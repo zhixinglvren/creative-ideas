@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创意详情 — 知行旅人</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --bg-card: #ffffff; --border: #e8e2d6;
+      --text: #2c2416; --text-muted: #8c8070;
+      --accent: #e07a5f; --accent-hover: #c96a50;
+      --radius: 12px;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1e; --bg-card: #252528; --border: #38383c;
+      --text: #e8e8ec; --text-muted: #98989e;
+      --accent: #f0a060; --accent-hover: #d48840;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 720px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent);
+      text-decoration: none; font-size: 0.9rem; margin-bottom: 28px; }
+    .back:hover { text-decoration: underline; }
+
+    .hero {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 32px; margin-bottom: 24px; text-align: center;
+    }
+    .hero .icon { font-size: 3rem; margin-bottom: 12px; }
+    .hero h1 { font-size: 1.6rem; margin-bottom: 6px; }
+    .hero .tagline { color: var(--text-muted); font-size: 1rem; margin-bottom: 14px; }
+    .hero .badge {
+      display: inline-block; font-size: 0.8rem; font-weight: 700;
+      border-radius: 14px; padding: 4px 16px;
+    }
+    .badge-live { background: #2e8b5722; color: #2e8b57; border: 1px solid #2e8b5744; }
+    .badge-wip  { background: #b8860b22; color: #b8860b; border: 1px solid #b8860b44; }
+
+    .section {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px; margin-bottom: 18px;
+    }
+    .section h2 { font-size: 1rem; color: var(--accent); margin-bottom: 10px; }
+    .section p, .section li { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; }
+    .section ul { padding-left: 20px; }
+    .section li { margin-bottom: 4px; }
+
+    .actions { text-align: center; margin-top: 28px; }
+    .actions a {
+      display: inline-block; background: var(--accent); color: #fff;
+      padding: 12px 32px; border-radius: 10px; text-decoration: none;
+      font-weight: 700; font-size: 1rem; transition: background 0.2s;
+    }
+    .actions a:hover { background: var(--accent-hover); }
+    .actions .note {
+      display: block; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="index.html" class="back">← 返回创意实验室</a>
+    <div id="content"></div>
+  </div>
+
+  <script>
+    const details = {
+      "parent-translator": {
+        description: "一通电话里，父母说「隔壁老王家孩子考上公务员了」，你听到的是「又在比」。他们真正想说的是：「我在担心你的未来」。",
+        sections: [
+          { title: "🎯 场景", text: "你和父母打电话。他们用「批评」表达关心，你用「沉默」表达尊重。结果双方都在用最真诚的方式互相误解。" },
+          { title: "💡 方案", text: "一个极简的代际翻译器：输入父母的话 → 输出「他们真正的意思」+「你可以这样回」。不教人撒谎，而是帮人找到那条既诚实又不伤人的表达路径。" },
+          { title: "🔧 技术", text: "纯前端规则引擎（Demo 阶段）→ 接入 LLM 做个性化理解（产品阶段）。微信小程序即可承载。" },
+          { title: "📈 为什么值得做", html: "中国 1.7 亿独生子女正经历代际沟通困境。从「节日焦虑」场景切入，天然具有社交裂变属性。技术实现极轻。" }
+        ],
+        demoUrl: "demo-parent-translator/"
+      },
+      "knowledge-fossil": {
+        description: "老王离职了——带着 5 年没人知道的隐性知识一起走了。那个奇怪的 status=99、那段不能删的 SQL 子查询、那个客户不能碰的功能……全没了。",
+        sections: [
+          { title: "🎯 场景", text: "新同事接手系统，翻遍 Confluence 只有骨架文档，Slack 里碎片信息，代码没有注释。每一个「当初为什么这样」都要靠猜。" },
+          { title: "💡 方案", text: "AI 持续分析团队沟通记录（Slack/邮件/PR/代码注释），在老员工在职时就自动识别决策节点、提取 why 信息、生成知识化石层。" },
+          { title: "🔧 技术", text: "LLM 从非结构化文本中提取决策链路 + 关联实体 + 生成结构化摘要。Demo 展示 7 条模拟化石，真实产品接入企业 IM + 代码仓库 API。" },
+          { title: "📈 为什么值得做", html: "每个关键员工离职，隐性知识损失估值 $50k-$500k。企业知识管理是千亿美元市场。可以从工程团队的代码决策切入，再扩展到产品/设计/运营。" }
+        ],
+        demoUrl: "demo-knowledge-fossil/"
+      },
+      "digital-declutter": {
+        description: "你的硬盘里堆了几年的文件——下载后从没打开过的 PDF、三年前的截图、改了 18 个版本的 PPT。「以后可能有用」是数字囤积症的头号理由。",
+        sections: [
+          { title: "🎯 场景", text: "周末想整理文件，打开下载文件夹看到 3000 个文件。你不知道哪些能删，于是又关掉了——「下次再说」。这个「下次」永远不会来。" },
+          { title: "💡 方案", text: "AI 读懂文件内容，而不是只看文件名和日期。给出「可以安心删除」的清单，每条附带一句话理由——「这是 2023 年的会议纪要，相关项目已结项」。不是简单按日期排列，而是真的理解文件价值。" },
+          { title: "🔧 技术", text: "本地运行（隐私优先），读取文件内容摘要 + 元数据，用 LLM 判断价值。不备份、不上传，所有处理在本地完成。" },
+          { title: "📈 为什么值得做", html: "数字囤积症影响数十亿人。macOS/Windows 自带的存储管理只按大小/日期排列，不读内容。这是一个「AI + 本地计算」的 sweet spot——隐私敏感 + 语义理解需求强。" }
+        ],
+        demoUrl: null
+      },
+      "info-will": {
+        description: "如果你明天不在了——你的微信聊天记录、GitHub 仓库、网盘文件、订阅服务……谁会知道它们的存在？谁会按你的意愿处理它们？",
+        sections: [
+          { title: "🎯 场景", text: "你有一个 GitHub 私人仓库、3 个网盘的资料、几十个在线账号。这些数字资产在你走后会成为「数字垃圾」——没人知道密码，没人知道哪些重要哪些不重要。" },
+          { title: "💡 方案", text: "一份加密的「信息遗嘱」：列出你的数字资产清单 + 对每项资产的处置意愿（删除/转交/公开/保留），设置信任人。不是法律遗嘱的替代品，而是数字层面的补充——法律遗嘱管钱和房产，信息遗嘱管你的数字痕迹。" },
+          { title: "🔧 技术", text: "本地加密存储 + 定时签到机制（如果你一段时间未响应，触发转交流程）。纯前端 + 端到端加密，不上传明文到任何服务器。" },
+          { title: "📈 为什么值得做", html: "全球数字遗产市场规模到 2030 年预计达 $200B。Facebook 已有「纪念账号」功能，但太浅——只管社交账号，不管你的文件、代码、知识库、订阅。这是一个「临终关怀 × 数字隐私」的交叉蓝海。" }
+        ],
+        demoUrl: null
+      },
+      "reverse-resume": {
+        description: "你的简历写的是你想展示的。但你的 GitHub 提交记录、代码注释风格、PR review 习惯——这些在讲另一个故事。AI 能从你的代码仓库反推出你真正的能力画像。",
+        sections: [
+          { title: "🎯 场景", text: "面试时你说「精通性能优化」——但你的 commits 显示你 80% 的工作是 CRUD。你的代码仓库比你的嘴诚实。不是要揭穿谁，而是帮人发现「我以为我擅长什么」和「我实际擅长什么」之间的差距。" },
+          { title: "💡 方案", text: "读你的 Git 历史 → 分析代码类型分布、commit 频率、注释质量、PR review 风格 → 生成「真实能力画像」。不是打分，不是排名，是镜子——让你看到自己在代码世界里真正的样子。" },
+          { title: "🔧 技术", text: "Git 历史分析（语言分布、commit 模式、issue 参与度）+ LLM 语义理解（代码注释质量、PR 讨论深度）。本地运行，隐私优先。" },
+          { title: "📈 为什么值得做", html: "LinkedIn 只展示「声明式自我」。真正有价值的是「行为数据」——你的 GitHub 比你的简历更懂你。这可以成为新一代职业画像工具，也可以作为内省工具——了解自己的技术盲区。" }
+        ],
+        demoUrl: null
+      }
+    };
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const idea = details[id];
+
+    if (!idea) {
+      document.getElementById('content').innerHTML = `
+        <div class="hero"><div class="icon">❓</div><h1>未找到创意</h1></div>`;
+    } else {
+      const badge = idea.demoUrl
+        ? '<span class="badge badge-live">🟢 可体验</span>'
+        : '<span class="badge badge-wip">🟡 构思中</span>';
+      const sections = idea.sections.map(s => `
+        <div class="section">
+          <h2>${s.title}</h2>
+          ${s.html ? s.html : `<p>${s.text}</p>`}
+        </div>
+      `).join('');
+      const cta = idea.demoUrl
+        ? `<a href="${idea.demoUrl}">✨ 打开 Demo</a>`
+        : `<a href="mailto:zhixinglvren@163.com?subject=我对「${document.title}」感兴趣">📬 我感兴趣，聊聊</a>`;
+
+      document.title = `${details[id] ? '父母说明书|知识化石挖掘机|数字断舍离教练|信息遗嘱|逆向简历'.split('|')[Object.keys(details).indexOf(id)] : '创意'} — 知行旅人`;
+
+      document.getElementById('content').innerHTML = `
+        <div class="hero">
+          <div class="icon">${getIcon(id)}</div>
+          <h1>${getTitle(id)}</h1>
+          <p class="tagline">${idea.description}</p>
+          ${badge}
+        </div>
+        ${sections}
+        <div class="actions">
+          ${cta}
+          ${!idea.demoUrl ? '<span class="note">Demo 开发中，感兴趣可提前联系</span>' : ''}
+        </div>`;
+    }
+
+    function getIcon(id) {
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄'};
+      return m[id] || '💡';
+    }
+    function getTitle(id) {
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历'};
+      return m[id] || id;
+    }
+
+    // 主题
+    const html = document.documentElement;
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      if (t === 'system') {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        html.setAttribute('data-theme', mq.matches ? 'dark' : 'light');
+      }
+    }
+    setTheme(localStorage.getItem('creative-lab-theme') || 'system');
+  </script>
+</body>
+</html>
