@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识化石挖掘机 — Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #1a1a2e; color: #e0e0e0; min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+      padding: 36px 24px 28px; text-align: center;
+      border-bottom: 1px solid #1f4068;
+    }
+    .header h1 { font-size: 1.7rem; color: #e2c275; margin-bottom: 6px; }
+    .header .sub { font-size: 0.9rem; color: #8899aa; }
+    .header .warning {
+      margin-top: 14px; display: inline-flex; align-items: center; gap: 8px;
+      background: #e2c27522; border: 1px solid #e2c27544; border-radius: 8px;
+      padding: 8px 16px; font-size: 0.85rem; color: #e2c275;
+    }
+
+    .main { max-width: 720px; margin: 0 auto; padding: 24px 20px; }
+
+    /* 搜索 */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 24px;
+    }
+    .search-bar input {
+      flex: 1; background: #16213e; border: 1px solid #1f4068; border-radius: 10px;
+      padding: 12px 16px; font-size: 1rem; color: #e0e0e0; outline: none;
+      font-family: inherit;
+    }
+    .search-bar input:focus { border-color: #e2c275; }
+    .search-bar input::placeholder { color: #556677; }
+    .search-bar button {
+      background: #e2c275; color: #1a1a2e; border: none; border-radius: 10px;
+      padding: 12px 24px; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .search-bar button:hover { background: #f0d685; }
+
+    /* 标签筛选 */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .tag {
+      background: #16213e; border: 1px solid #1f4068; border-radius: 20px;
+      padding: 6px 14px; font-size: 0.82rem; color: #8899aa; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag:hover { border-color: #e2c275; color: #e2c275; }
+    .tag.active { background: #e2c27522; border-color: #e2c275; color: #e2c275; }
+
+    /* 统计 */
+    .stats {
+      display: flex; gap: 16px; margin-bottom: 24px;
+    }
+    .stat {
+      flex: 1; background: #16213e; border-radius: 10px; padding: 16px; text-align: center;
+      border: 1px solid #1f4068;
+    }
+    .stat .num { font-size: 1.8rem; font-weight: 800; color: #e2c275; }
+    .stat .label { font-size: 0.78rem; color: #8899aa; margin-top: 4px; }
+
+    /* 化石卡片 */
+    .fossil {
+      background: #16213e; border: 1px solid #1f4068; border-radius: 12px;
+      padding: 24px; margin-bottom: 16px; transition: border-color 0.2s;
+    }
+    .fossil:hover { border-color: #e2c27544; }
+    .fossil .fossil-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+    }
+    .fossil h3 { color: #e2c275; font-size: 1.05rem; line-height: 1.4; }
+    .fossil .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 6px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .badge-arch  { background: #e2c27522; color: #e2c275; border: 1px solid #e2c27544; }
+    .badge-bug   { background: #e74c3c22; color: #e74c3c; border: 1px solid #e74c3c44; }
+    .badge-logic { background: #3498db22; color: #3498db; border: 1px solid #3498db44; }
+    .badge-safe  { background: #2ecc7122; color: #2ecc71; border: 1px solid #2ecc7144; }
+
+    .fossil .insight {
+      color: #ccdddd; font-size: 0.95rem; line-height: 1.7;
+      margin-bottom: 14px; padding: 12px; background: #0d1b2a; border-radius: 8px;
+      border-left: 3px solid #e2c275;
+    }
+    .fossil .source {
+      font-size: 0.8rem; color: #667788; display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
+    }
+    .fossil .source span {
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .fossil .source .person {
+      background: #0f346022; border: 1px solid #0f3460; border-radius: 4px;
+      padding: 2px 8px; color: #8899cc; font-size: 0.78rem;
+    }
+    .fossil .source .date { color: #556677; }
+    .fossil .source .channel { color: #8899aa; }
+
+    .empty { text-align: center; padding: 60px 20px; color: #667788; }
+    .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .footer { text-align: center; padding: 32px 20px 48px; }
+    .footer a { color: #e2c275; text-decoration: none; font-size: 0.9rem; }
+    .footer .note {
+      margin-top: 12px; font-size: 0.75rem; color: #556677; line-height: 1.5;
+    }
+
+    /* 离职倒计时条 */
+    .departure-bar {
+      background: #e2c275; color: #1a1a2e; border-radius: 10px;
+      padding: 12px 20px; margin-bottom: 24px; display: flex;
+      justify-content: space-between; align-items: center; font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .departure-bar .days { font-size: 1.3rem; color: #c0392b; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🦴 知识化石挖掘机</h1>
+    <p class="sub">在老员工离职前，把隐性知识从聊天记录、代码注释、PR 讨论中挖出来</p>
+    <div class="warning">⚠️ 演示数据 · 模拟「老王」（后端架构师）离职前自动挖掘的知识化石</div>
+  </div>
+
+  <div class="main">
+    <div class="departure-bar">
+      <span>🔴 <b>老王的最后工作日：2026-07-15</b>（系统自动启动知识采集）</span>
+      <span class="days">剩余 25 天</span>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="搜索知识化石… 比如：Redis、客户X、订单" oninput="filter()">
+      <button onclick="filter()">🔍 挖掘</button>
+    </div>
+
+    <div class="tags" id="tags"></div>
+
+    <div id="results"></div>
+
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+      <p class="note">
+        真实产品会接入 Slack / 飞书 / 钉钉 / 企业微信 / GitHub / 邮件 API，<br>
+        自动识别决策节点、提取 why 信息、在离职交接期生成知识化石层。
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const fossils = [
+      {
+        id: 1,
+        title: '为什么订单模块的消息队列选了 Redis 而不是 RabbitMQ',
+        category: 'arch',
+        person: '老王（架构决策）',
+        date: '2024-03-15',
+        channels: ['Slack #tech-arch', 'PR #3421 讨论'],
+        insight: '<b>不是技术选型问题，是组织约束。</b><br><br>当时 RabbitMQ 更合适（死信、延迟队列、消息回溯），但运维团队只有 2 个人且不会维护 Erlang。Redis 全团队都能排查问题。选了降级方案，但换来了「出问题时不用等运维」。<br><br>⚠️ 接手的同学注意：如果运维团队扩到 4 人以上，这个决策应该重新评估。',
+        source: 'Slack #tech-arch · 2024-03-15 · 老王: "不是 RabbitMQ 不好，是咱们没人能维护它。Redis 虽然功能弱，但谁都能上去看"  [AI 识别为：架构决策 → 组织约束型 tradeoff]'
+      },
+      {
+        id: 2,
+        title: '数据库 orders 表里 status=99 的隐藏含义',
+        category: 'logic',
+        person: '老王（隐含业务规则）',
+        date: '2024-07-22',
+        channels: ['Slack #backend', '代码注释'],
+        insight: '<b>枚举表里没写，注释里没写，只有老王和财务知道。</b><br><br>status=99 = 已发货但客户拒收后重新入库，财务还没冲销。这个状态的订单<b>不能触发自动对账</b>，否则会导致财务系统金额不一致。<br><br>🔴 高风险：如果有人在代码里把所有 status 一视同仁处理，会引发财务事故。',
+        source: 'Slack #backend · 2024-07-22 · 老王: "那个 status=99 别动它，财务那边还有个步骤没走完。对，我知道没写文档，我补一下…"  [AI 标记：风险项 · 未文档化 · 跨部门依赖]'
+      },
+      {
+        id: 3,
+        title: '客户「宏达商贸」永远不能碰的 3 个功能',
+        category: 'safe',
+        person: '老王（客户边界规则）',
+        date: '2023-11-08',
+        channels: ['内部邮件', 'Slack #customer-support'],
+        insight: '<b>合同里有但不执行，这是老板和他们 VP 的口头默契。</b><br><br>功能 A（自动扣款）：他们财务流程特殊，手动汇款<br>功能 B（数据导出）：上市前敏感，只走人工<br>功能 C（API 对接）：去年事故后双方约定暂停<br><br>⚡ 这些不在任何文档里。如果新人不知道打开了这些功能，不是技术事故，是商务事故。',
+        source: '内部邮件 · 2023-11-08 · 老王→全组: "宏达的三个老问题我再强调一遍…" [AI 识别为：客户边界规则 → 商务级别 · 非技术限制]'
+      },
+      {
+        id: 4,
+        title: '那段奇怪的 SQL 子查询：3 年前线上事故留下的补丁',
+        category: 'bug',
+        person: '老王（历史事故教训）',
+        date: '2023-05-12 ~ 2023-05-15',
+        channels: ['GitHub Issue #8921', 'Slack #oncall'],
+        insight: '<b>你看到的脏代码，当时是为了止血。</b><br><br>2023-05-12 凌晨，这段 SQL 没加子查询时导致全表扫描，MySQL CPU 100% 持续 40 分钟，影响 12 万用户。这个看起来多余的子查询 <code>WHERE id IN (SELECT id FROM ...)</code> 实际上是为了强制走索引 idx_order_time。<br><br>🔧 如果你要优化——先确保新版本在同等数据量下 EXPLAIN 走的是索引。别删。',
+        source: 'GitHub Issue #8921 · 老王: "临时止血，加了子查询强制走索引。等有空了用 optimizer hint 重写。" [AI 标记：技术债 · 有事故背景 · 删除有风险]'
+      },
+      {
+        id: 5,
+        title: '微服务拆分计划：为什么最终只拆了 3 个而不是原计划的 12 个',
+        category: 'arch',
+        person: '老王（架构演进史）',
+        date: '2024-09-01 ~ 2024-10-20',
+        channels: ['技术方案评审文档', 'Slack #tech-leads'],
+        insight: '<b>拆到第 4 个的时候，团队发现分布式事务的复杂度已经开始吞噬收益。</b><br><br>原计划 12 个微服务，实际拆了：<br>① 订单服务（独立部署，收益最大）<br>② 用户服务（SSO 解耦，安全需要）<br>③ 消息服务（异步化，性能瓶颈）<br><br>剩下的 9 个保持单体——团队只有 8 个人，拆得越多就越是在运维微服务而不是开发业务。<br><br>📌 接手的TL注意：如果团队规模到 20+ 人，可以考虑继续拆第 4-6 个。现在的平衡点是刻意维持的，不是做不到。',
+        source: '技术方案评审 · 2024-10-20 · 老王: "我们一致同意暂停拆分。3 个是我们团队规模的 sweet spot。"  [AI 识别：架构决策 → 团队规模约束 · 有明确继续拆分的条件]'
+      },
+      {
+        id: 6,
+        title: '为什么日志系统用的是自研而不是 ELK——那个没人想提的采购事故',
+        category: 'arch',
+        person: '老王（历史决策背景）',
+        date: '2023-01-10',
+        channels: ['内部 Wiki（仅技术管理层可访问）'],
+        insight: '<b>不是因为 ELK 不好，是采购申请被 CIO 卡了 6 个月。</b><br><br>当时 CIO 要求所有 SaaS 采购必须走信息安全评估 + 供应商资质审核。ELK Cloud 的评估周期预估 4-6 个月，但日志系统等不了。老王花 3 周写了第一个版本的自研日志。<br><br>现在用习惯了，但代价是：每人每月大概花 2-3 小时维护日志基础设施（总计 ~24h/月）。如果新 CTO 来了推 ELK，这个是决策背景——不是技术偏好，是组织惯性。',
+        source: '内部 Wiki · 老王: "自研日志系统运维手册 v1.0" [AI 识别：非技术因素驱动的架构决策 → 组织约束 · 采购流程问题]'
+      },
+      {
+        id: 7,
+        title: '定时任务 cron-export 为什么不能改执行时间',
+        category: 'logic',
+        person: '老王（隐含调度依赖）',
+        date: '2024-06-03',
+        channels: ['GitLab MR !4412', 'Slack #backend'],
+        insight: '<b>不是技术限制，是和财务部门的手动操作窗口耦合了。</b><br><br>cron-export 每天 02:00 导出对账数据。财务部小陈每天 03:00 手动取数跑他们的 Excel 宏。如果你把 cron 改到 04:00，小陈的 Excel 会报错，然后财务经理会打电话。<br><br>📞 如果要改：先和财务部确认，改他们的 Excel 宏时间，再改 cron。或者等到财务系统升级（Q3 计划中）。',
+        source: 'GitLab MR !4412 · 老王 Code Review: "不要改这个时间，跟财务的流程绑定了。等我找他们对齐了再说。"  [AI 标记：跨部门耦合 · 非技术限制]'
+      }
+    ];
+
+    const categories = [
+      { key: 'all', label: '全部', icon: '🦴' },
+      { key: 'arch', label: '架构决策', icon: '🏗️' },
+      { key: 'bug', label: '事故教训', icon: '🔥' },
+      { key: 'logic', label: '隐含规则', icon: '🧩' },
+      { key: 'safe', label: '安全边界', icon: '🛡️' },
+    ];
+
+    let activeTag = 'all';
+    let searchTerm = '';
+
+    function getBadge(cat) {
+      const map = { arch: 'badge-arch', bug: 'badge-bug', logic: 'badge-logic', safe: 'badge-safe' };
+      return map[cat] || 'badge-arch';
+    }
+    function getCatLabel(cat) {
+      const map = { arch: '架构决策', bug: '事故教训', logic: '隐含规则', safe: '安全边界' };
+      return map[cat] || cat;
+    }
+
+    function renderStats(filtered) {
+      const total = fossils.length;
+      const count = filtered.length;
+      const coverage = Math.round((count / total) * 100);
+      const cats = [...new Set(filtered.map(f => f.category))];
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="num">${count}</div><div class="label">已挖掘化石</div></div>
+        <div class="stat"><div class="num">${cats.length}</div><div class="label">覆盖类型</div></div>
+        <div class="stat"><div class="num">${coverage}%</div><div class="label">覆盖率</div></div>
+      `;
+    }
+
+    function renderTags() {
+      document.getElementById('tags').innerHTML = categories.map(c =>
+        `<span class="tag ${activeTag === c.key ? 'active' : ''}" data-key="${c.key}">${c.icon} ${c.label}</span>`
+      ).join('');
+    }
+
+    function renderFossils(filtered) {
+      if (filtered.length === 0) {
+        document.getElementById('results').innerHTML = `
+          <div class="empty"><div class="icon">🔍</div>没找到匹配的知识化石。<br>试试换个关键词，比如「Redis」「客户」「SQL」</div>`;
+        return;
+      }
+      document.getElementById('results').innerHTML = filtered.map(f => `
+        <div class="fossil">
+          <div class="fossil-header">
+            <h3>${f.title}</h3>
+            <span class="badge ${getBadge(f.category)}">${getCatLabel(f.category)}</span>
+          </div>
+          <div class="insight">${f.insight}</div>
+          <div class="source">
+            <span class="person">👤 ${f.person}</span>
+            <span class="date">📅 ${f.date}</span>
+            <span class="channel">💬 ${f.channels.join(' · ')}</span>
+          </div>
+          <div style="margin-top:10px;font-size:0.78rem;color:#445566;font-style:italic;">
+            📎 ${f.source}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filter() {
+      searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+      let filtered = fossils;
+
+      if (activeTag !== 'all') {
+        filtered = filtered.filter(f => f.category === activeTag);
+      }
+      if (searchTerm) {
+        filtered = filtered.filter(f =>
+          f.title.toLowerCase().includes(searchTerm) ||
+          f.insight.toLowerCase().includes(searchTerm) ||
+          f.source.toLowerCase().includes(searchTerm) ||
+          f.person.includes(searchTerm)
+        );
+      }
+      renderStats(filtered);
+      renderFossils(filtered);
+    }
+
+    document.getElementById('tags').addEventListener('click', e => {
+      if (e.target.classList.contains('tag')) {
+        activeTag = e.target.dataset.key;
+        renderTags();
+        filter();
+      }
+    });
+
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') filter();
+    });
+
+    // init
+    renderTags();
+    filter();
+  </script>
+</body>
+</html>
