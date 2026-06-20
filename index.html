@@ -161,11 +161,15 @@
     let filtered = [];
     let page = 1;
 
-    async function load() {
-      const resp = await fetch('ideas-data.json');
-      allIdeas = (await resp.json()).ideas;
-      search();
-    }
+    // 数据内嵌（本地 file:// 也能用，GitHub Pages 无需额外请求）
+    allIdeas = [
+      { "id": "parent-translator", "icon": "👨‍👩‍👧", "title": "父母说明书", "tagline": "代际沟通翻译器", "status": "live", "category": "情感科技" },
+      { "id": "knowledge-fossil", "icon": "🦴", "title": "知识化石挖掘机", "tagline": "隐性知识不流失", "status": "live", "category": "企业效率" },
+      { "id": "digital-declutter", "icon": "📦", "title": "数字断舍离教练", "tagline": "AI 帮你删文件", "status": "wip", "category": "个人效率" },
+      { "id": "info-will", "icon": "📜", "title": "信息遗嘱", "tagline": "数字身后事整理师", "status": "wip", "category": "数字遗产" },
+      { "id": "reverse-resume", "icon": "🔄", "title": "逆向简历", "tagline": "AI 反推真实能力", "status": "wip", "category": "职业发展" }
+    ];
+    search();
 
     function search() {
       const q = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -244,7 +248,7 @@
     });
     setTheme(localStorage.getItem('creative-lab-theme') || 'system');
 
-    load();
+    // 页面加载完成，search() 已在上面调用
   </script>
 </body>
 </html>
