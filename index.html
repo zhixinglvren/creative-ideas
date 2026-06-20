@@ -1,88 +1,237 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="system">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>知行人 — 创意实验室</title>
+  <title>知行旅人 · 创意实验室</title>
   <style>
+    /* ── 主题变量 ── */
+    :root {
+      --bg: #faf7f2;
+      --bg-card: #ffffff;
+      --border: #e8e2d6;
+      --text: #2c2416;
+      --text-muted: #8c8070;
+      --accent: #e07a5f;
+      --accent-hover: #c96a50;
+      --tag-bg: #f5f0e8;
+      --tag-text: #8c8070;
+      --green: #2e8b57;
+      --yellow: #b8860b;
+      --shadow: 0 2px 16px rgba(0,0,0,0.06);
+      --radius: 16px;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1e;
+      --bg-card: #252528;
+      --border: #38383c;
+      --text: #e8e8ec;
+      --text-muted: #98989e;
+      --accent: #f0a060;
+      --accent-hover: #d48840;
+      --tag-bg: #2a2a2e;
+      --tag-text: #98989e;
+      --shadow: 0 2px 16px rgba(0,0,0,0.25);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
-      line-height: 1.6;
-      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
     }
-    .container { max-width: 900px; margin: 0 auto; padding: 60px 24px; }
-    header { margin-bottom: 64px; }
-    h1 { font-size: 2.4rem; color: #f0f6fc; margin-bottom: 8px; }
-    .subtitle { color: #8b949e; font-size: 1.1rem; }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 48px 20px 80px; }
+
+    /* ── Header ── */
+    header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 48px; flex-wrap: wrap; gap: 16px;
+    }
+    header h1 { font-size: 2rem; font-weight: 800; color: var(--text); }
+    header .subtitle { color: var(--text-muted); font-size: 1rem; margin-top: 6px; }
+    .theme-switch {
+      display: flex; gap: 4px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 3px;
+    }
+    .theme-switch button {
+      border: none; background: transparent; padding: 6px 12px; border-radius: 8px;
+      font-size: 0.82rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .theme-switch button.active { background: var(--accent); color: #fff; }
+
+    /* ── 卡片网格 ── */
+    .grid { display: flex; flex-direction: column; gap: 20px; }
+
     .card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 28px;
-      margin-bottom: 20px;
-      transition: border-color 0.2s;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 28px; box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; gap: 20px; align-items: flex-start;
+      cursor: default;
     }
-    .card:hover { border-color: #58a6ff; }
-    .card h3 { color: #58a6ff; font-size: 1.2rem; margin-bottom: 8px; }
-    .card .tagline { color: #8b949e; font-size: 0.95rem; margin-bottom: 12px; }
-    .card p { color: #8b949e; font-size: 0.9rem; }
-    .status {
-      display: inline-block;
-      background: #1f6feb22;
-      color: #58a6ff;
-      border: 1px solid #1f6feb44;
-      border-radius: 12px;
-      padding: 2px 10px;
-      font-size: 0.8rem;
-      margin-bottom: 12px;
+    .card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
+
+    .card-icon {
+      font-size: 2.2rem; flex-shrink: 0; width: 56px; height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--tag-bg); border-radius: 14px;
     }
+
+    .card-body { flex: 1; min-width: 0; }
+    .card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+    .card-top h3 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+    .card-top h3 a { color: inherit; text-decoration: none; }
+    .card-top h3 a:hover { color: var(--accent); }
+    .status-dot {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.75rem; font-weight: 600; border-radius: 20px;
+      padding: 3px 12px; white-space: nowrap;
+    }
+    .status-dot.live { background: #2e8b5722; color: var(--green); border: 1px solid #2e8b5744; }
+    .status-dot.wip  { background: #b8860b22; color: var(--yellow); border: 1px solid #b8860b44; }
+    .card .tagline { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; }
+    .card .desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; }
+    .card-arrow {
+      flex-shrink: 0; color: var(--text-muted); font-size: 1.2rem;
+      margin-top: 14px; opacity: 0.4; transition: opacity 0.2s;
+    }
+    .card:hover .card-arrow { opacity: 1; }
+    .card a.card-link {
+      position: absolute; inset: 0; z-index: 1;
+    }
+    .card { position: relative; }
+
+    /* ── Footer ── */
     footer {
-      margin-top: 64px;
-      padding-top: 24px;
-      border-top: 1px solid #21262d;
-      color: #484f58;
-      font-size: 0.85rem;
-      text-align: center;
+      margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.85rem; text-align: center;
     }
-    a { color: #58a6ff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🧪 知行人 · 创意实验室</h1>
-      <p class="subtitle">有趣的点子 × 可运行的 Demo → 找到真正需要它的人</p>
+      <div>
+        <h1>🧪 知行旅人 · 创意实验室</h1>
+        <p class="subtitle">有趣的点子 × 可运行的 Demo → 找到真正需要它的人</p>
+      </div>
+      <div class="theme-switch" id="themeSwitch">
+        <button data-theme="system" class="active">💻 系统</button>
+        <button data-theme="light">☀️ 浅色</button>
+        <button data-theme="dark">🌙 深色</button>
+      </div>
     </header>
 
-    <div class="card">
-      <span class="status">🟢 Demo 上线</span>
-      <h3><a href="demo-parent-translator/">👨‍👩‍👧 父母说明书 →</a></h3>
-      <p class="tagline">代际沟通翻译器——读懂「话里有话」</p>
-      <p>输入父母说的话 → 输出「真正的意思」+「你可以这样回」。规则引擎 Demo，即刻体验。</p>
-    </div>
+    <div class="grid">
 
-    <div class="card">
-      <span class="status">🟢 Demo 上线</span>
-      <h3><a href="demo-knowledge-fossil/">🦴 知识化石挖掘机 →</a></h3>
-      <p class="tagline">在老员工离职前，把隐性知识挖出来</p>
-      <p>分析团队沟通记录，自动提取未文档化的架构决策、隐含规则和事故教训。含 7 条模拟化石。</p>
-    </div>
+      <!-- 父母说明书 -->
+      <div class="card" onclick="location.href='demo-parent-translator/'">
+        <div class="card-icon">👨‍👩‍👧</div>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>父母说明书</h3>
+            <span class="status-dot live">🟢 可体验</span>
+          </div>
+          <p class="tagline">代际沟通翻译器 — 读懂「话里有话」</p>
+          <p class="desc">输入父母说的话 → 输出「真正的意思」+「你可以这样回」。内置 6 类场景规则引擎，即刻体验。</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
 
-    <div class="card">
-      <span class="status">🟡 构思中</span>
-      <h3>📦 数字断舍离教练</h3>
-      <p class="tagline">AI 帮你勇敢删除「以后可能有用」的文件</p>
-      <p>读懂文件内容，给出"可以安心删除"的清单，每条附带一句话理由。Demo 制作中…</p>
+      <!-- 知识化石挖掘机 -->
+      <div class="card" onclick="location.href='demo-knowledge-fossil/'">
+        <div class="card-icon">🦴</div>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>知识化石挖掘机</h3>
+            <span class="status-dot live">🟢 可体验</span>
+          </div>
+          <p class="tagline">在老员工离职前，把隐性知识挖出来</p>
+          <p class="desc">分析团队沟通记录，自动提取未文档化的架构决策、隐含规则和事故教训。含 7 条模拟化石 + 分类筛选。</p>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+
+      <!-- 数字断舍离教练 -->
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>数字断舍离教练</h3>
+            <span class="status-dot wip">🟡 构思中</span>
+          </div>
+          <p class="tagline">AI 帮你勇敢删除「以后可能有用」的文件</p>
+          <p class="desc">读懂文件内容，给出「可以安心删除」的清单，每条附带一句话理由。Demo 制作中…</p>
+        </div>
+      </div>
+
+      <!-- 信息遗嘱 -->
+      <div class="card">
+        <div class="card-icon">📜</div>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>信息遗嘱</h3>
+            <span class="status-dot wip">🟡 构思中</span>
+          </div>
+          <p class="tagline">你的数字身后事整理师</p>
+          <p class="desc">整理你的数字资产——账号、文件、订阅——在你离开后按照你的意愿传递或销毁。Demo 制作中…</p>
+        </div>
+      </div>
+
+      <!-- 逆向简历 -->
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <div class="card-body">
+          <div class="card-top">
+            <h3>逆向简历</h3>
+            <span class="status-dot wip">🟡 构思中</span>
+          </div>
+          <p class="tagline">让 AI 反推你的真实能力边界</p>
+          <p class="desc">读取你的代码仓库，反向生成一份「真实能力画像」——不是你想展示的，而是你实际擅长的。Demo 制作中…</p>
+        </div>
+      </div>
+
     </div>
 
     <footer>
       <p>📬 感兴趣？联系我：<a href="mailto:zhixinglvren@163.com">zhixinglvren@163.com</a></p>
-      <p style="margin-top: 8px;">© 2026 知行人 · Hosted on <a href="https://github.com/zhixinglvren">GitHub</a></p>
+      <p style="margin-top: 8px;">© 2026 知行旅人 · Hosted on <a href="https://github.com/zhixinglvren">GitHub</a></p>
     </footer>
   </div>
+
+  <script>
+    const html = document.documentElement;
+    const btns = document.querySelectorAll('#themeSwitch button');
+
+    function setTheme(t) {
+      html.setAttribute('data-theme', t);
+      btns.forEach(b => b.classList.toggle('active', b.dataset.theme === t));
+      localStorage.setItem('creative-lab-theme', t);
+
+      if (t === 'system') {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        html.setAttribute('data-theme', mq.matches ? 'dark' : 'light');
+      }
+    }
+
+    // 跟随系统变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (localStorage.getItem('creative-lab-theme') === 'system') setTheme('system');
+    });
+
+    btns.forEach(b => {
+      b.addEventListener('click', e => {
+        e.stopPropagation();
+        setTheme(b.dataset.theme);
+      });
+    });
+
+    // 初始化
+    const saved = localStorage.getItem('creative-lab-theme') || 'system';
+    setTheme(saved);
+  </script>
 </body>
 </html>
