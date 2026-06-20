@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>父母说明书 — 代际翻译器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f5f0eb;
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #e07a5f 0%, #f2cc8f 100%);
+      color: white;
+      padding: 32px 24px 24px;
+      text-align: center;
+    }
+    .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .header .desc { font-size: 0.9rem; opacity: 0.9; }
+
+    .main { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+    /* 快速尝试 */
+    .quick-try { margin-bottom: 20px; }
+    .quick-try .label {
+      font-size: 0.8rem; color: #999; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .quick-try .label::before { content: '💬'; }
+    .examples { display: flex; flex-wrap: wrap; gap: 8px; }
+    .example-btn {
+      background: white; border: 1px solid #e0d6cc; border-radius: 20px;
+      padding: 8px 16px; font-size: 0.85rem; color: #3d405b;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .example-btn:hover { background: #e07a5f; color: white; border-color: #e07a5f; }
+
+    /* 输入区 */
+    .input-area {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .input-area textarea {
+      width: 100%; border: 2px solid #e0d6cc; border-radius: 12px;
+      padding: 14px; font-size: 1rem; font-family: inherit;
+      resize: vertical; min-height: 80px; outline: none;
+      transition: border-color 0.2s; color: #3d405b;
+    }
+    .input-area textarea:focus { border-color: #e07a5f; }
+    .input-area .hint {
+      font-size: 0.78rem; color: #b0a69a; margin-top: 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .btn-row { display: flex; gap: 10px; margin-top: 12px; }
+    .btn-row button {
+      flex: 1; padding: 12px; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-translate {
+      background: #e07a5f; color: white;
+      flex: 2;
+    }
+    .btn-translate:hover { background: #c96a50; }
+    .btn-translate:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-clear {
+      background: #f5f0eb; color: #999;
+      flex: 1;
+    }
+
+    /* 结果区 */
+    .result { display: none; }
+    .result.show { display: block; }
+
+    .card {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 14px;
+    }
+    .card .card-label {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    }
+    .meaning .card-label { color: #e07a5f; }
+    .reply .card-label { color: #81b29a; }
+    .card .card-content {
+      font-size: 1.05rem; line-height: 1.7; color: #3d405b;
+    }
+    .card .card-sub {
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid #f0ebe3;
+      font-size: 0.85rem; color: #b0a69a; line-height: 1.5;
+    }
+
+    /* 警告/提示 */
+    .disclaimer {
+      font-size: 0.75rem; color: #c0b8a8; text-align: center;
+      margin: 24px 0 12px; line-height: 1.5;
+    }
+    .back-link {
+      display: block; text-align: center; color: #e07a5f; text-decoration: none;
+      font-size: 0.9rem; margin-bottom: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>👨‍👩‍👧 父母说明书</h1>
+    <p class="desc">听懂父母「话里有话」· 代际翻译器 Demo</p>
+  </div>
+
+  <div class="main">
+
+    <div class="quick-try">
+      <div class="label">快速尝一个</div>
+      <div class="examples" id="examples"></div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="input" placeholder='把父母说的话粘贴在这里…&#10;比如："隔壁老王家孩子考上公务员了，你看看人家"'
+        maxlength="500"></textarea>
+      <div class="hint">🫶 支持 500 字以内</div>
+      <div class="btn-row">
+        <button class="btn-translate" id="btnTranslate">✨ 翻译</button>
+        <button class="btn-clear" id="btnClear">清空</button>
+      </div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="card meaning">
+        <div class="card-label">🧠 真正的意思</div>
+        <div class="card-content" id="meaningText"></div>
+        <div class="card-sub" id="meaningSub"></div>
+      </div>
+      <div class="card reply">
+        <div class="card-label">💚 你可以这样回</div>
+        <div class="card-content" id="replyText"></div>
+        <div class="card-sub" id="replySub"></div>
+      </div>
+    </div>
+
+    <p class="disclaimer">
+      ⚠️ 本 Demo 使用规则匹配 + 模板生成，仅供体验。真正的产品会接入 LLM 做个性化理解。<br>
+      翻译不是教你说谎，而是帮你找到那条既诚实又不伤人的路径。
+    </p>
+    <a href="../" class="back-link">← 返回创意实验室</a>
+  </div>
+
+  <script>
+    // ── 内核：规则匹配引擎 ──
+    const patterns = [
+      {
+        // 比较类
+        re: /别人|隔壁|邻居|同事.*孩子|同事.*儿子|同事.*女儿|老王|老李|老张|人家.*考上|人家.*买了|人家.*结婚|你看看人家|你学学.{0,8}/,
+        meaning: '“别人家孩子”其实不是重点。他们真正想说的是：<br><br>🟡 <b>我在担心你的未来</b>——我用别人的成功来丈量你的安全距离。这种担心的根源，是他们这代人对“稳定”的执着。',
+        meaningSub: '他们的比较不是贬低你，而是自己成长年代留下的焦虑痕迹——那时候“比别人差”是真的会饿肚子。',
+        reply: '“妈/爸，我知道你是怕我吃亏。我这条路虽然跟别人走的不一样，但我心里有数。”<br><br>或者更简短：',
+        replySub: '“嗯，我知道你是为了我好。我这边也有在努力，就是走得慢一点。”<br><br>——不反驳比较，也不承诺改变方向，但承认了他们的好意。这是最高性价比的回应。'
+      },
+      {
+        // 催婚
+        re: /对象|男朋友|女朋友|结婚|相亲|成家|单身|什么时候.*婚|找.*人|要不.*介绍|三十|不小了|年纪.*不小/,
+        meaning: '这不是在催你完成 kpi。而是：<br><br>🟡 <b>我老了，怕以后陪不了你。</b>——催婚的底层情绪是“时间焦虑”和“分离恐惧”，不是真的要你随便找个人。',
+        meaningSub: '他们在用自己的方式说“我爱你，但不知道还能爱你多久”。这句说不出口。',
+        reply: '“妈/爸，我懂你是想有个人能照顾我。你放心，我自己也在留意，但我不会随便凑合。”<br><br>或者：',
+        replySub: '“你怕我一个人太孤单对吧？其实我有朋友有同事，过得挺充实的。缘分的事情，急不来的。”<br><br>——把“催婚”翻译回“关心”，顺着情感回应，而不是顺着话题辩论。'
+      },
+      {
+        // 工作稳定性
+        re: /公务员|事业编|稳定|铁饭碗|国企|私企.*不稳定|公司.*怎么|工作.*怎么样|辞职|换工作|跳槽/,
+        meaning: '他们不是在质疑你的职业选择，而是：<br><br>🟡 <b>我经历过动荡年代，不想你也经历。</b>——“稳定”对他们来说是生存经验，不是保守。',
+        meaningSub: '这代人经历过下岗潮、经历过没有社保的年代。你说的“成长”和“机会”，在他们的词典里叫“不确定”。',
+        reply: '“妈/爸，我知道你经历过不容易的年代。我现在做的这个行业跟你们那时候不太一样——能力就是铁饭碗。你看到我一直在进步就够了。”<br><br>或者：',
+        replySub: '“放心，我有 plan B。真到那一步我会考虑其他选项的。”<br><br>——不要争辩“稳定”的定义，给一个他们能听懂的“安全感信号”。'
+      },
+      {
+        // 健康唠叨
+        re: /吃.*饭|不.*吃饭|熬夜|早点睡|多穿|穿.*衣服|别.*冷|着凉|感冒|身体|生病|胃|头疼|累|减肥|太瘦|太胖/,
+        meaning: '每一句健康唠叨的潜台词都一样：<br><br>🟡 <b>我怕你垮掉，但我除了唠叨什么都做不了。</b>——这是远距离父母唯一能做的“照顾”。',
+        meaningSub: '他们不知道你的工作细节、不理解你的压力来源，唯一能抓到的是“你饿不饿、冷不冷、睡了没”。',
+        reply: '“好好好，遵命！我今天真吃过了，有菜有饭。争取十二点前睡。”<br><br>或者：',
+        replySub: '“你一说我马上穿外套了（发张照片）。你这唠叨比闹钟还管用。”<br><br>——不要解释为什么熬夜/没吃饭，先接住关心，再幽默化解。他们不是要解决方案，是要确认你还听他们的话。'
+      },
+      {
+        // 回家/联系少
+        re: /怎么不.*打电话|好久.*没.*电话|什么时候.*回来|回家|放假|过年|不.*联系|想你|想你了|忘了.*家|不管.*家/,
+        meaning: '这不是在指责你冷漠。而是：<br><br>🟡 <b>我想你了，但我不习惯直接说“我想你”。</b>——他们那代人表达思念的唯一方式就是“你怎么不打电话”。',
+        meaningSub: '“想你了”这三个字在他们的成长环境里是“矫情”。批评是他们最熟练的亲近方式。',
+        reply: '“我也想你。这周忙完就给你打电话，我们好好聊。”<br><br>——说“我也想你”是关键。这打破了两代人都嘴硬的死循环。'
+      },
+      {
+        // 花钱
+        re: /花钱|省钱|浪费|贵|便宜|别.*买|乱花|存钱|攒钱|工资.*存|省.*点/,
+        meaning: '不是真的抠门。而是：<br><br>🟡 <b>我经历过没钱的日子，害怕你重蹈覆辙。</b>——节俭是他们的条件反射，不是对你的不信任。',
+        meaningSub: '这代人月薪几十块钱过来，银行存款就是他们的血压计。你的消费在他们眼里等于“你又离危险近了一步”。',
+        reply: '“妈/爸你放心，我有记账的，该省的地方都省了。这个确实是我评估过才买的，用得上。”<br><br>——先认可“省钱是对的”，再说“这次花得值”。先站到他们的价值框架里，再往外迈一步。'
+      }
+    ];
+
+    const examples = [
+      { text: '隔壁老王家孩子考上公务员了' },
+      { text: '你什么时候带个女朋友回来看看' },
+      { text: '不要天天熬夜，身体是自己的' },
+      { text: '你都快两个月没给家里打电话了' },
+      { text: '那个公司不靠谱，还是考个编制稳定' },
+    ];
+
+    function matchInput(text) {
+      for (const p of patterns) {
+        if (p.re.test(text)) {
+          return { meaning: p.meaning, meaningSub: p.meaningSub, reply: p.reply, replySub: p.replySub };
+        }
+      }
+      // 通用兜底
+      return {
+        meaning: '没有识别到特定模式，但几乎所有的“难听话”都不是字面意思：<br><br>🟡 <b>他们那代人用“批评”表达关心、用“催促”表达害怕、用“沉默”表达想念。</b>——这跟你的表达方式用的是两套编码系统。',
+        meaningSub: '试着把情绪剥离，看这句话的“动机”——他们想表达的东西，往往比他们实际说出来的要温柔得多。',
+        reply: '一个万能开局：<br><br>“嗯，我听到了。你说的这个我会想一想。”<br><br>——这句话没有承诺任何事，但传递了“我在听”，这恰好是他们最需要的。',
+        replySub: '不要急着反驳或解释。先做一个“翻译练习”：想象他们是你的朋友，用朋友的语气说同一句话，那才是他们真正想表达的东西。'
+      };
+    }
+
+    // ── UI ──
+    function renderExamples() {
+      document.getElementById('examples').innerHTML = examples.map(e =>
+        `<button class="example-btn" data-text="${e.text}">${e.text}</button>`
+      ).join('');
+    }
+
+    function translate() {
+      const text = document.getElementById('input').value.trim();
+      if (!text) return;
+
+      const result = matchInput(text);
+      document.getElementById('meaningText').innerHTML = result.meaning;
+      document.getElementById('meaningSub').innerHTML = result.meaningSub;
+      document.getElementById('replyText').innerHTML = result.reply;
+      document.getElementById('replySub').innerHTML = result.replySub;
+      document.getElementById('result').classList.add('show');
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ── 事件 ──
+    document.getElementById('examples').addEventListener('click', e => {
+      if (e.target.classList.contains('example-btn')) {
+        document.getElementById('input').value = e.target.dataset.text;
+        document.getElementById('input').focus();
+      }
+    });
+
+    document.getElementById('btnTranslate').addEventListener('click', translate);
+    document.getElementById('btnClear').addEventListener('click', () => {
+      document.getElementById('input').value = '';
+      document.getElementById('result').classList.remove('show');
+      document.getElementById('input').focus();
+    });
+
+    document.getElementById('input').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        translate();
+      }
+    });
+
+    renderExamples();
+  </script>
+</body>
+</html>
