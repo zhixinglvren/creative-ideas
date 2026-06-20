@@ -120,6 +120,16 @@
           { title: "📈 为什么值得做", html: "LinkedIn 只展示「声明式自我」。真正有价值的是「行为数据」——你的 GitHub 比你的简历更懂你。这可以成为新一代职业画像工具，也可以作为内省工具——了解自己的技术盲区。" }
         ],
         demoUrl: null
+      },
+      "personal-board": {
+        description: "你要跳槽、买房、创业——朋友说「相信你的判断」。但你真正需要的是有人认真告诉你：这事儿可能怎么黄。",
+        sections: [
+          { title: "🎯 场景", text: "重大决策前，你会问朋友意见。但朋友没有义务认真跟你抬杠。付费顾问太贵。结果大多数人靠「直觉 + 模糊意见」做人生最重要的决定——这正是 Ray Dalio 花几十年想解决的问题。" },
+          { title: "💡 方案", text: "AI 模拟 5 个结构化角色——投资人、用户自己、竞品视角、5年后的你、魔鬼代言人——对你的决策草案给出一针见血的反对意见。不是告诉你怎么做，而是让你看到你还没考虑到的风险。最终决策权在你。" },
+          { title: "🔧 技术", text: "规则引擎识别决策类型（跳槽/买房/搬家/学习/创业）+ 角色模板生成批判性提问。真实产品接入 LLM 可做到完全个性化。Demo 覆盖 5 种场景。" },
+          { title: "📈 为什么值得做", html: "每个人一生做 ~30 个重大决策，大多数靠直觉。AI 决策辅助市场正在爆发，但市面上都是「给你答案」的算命型产品。「告诉你可能错在哪」是差异化蓝海——LLM 天生擅长角色扮演 + 批判性思维。" }
+        ],
+        demoUrl: "demo-personal-board/"
       }
     };
 
@@ -161,11 +171,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄'};
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历'};
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会'};
       return m[id] || id;
     }
 

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人董事会 — Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f0; --card: #ffffff; --border: #e0dcd0;
+      --text: #2c2416; --muted: #8c8070;
+      --gold: #b8860b; --gold-bg: #fdf3d0;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1c1d; --card: #252728; --border: #3a3c3d;
+      --text: #e8e8ec; --muted: #98989e;
+      --gold: #d4a040; --gold-bg: #2a2218;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 780px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--gold);
+      text-decoration: none; font-size: 0.9rem; margin-bottom: 24px; }
+    .back:hover { text-decoration: underline; }
+
+    .hero {
+      text-align: center; margin-bottom: 28px;
+    }
+    .hero h1 { font-size: 1.6rem; color: var(--gold); margin-bottom: 6px; }
+    .hero .sub { color: var(--muted); font-size: 0.9rem; }
+
+    /* 输入区 */
+    .input-card {
+      background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+      padding: 24px; margin-bottom: 24px;
+    }
+    .input-card textarea {
+      width: 100%; border: 2px solid var(--border); border-radius: 10px;
+      padding: 14px; font-size: 1rem; font-family: inherit; resize: vertical;
+      min-height: 90px; outline: none; background: var(--bg); color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .input-card textarea:focus { border-color: var(--gold); }
+    .input-card textarea::placeholder { color: var(--muted); opacity: 0.5; }
+    .btn-row { display: flex; gap: 10px; margin-top: 12px; }
+    .btn-row button {
+      padding: 12px 28px; border: none; border-radius: 10px; font-size: 0.95rem;
+      font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .btn-convene {
+      background: var(--gold); color: #fff; flex: 1;
+    }
+    .btn-convene:hover { filter: brightness(1.1); }
+    .btn-convene:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-clear { background: var(--border); color: var(--muted); }
+
+    /* 示例 */
+    .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .example {
+      background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+      padding: 7px 16px; font-size: 0.82rem; color: var(--muted); cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .example:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* 董事会成员 */
+    .board { display: none; }
+    .board.show { display: block; }
+    .board h3 {
+      font-size: 1rem; color: var(--gold); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .role-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 14px; transition: border-color 0.2s;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .role-card:hover { border-color: var(--gold); }
+    .role-card .avatar {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+      background: var(--gold-bg);
+    }
+    .role-card .body { flex: 1; min-width: 0; }
+    .role-card .role-name {
+      font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; color: var(--text);
+    }
+    .role-card .role-question {
+      font-size: 0.9rem; color: var(--muted); line-height: 1.7;
+    }
+    .role-card .verdict {
+      display: inline-block; margin-top: 8px; font-size: 0.72rem; font-weight: 800;
+      padding: 3px 10px; border-radius: 6px;
+      letter-spacing: 1px;
+    }
+    .verdict-risk  { background: #e74c3c22; color: #c0392b; border: 1px solid #e74c3c44; }
+    .verdict-ok    { background: #2ecc7122; color: #27ae60; border: 1px solid #2ecc7144; }
+    .verdict-warn  { background: #f39c1222; color: #e67e22; border: 1px solid #f39c1244; }
+
+    .summary {
+      margin-top: 20px; background: var(--gold-bg); border: 1px solid var(--gold);
+      border-radius: 12px; padding: 18px;
+    }
+    .summary h4 { color: var(--gold); font-size: 0.9rem; margin-bottom: 8px; }
+    .summary p { font-size: 0.88rem; color: var(--text); line-height: 1.7; }
+
+    .footer { text-align: center; padding: 40px 0 24px; }
+    .footer a { color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="../index.html" class="back">← 返回创意实验室</a>
+    <div class="hero">
+      <h1>🏛️ 个人董事会</h1>
+      <p class="sub">在做重大决定前，先让 5 个角色认真告诉你：这事儿可能怎么黄</p>
+    </div>
+
+    <div class="examples" id="examples"></div>
+
+    <div class="input-card">
+      <textarea id="decision" placeholder="描述你的决定…&#10;比如：我打算辞去现在的后端开发工作，全职做独立开发者。" maxlength="300"></textarea>
+      <div class="btn-row">
+        <button class="btn-convene" id="btnConvene" onclick="convene()">📋 召集董事会</button>
+        <button class="btn-clear" onclick="clearAll()">清空</button>
+      </div>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+    </div>
+  </div>
+
+  <script>
+    const examples = [
+      '我打算辞去现在的工作，全职做独立开发者。',
+      '我要不要在上海买房？现在首付刚好够。',
+      '我想离开大厂，加入一个刚 A 轮的创业公司。',
+      '我在纠结要不要读一个在职 MBA。',
+      '我应该留在杭州还是搬去深圳发展？',
+    ];
+
+    const roles = [
+      { icon: '💰', name: '投资人视角', key: 'investor' },
+      { icon: '👤', name: '用户/自己视角', key: 'user' },
+      { icon: '⚔️', name: '竞品视角', key: 'competitor' },
+      { icon: '⏳', name: '5 年后的你', key: 'future' },
+      { icon: '🧠', name: '魔鬼代言人', key: 'devil' },
+    ];
+
+    // ── 规则引擎 ──
+    function detectType(text) {
+      if (/辞|跳槽|换.*工作|离职|裸辞|独立开发|自由职业|创业|开.*公司|做.*生意/.test(text)) return 'career';
+      if (/买房|购房|首付|房贷|房价|租.*房|换.*房/.test(text)) return 'house';
+      if (/搬|换.*城市|去.*发展|留.*还是|北京|上海|深圳|杭州|广州|成都/.test(text)) return 'relocate';
+      if (/MBA|考研|读.*书|学历|转行|学.*新/.test(text)) return 'study';
+      if (/结婚|离婚|分手|在一起|对象/.test(text)) return 'relationship';
+      return 'general';
+    }
+
+    function getResponses(type) {
+      const templates = {
+        career: {
+          investor: {
+            q: '这笔投资回报率你算过吗？<br><br>你现在的年薪 + 五险一金 + 稳定性溢价，总包多少？全职独立开发的第一年收入预期多少？<br><br>如果第 18 个月还没盈利，你的 Plan B 是什么？回大厂的门还开着吗？',
+            v: 'risk', vl: 'ROI 待验证'
+          },
+          user: {
+            q: '你需要自由，还是需要逃离？<br><br>独立开发最大的幻觉是「有了时间就能做出好产品」。实际上前 6 个月你可能花 50% 时间在税务、客户沟通、自我管理上。你享受这些吗？<br><br>如果只是为了「不用开会」——远程工作也能做到。',
+            v: 'warn', vl: '动机审查'
+          },
+          competitor: {
+            q: '你做的方向，有多少人在做？<br><br>如果是工具类——Cursor 团队 4 个人拿了几千万融资。如果是 SaaS——你的获客成本算过吗？<br><br>大厂的独立开发者比你多一个优势：他们有前同事可以直接当第一批客户。你有吗？',
+            v: 'risk', vl: '护城河存疑'
+          },
+          future: {
+            q: '5 年后回头看——<br><br>你最可能后悔的点不是「失败了」，而是「没有给自己设一个止损线」。<br><br>给自己一个时间窗口（比如 18 个月）和一个财务止损线（比如积蓄的 50%），到了就重新评估。后悔的不是试过，是没设底线。',
+            v: 'warn', vl: '需要止损线'
+          },
+          devil: {
+            q: '你确定你是想独立开发，而不是想逃避？<br><br>你的同事让你烦？老板让你焦虑？还是你真的有一个「不做就会后悔」的产品想法？<br><br>前两个理由不足以创业。第三个理由才值得。你现在属于哪种？',
+            v: 'risk', vl: '动机存疑'
+          }
+        },
+        house: {
+          investor: {
+            q: '算一笔明白账。<br><br>首付 = 你几年的积蓄？月供占你税后收入的比例？如果利率再涨 1%，月供还 comfortable 吗？<br><br>最重要的是——如果房价 3 年内不涨甚至微跌，你能接受这个结果而不影响生活质量吗？房子首先是消费品，其次才是投资品。',
+            v: 'warn', vl: '现金流压力测试'
+          },
+          user: {
+            q: '你需要的是「家」还是「安全感」？<br><br>很多人买房不是因为需要房子，是因为需要「我终于有个扎根的地方了」的感觉。这种感觉很重要——但值不值得用 30 年月供来换，你最有发言权。<br><br>如果你租一个同地段同品质的房子，每月多 2000 块租金（相比月供差价），你会怎么选？',
+            v: 'warn', vl: '情感需求 vs 财务理性'
+          },
+          competitor: {
+            q: '你看的这套房子，5 年后谁来接盘？<br><br>附近有新增土地供应吗？人口是流入还是流出？学区政策稳定吗？<br><br>如果 5 年后你要卖——买家画像是什么人？他们的购买力在涨还是跌？',
+            v: 'risk', vl: '流动性风险'
+          },
+          future: {
+            q: '5 年后的你——<br><br>如果你现在不买，5 年后的你可能会怪自己「错过了窗口」。<br>但如果你买了，5 年后的你可能会怪现在的你「把自己锁在一个地方了」——这取决于你未来 5 年有多大可能换城市、换工作、换生活方式。<br><br>你未来 5 年变动的概率有多大？',
+            v: 'warn', vl: '灵活性折价'
+          },
+          devil: {
+            q: '你买房是因为你觉得「应该买了」，还是你真的想买？<br><br>「30 岁该买房了」「同事都买了」「再不买就买不起了」——这些是 FOMO，不是需求。去掉别人的眼光和焦虑驱动，你还想买吗？<br><br>如果你犹豫了超过 3 秒——等一等。',
+            v: 'risk', vl: 'FOMO 驱动'
+          }
+        },
+        relocate: {
+          investor: {
+            q: '换城市是一笔沉默成本。<br><br>搬家成本、社保公积金断档、人脉重建——这些算过吗？<br><br>新城市的薪资能覆盖这些成本吗？你有拿到 offer 再搬，还是裸辞先搬？',
+            v: 'warn', vl: '迁移成本量化'
+          },
+          user: {
+            q: '你想要新城市给你什么？<br><br>更好的工作机会？更大的人际圈？更好的气候？还是「重新开始」的感觉？<br><br>每一条都可以在你现在的城市通过努力获得——除了气候。如果气候不是核心原因，你确定搬是唯一解？',
+            v: 'warn', vl: '需求拆解'
+          },
+          competitor: {
+            q: '新城市有你的生态位吗？<br><br>你在现在城市积累的人脉、口碑、熟悉度——在新城市归零。你的行业在新城市有聚集效应吗？如果没有，你等于单打独斗。',
+            v: 'risk', vl: '行业生态'
+          },
+          future: {
+            q: '5 年后——你会在哪个城市结婚生子？父母养老怎么办？<br><br>现在的决策会影响这些问题的答案。如果家庭因素在未来 5 年可能变动，现在的搬迁会不会 5 年后又要搬一次？<br><br>搬家不是一次投入，是连锁反应。',
+            v: 'warn', vl: '长期连锁效应'
+          },
+          devil: {
+            q: '你是去追机会，还是逃离困境？<br><br>如果你在现在的城市不开心，是因为城市不适合你，还是因为你没有在自己身上做足够的改变？<br><br>换城市是最贵的一种「重新开始」。你真的试过了所有在本地的可能性？',
+            v: 'risk', vl: '逃离 vs 追求'
+          }
+        },
+        study: {
+          investor: {
+            q: 'ROI 算清楚了吗？<br><br>在职 MBA = 学费 + 两年周末 + 机会成本。毕业后你的薪资预期涨幅是多少？<br><br>如果你把同样的时间和钱投入到深度项目、开源贡献、技术深度上，哪个回报率更高？',
+            v: 'warn', vl: '机会成本对比'
+          },
+          user: {
+            q: '你学这个是因为「需要」还是「焦虑」？<br><br>AI 时代很多传统学历正在加速贬值。你缺的是那张纸，还是缺了某几个具体的能力？<br><br>如果是后者——买 3 本好书 + 做一个深度项目，效果可能比两年 MBA 更好。',
+            v: 'warn', vl: '学历 vs 能力'
+          },
+          competitor: {
+            q: '你的同龄人里，没有 MBA 但做得很好的比例有多大？<br><br>如果 > 50%——那 MBA 可能不是你唯一的路径。如果 < 20%——这个行业确实需要这个 credential。<br><br>你所在的行业，学历的边际价值在涨还是在跌？',
+            v: 'warn', vl: '行业依赖度'
+          },
+          future: {
+            q: '5 年后——<br><br>你可能会感谢今天的自己选择了学习。但你也可能会后悔「为什么不多花点时间陪家人/做副业」。<br><br>关键不是要不要学，是学什么、怎么学、学多久。如果你选择了一个沉重的项目来逃避当下的不满——那不是成长，是替换。',
+            v: 'warn', vl: '时间有限性'
+          },
+          devil: {
+            q: '你是为了那张证，还是为了那个圈子？<br><br>如果只是为了人脉——花同样的钱请行业内 50 个关键人吃 50 顿饭，效果可能更直接。我说真的。',
+            v: 'risk', vl: '目标审查'
+          }
+        },
+        general: {
+          investor: {
+            q: '如果这是一个投资项目——你会投吗？<br><br>把你自己的时间、精力、金钱当成一笔投资。回报是什么？风险是什么？退出机制是什么？<br><br>如果你是 VC，你会给这个项目打几分？为什么？',
+            v: 'warn', vl: '投资视角'
+          },
+          user: {
+            q: '你真的想要这个结果吗？还是你只是想要「一个改变」？<br><br>很多时候我们做决定不是因为那个选项有多好，而是因为现状让我们不舒服。区分「逃避」和「追求」是决策的第一课。',
+            v: 'warn', vl: '动机澄清'
+          },
+          competitor: {
+            q: '有没有人用更聪明的方式解决了同样的问题？<br><br>在你之前，走过这条路的人——他们成功/失败的原因是什么？你跟他们最大的不同在哪？',
+            v: 'warn', vl: '对标分析'
+          },
+          future: {
+            q: '5 年后的你，会怎么评价今天这个决定？<br><br>再往远想——10 年后呢？大多数让你纠结的事情，放远了看都没那么重要。真正重要的决定有什么特征：不可逆、影响半径大、复利效应强。<br><br>你这个决定属于哪一种？',
+            v: 'warn', vl: '时间尺度检验'
+          },
+          devil: {
+            q: '我只有一个问题。<br><br>如果你的好朋友也面临同样的选择，你会建议他怎么做？<br><br>现在——用你给朋友的建议来建议你自己。你会发现一个残酷的事实：我们给别人建议时比给自己建议时聪明得多。',
+            v: 'risk', vl: '外化视角'
+          }
+        }
+      };
+      return templates[type] || templates.general;
+    }
+
+    function convene() {
+      const text = document.getElementById('decision').value.trim();
+      if (!text) return;
+
+      const type = detectType(text);
+      const responses = getResponses(type);
+
+      const board = document.getElementById('board');
+      let html = '<h3>📋 董事会已就位 · 审议中…</h3>';
+
+      roles.forEach(r => {
+        const resp = responses[r.key];
+        html += `
+          <div class="role-card">
+            <div class="avatar">${r.icon}</div>
+            <div class="body">
+              <div class="role-name">${r.name}</div>
+              <div class="role-question">${resp.q}</div>
+              <span class="verdict verdict-${resp.v}">${resp.vl}</span>
+            </div>
+          </div>`;
+      });
+
+      // 汇总
+      const risks = Object.values(responses).filter(r => r.v === 'risk').length;
+      const warns = Object.values(responses).filter(r => r.v === 'warn').length;
+      html += `
+        <div class="summary">
+          <h4>📊 董事会小结</h4>
+          <p>5 位董事共提出 <b>${risks} 项高风险</b> + <b>${warns} 项需关注</b>。<br>
+          没有人说「别做」，也没有人说「必做」。<br><br>
+          <b>最终决策权在你手里。</b>但至少——你现在看到了决策的全貌，而不仅仅是那个让你心动的部分。</p>
+        </div>`;
+
+      board.innerHTML = html;
+      board.classList.add('show');
+      board.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearAll() {
+      document.getElementById('decision').value = '';
+      document.getElementById('board').classList.remove('show');
+      document.getElementById('board').innerHTML = '';
+    }
+
+    // ── 示例 ──
+    document.getElementById('examples').innerHTML = examples.map(e =>
+      `<span class="example" data-text="${e}">${e}</span>`
+    ).join('');
+
+    document.getElementById('examples').addEventListener('click', e => {
+      if (e.target.classList.contains('example')) {
+        document.getElementById('decision').value = e.target.dataset.text;
+        document.getElementById('decision').focus();
+      }
+    });
+
+    document.getElementById('decision').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) convene();
+    });
+
+    // 主题
+    (function() {
+      const html = document.documentElement;
+      function set(t) {
+        html.setAttribute('data-theme', t);
+        if (t === 'system') {
+          html.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      }
+      set(localStorage.getItem('creative-lab-theme') || 'system');
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('creative-lab-theme') === 'system') set('system');
+      });
+    })();
+  </script>
+</body>
+</html>
