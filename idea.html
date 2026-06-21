@@ -130,6 +130,16 @@
           { title: "📈 为什么值得做", html: "每个人一生做 ~30 个重大决策，大多数靠直觉。AI 决策辅助市场正在爆发，但市面上都是「给你答案」的算命型产品。「告诉你可能错在哪」是差异化蓝海——LLM 天生擅长角色扮演 + 批判性思维。" }
         ],
         demoUrl: "demo-personal-board/"
+      },
+      "bubble-breaker": {
+        description: "你每天刷到的内容都在强化你已有的观点。算法把你裹进越来越厚的信息茧房。你觉得自己在「获取信息」，实际上在「反复确认自己是对的」。",
+        sections: [
+          { title: "🎯 场景", text: "你的微博、公众号、短视频、播客——全在顺应你的偏好。推荐系统永远不会把反对意见推到你面前。你不知道你不知道什么——这是最危险的无知。" },
+          { title: "💡 方案", text: "每天推送一条经过精选的「你大概会反对」的观点。不是要说服你改变看法，而是要求你认真读一遍反对意见，做一次诚实投票。连续 7 天全投 👎 → 系统提醒：你可能在犯最贵的错误。" },
+          { title: "🔧 技术", text: "Demo 含 7 条预写的高质量逆耳观点 + 投票追踪 + 连续 7 天 👎 触发审判机制。真实产品由 LLM 每日生成个性化反对观点，投票数据训练「每个人的认知边界地图」。" },
+          { title: "📈 为什么值得做", html: "所有人都知道信息茧房不好，但没人愿意手动打破——因为不舒服。这个产品替你做最不舒服的那一步。天然适合截图分享——「今天我遇到了这条让我重新思考的观点」，传播力强。" }
+        ],
+        demoUrl: "demo-bubble-breaker/"
       }
     };
 
@@ -171,11 +181,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️'};
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会'};
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器'};
       return m[id] || id;
     }
 

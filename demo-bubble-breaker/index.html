@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>认知破圈器 — Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f2; --card: #ffffff; --border: #e0dcd0;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #5b4ae0; --accent-hover: #4a3bc0;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1c1e; --card: #252728; --border: #3a3c3d;
+      --text: #e8e8ec; --muted: #98989e;
+      --accent: #7c6af0; --accent-hover: #6a5ad0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 640px; margin: 0 auto; padding: 32px 20px 60px; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent);
+      text-decoration: none; font-size: 0.9rem; margin-bottom: 24px; }
+    .back:hover { text-decoration: underline; }
+
+    .hero { text-align: center; margin-bottom: 28px; }
+    .hero h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 6px; }
+    .hero .sub { color: var(--muted); font-size: 0.9rem; }
+
+    /* 观点卡片 */
+    .opinion-card {
+      background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+      padding: 32px 28px; margin-bottom: 20px; transition: border-color 0.3s;
+    }
+    .opinion-card .day-label {
+      font-size: 0.75rem; color: var(--muted); letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+    .opinion-card .quote {
+      font-size: 1.2rem; line-height: 1.6; font-weight: 700;
+      color: var(--text); margin-bottom: 18px; padding-left: 12px;
+      border-left: 3px solid var(--accent);
+    }
+    .opinion-card .why-disagree {
+      background: #ffeaea; border-radius: 8px; padding: 14px;
+      margin-bottom: 14px; font-size: 0.88rem; color: #c0392b; line-height: 1.6;
+    }
+    [data-theme="dark"] .opinion-card .why-disagree { background: #3d1a1a; color: #f08080; }
+    .opinion-card .why-read {
+      background: #eaf4ff; border-radius: 8px; padding: 14px;
+      margin-bottom: 20px; font-size: 0.88rem; color: #2980b9; line-height: 1.6;
+    }
+    [data-theme="dark"] .opinion-card .why-read { background: #1a2a3d; color: #7cb8e8; }
+
+    /* 投票 */
+    .vote-row {
+      display: flex; gap: 10px;
+    }
+    .vote-btn {
+      flex: 1; padding: 12px 8px; border: 2px solid var(--border);
+      border-radius: 10px; background: var(--card); font-size: 0.85rem;
+      cursor: pointer; transition: all 0.2s; font-family: inherit; color: var(--text);
+      text-align: center;
+    }
+    .vote-btn:hover { border-color: var(--accent); }
+    .vote-btn.selected { border-color: var(--accent); background: #5b4ae011; }
+    .vote-btn .emoji { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+    .voted-label { text-align: center; color: var(--accent); font-size: 0.9rem;
+      margin-top: 16px; font-weight: 600; }
+
+    /* 进度条 */
+    .streak-bar {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px; margin-bottom: 20px; text-align: center;
+    }
+    .streak-bar .days {
+      display: flex; justify-content: center; gap: 10px; margin: 12px 0;
+    }
+    .streak-bar .day-dot {
+      width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 800; transition: all 0.3s;
+    }
+    .day-dot.agree  { background: #27ae6022; border-color: #27ae60; color: #27ae60; }
+    .day-dot.mixed  { background: #f39c1222; border-color: #f39c12; color: #f39c12; }
+    .day-dot.disagree { background: #e74c3c22; border-color: #e74c3c; color: #e74c3c; }
+    .day-dot.empty { color: var(--muted); }
+
+    /* 审判 */
+    .judgment {
+      background: #ffeaea; border: 2px solid #e74c3c; border-radius: 14px;
+      padding: 24px; text-align: center; display: none; margin-bottom: 20px;
+    }
+    [data-theme="dark"] .judgment { background: #3d1a1a; }
+    .judgment.show { display: block; }
+    .judgment h3 { color: #c0392b; margin-bottom: 10px; font-size: 1.1rem; }
+    .judgment p { color: #e08080; font-size: 0.9rem; line-height: 1.7; }
+
+    .footer { text-align: center; padding: 40px 0 24px; }
+    .footer a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .footer .note { margin-top: 10px; font-size: 0.75rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="../index.html" class="back">← 返回创意实验室</a>
+    <div class="hero">
+      <h1>🫧 认知破圈器</h1>
+      <p class="sub">每天一条你大概率不同意的观点——认真读，诚实投票</p>
+    </div>
+
+    <div class="streak-bar" id="streakBar"></div>
+    <div class="judgment" id="judgment"></div>
+    <div class="opinion-card" id="opinionCard"></div>
+
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+      <p class="note">Demo 含 7 条预设观点。真实产品每日接入 LLM 生成个性化疗愈。</p>
+    </div>
+  </div>
+
+  <script>
+    const opinions = [
+      {
+        quote: '编程能力不是程序员的护城河，领域知识才是。',
+        disagree: '你是程序员，靠编程能力吃饭。这句话等于否定你的核心价值，听着不舒服。',
+        read: 'Cursor 等 AI 工具已经把「纯编码」的边际价值打到接近零。你越抗拒这句话，越说明你需要认真想想——你到底是程序员，还是「会写代码的金融/医疗/物流人」。'
+      },
+      {
+        quote: '30 岁后还在写代码，不是选择了技术，是没得选。',
+        disagree: '写代码是你最有成就感的事。这句话把「喜欢技术」矮化成「职业失败」。',
+        read: '中国软件业的现实是：大多数公司的技术岗天花板确实低。不是否定技术，是提醒你——如果你的公司没有技术上升通道，你是在为它付出代价。这和你的代码能力无关。'
+      },
+      {
+        quote: '买房是过去 20 年最被高估的投资，未来 20 年会现原形。',
+        disagree: '你刚攒够首付/已经买了房。说买房不好等于说你做错了你人生最大一笔决定。',
+        read: '人口拐点 + 新增土地供应 + 租售比 = 大部分城市房产的金融属性正在消退。这不等于「你买错了」——如果你买的是消费品（自住），它就该贬值。消费品本来就会贬值。'
+      },
+      {
+        quote: '不要做自己热爱的事，做自己擅长的事。热爱会变，擅长会积累。',
+        disagree: '你从小被教育「做你喜欢的事」。这句话推翻了整个 90 后的人生信条。',
+        read: 'Calling 和 Career 的区别。Calling 让你兴奋但可能不擅长（比如99%想做游戏的人不适合做游戏）。把擅长的事做到极致，热爱会自然生长。斯科特·亚当斯（呆伯特作者）用了 20 年验证这句话。'
+      },
+      {
+        quote: '你的「独立思考」大概率是别人的精心设计的营销话术。',
+        disagree: '你觉得你很清醒。消费主义洗不了你，算法操控不了你。这句话在说你也是盲从的一员。',
+        read: '你在豆瓣看到的「必读清单」和你在抖音刷到的「必买清单」，底层机制是一样的——社交证明 + 稀缺感。没有人能免疫。承认「我也会被影响」比假装清醒更接近独立思考。'
+      },
+      {
+        quote: 'AI 不会取代设计师，但会用 AI 的设计师会取代不会用的。',
+        disagree: '你觉得创意和审美是 AI 替代不了的。把设计简化成「效率工具」是在贬低你的专业。',
+        read: '1970 年代排版师说「电脑不会取代手工排版」。他们对了——电脑没取代排版师，让排版师从 500 人变成 5 个人。你仍然需要审美判断，但你不需要花 80% 时间做 AI 能做的事。'
+      },
+      {
+        quote: '大多数人不是社恐，是「不值得社交」。你对无聊的人社恐，对有趣的人一秒变话痨。',
+        disagree: '你真的在社交场合感到焦虑。这句话等于说「你社恐是因为你挑剔」。',
+        read: '真正的社恐不会因对象不同而变化。如果你和某些人相处毫无障碍——那就是你的大脑在做成本收益计算。社恐可能是你的社交品味，不是你的社交障碍。这反而比纯「社恐」更积极——你可以找对的人。'
+      }
+    ];
+
+    const STORAGE_KEY = 'bubble-breaker-votes';
+    let votes = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let currentIdx = votes.length; // 下一条是第几条
+
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(votes)); }
+
+    function vote(choice) {
+      if (votes[currentIdx] !== undefined) return; // 已投
+      votes[currentIdx] = choice;
+      save();
+      render();
+    }
+
+    function getChoiceEmoji(c) {
+      if (c === 'agree') return '👍';
+      if (c === 'mixed') return '🤔';
+      if (c === 'disagree') return '👎';
+      return '';
+    }
+
+    function getChoiceLabel(c) {
+      if (c === 'agree') return '改变了看法';
+      if (c === 'mixed') return '有启发但保留';
+      if (c === 'disagree') return '坚持原观点';
+      return '';
+    }
+
+    function getChoiceClass(c) {
+      if (c === 'agree') return 'agree';
+      if (c === 'mixed') return 'mixed';
+      if (c === 'disagree') return 'disagree';
+      return 'empty';
+    }
+
+    function render() {
+      // 进度条
+      const streakBar = document.getElementById('streakBar');
+      let dotsHtml = '';
+      for (let i = 0; i < Math.max(7, votes.length); i++) {
+        const v = votes[i];
+        dotsHtml += `<div class="day-dot ${v ? getChoiceClass(v) : 'empty'}">${v ? getChoiceEmoji(v) : i+1}</div>`;
+      }
+      streakBar.innerHTML = `
+        <div style="font-size:0.85rem;color:var(--muted);">📅 连续 ${votes.length} 天</div>
+        <div class="days">${dotsHtml}</div>
+        <div style="font-size:0.75rem;color:var(--muted);">每天一条，诚实投票</div>`;
+
+      // 连续 7 天 👎 审判
+      const judgment = document.getElementById('judgment');
+      if (votes.length >= 7) {
+        const last7 = votes.slice(-7);
+        const allDisagree = last7.every(v => v === 'disagree');
+        const allAgree = last7.every(v => v === 'agree');
+
+        if (allDisagree) {
+          judgment.className = 'judgment show';
+          judgment.innerHTML = `
+            <h3>🔴 你在七个议题上都坚持了原观点</h3>
+            <p>如果是对的——很好。你的认知框架很坚固。<br><br>
+            如果是错的——你正在用最舒适的方式犯最贵的错误。<br><br>
+            建议：挑一个你投了 👎 的观点，花 10 分钟认真读一下反方的论据。<br>
+            不要求改变看法，只要求「理解为什么有人会这么想」。</p>
+            <button style="margin-top:12px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;" onclick="resetVotes()">🔄 重新开始</button>`;
+        } else if (allAgree) {
+          judgment.className = 'judgment show';
+          judgment.innerHTML = `
+            <h3>🟢 你有极强的开放心态</h3>
+            <p>连续 7 天你都被一个反直觉的观点改变了看法。<br>
+            这说明你的认知框架是「流动的」而非「僵硬的」——这是最稀缺的认知品质。<br><br>
+            但同样建议：保持批判性。不是所有反对意见都正确。</p>
+            <button style="margin-top:12px;padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;" onclick="resetVotes()">🔄 重新开始</button>`;
+        } else {
+          judgment.className = 'judgment';
+        }
+      } else {
+        judgment.className = 'judgment';
+      }
+
+      // 观点卡片
+      const card = document.getElementById('opinionCard');
+      const idx = Math.min(currentIdx, opinions.length - 1); // 超过则显示最后一条
+      const op = opinions[idx];
+
+      if (votes[idx] !== undefined) {
+        // 已投票
+        card.innerHTML = `
+          <div class="day-label">第 ${idx+1} 天 · ${getChoiceLabel(votes[idx])}</div>
+          <div class="quote">${op.quote}</div>
+          <div class="why-disagree"><b>🔍 为什么你大概率不同意：</b><br>${op.disagree}</div>
+          <div class="why-read"><b>📖 为什么值得认真读：</b><br>${op.read}</div>
+          <div class="voted-label">✅ 你选择了「${getChoiceLabel(votes[idx])}」</div>`;
+      } else if (idx >= opinions.length) {
+        // 没有更多了
+        card.innerHTML = `
+          <div style="text-align:center;padding:40px 0;">
+            <div style="font-size:2rem;margin-bottom:10px;">🎉</div>
+            <p style="color:var(--muted);">7 天全部完成！</p>
+            <p style="color:var(--accent);font-size:0.9rem;margin-top:8px;">
+              你认真读了 7 条可能让你不舒服的观点。<br>这已经超过了 99% 的人。</p>
+            <button style="margin-top:16px;padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;" onclick="resetVotes()">🔄 再走一轮</button>
+          </div>`;
+      } else {
+        // 待投票
+        card.innerHTML = `
+          <div class="day-label">第 ${idx+1} 天</div>
+          <div class="quote">${op.quote}</div>
+          <div class="why-disagree"><b>🔍 为什么你大概率不同意：</b><br>${op.disagree}</div>
+          <div class="why-read"><b>📖 为什么值得认真读：</b><br>${op.read}</div>
+          <div class="vote-row">
+            <button class="vote-btn" onclick="vote('agree')">
+              <span class="emoji">👍</span>改变了看法
+            </button>
+            <button class="vote-btn" onclick="vote('mixed')">
+              <span class="emoji">🤔</span>有启发但保留
+            </button>
+            <button class="vote-btn" onclick="vote('disagree')">
+              <span class="emoji">👎</span>坚持原观点
+            </button>
+          </div>`;
+      }
+    }
+
+    function resetVotes() {
+      votes = [];
+      currentIdx = 0;
+      localStorage.removeItem(STORAGE_KEY);
+      render();
+    }
+
+    // 主题
+    (function() {
+      const html = document.documentElement;
+      function set(t) {
+        html.setAttribute('data-theme', t);
+        if (t === 'system') {
+          html.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      }
+      set(localStorage.getItem('creative-lab-theme') || 'system');
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('creative-lab-theme') === 'system') set('system');
+      });
+    })();
+
+    render();
+  </script>
+</body>
+</html>
