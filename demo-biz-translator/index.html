@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>野路子翻译官 — Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f2; --card: #ffffff; --border: #e0dcd0;
+      --text: #2c2416; --muted: #8c8070;
+      --biz: #c0392b; --human: #27ae60;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1c1e; --card: #252728; --border: #3a3c3d;
+      --text: #e8e8ec; --muted: #98989e;
+      --biz: #e74c3c; --human: #2ecc71;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 28px 20px 60px; }
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted);
+      text-decoration: none; font-size: 0.88rem; margin-bottom: 20px; }
+    .hero { text-align: center; margin-bottom: 28px; }
+    .hero h1 { font-size: 1.5rem; color: var(--text); margin-bottom: 6px; }
+    .hero .sub { color: var(--muted); font-size: 0.85rem; }
+
+    .mode-switch {
+      display: flex; background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; margin-bottom: 20px;
+    }
+    .mode-switch button {
+      flex: 1; padding: 12px; border: none; font-family: inherit; font-size: 0.85rem;
+      cursor: pointer; background: var(--card); color: var(--muted); font-weight: 600;
+      transition: all 0.2s;
+    }
+    .mode-switch button.on {
+      background: var(--text); color: var(--bg);
+    }
+
+    .input-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .input-card label {
+      display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 8px;
+      font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .input-card textarea {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 14px; font-size: 0.92rem; font-family: inherit; resize: vertical;
+      min-height: 72px; outline: none; background: var(--bg); color: var(--text);
+    }
+    .input-card textarea:focus { border-color: var(--muted); }
+    .input-card textarea::placeholder { color: var(--muted); opacity: 0.4; }
+    .input-card button {
+      margin-top: 12px; padding: 10px 24px; background: var(--text); color: var(--bg);
+      border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+      font-family: inherit; font-weight: 600;
+    }
+    .input-card button:hover { opacity: 0.85; }
+
+    .output { display: none; margin-bottom: 20px; }
+    .output.show { display: block; }
+
+    .msg {
+      padding: 16px 18px; border-radius: 12px; margin-bottom: 10px;
+      font-size: 0.9rem; line-height: 1.7; position: relative;
+    }
+    .msg.biz {
+      background: #ffeaea; border: 1px solid #ffcccc;
+    }
+    .msg.biz .label {
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; color: var(--biz);
+      margin-bottom: 8px; text-transform: uppercase;
+    }
+    .msg.human {
+      background: #eafaf1; border: 1px solid #a9dfbf;
+    }
+    .msg.human .label {
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; color: var(--human);
+      margin-bottom: 8px; text-transform: uppercase;
+    }
+    [data-theme="dark"] .msg.biz { background: #3d1a1a; border-color: #5a2a2a; }
+    [data-theme="dark"] .msg.human { background: #1a2e1a; border-color: #2a5a2a; }
+
+    .copy-btn {
+      position: absolute; top: 12px; right: 12px; background: none; border: none;
+      color: var(--muted); cursor: pointer; font-size: 0.8rem; padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .copy-btn:hover { background: var(--border); }
+
+    /* 词典 */
+    .dict { margin-top: 30px; }
+    .dict h3 { font-size: 0.9rem; margin-bottom: 14px; color: var(--muted); }
+    .dict-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .dict-item {
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; font-size: 0.8rem;
+    }
+    .dict-item .biz { color: var(--biz); font-weight: 600; margin-bottom: 2px; }
+    .dict-item .hum { color: var(--human); }
+
+    .footer { text-align: center; padding: 40px 0 24px; }
+    .footer a { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+    .footer .note { margin-top: 10px; font-size: 0.72rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="../index.html" class="back">← 返回创意实验室</a>
+    <div class="hero">
+      <h1>🗣️ 野路子翻译官</h1>
+      <p class="sub">黑话 → 人话 · 人话 → 黑话 · 双模式即时翻译</p>
+    </div>
+
+    <div class="mode-switch">
+      <button id="btnB2H" class="on" onclick="setMode('b2h')">🏢 黑话 → 人话</button>
+      <button id="btnH2B" onclick="setMode('h2b')">🧑 人话 → 黑话</button>
+    </div>
+
+    <div class="input-card">
+      <label id="inputLabel">输入一句职场黑话</label>
+      <textarea id="inputText" placeholder="比如：我们需要对齐一下颗粒度…"></textarea>
+      <button onclick="translate()">🔄 翻译</button>
+    </div>
+
+    <div class="output" id="output"></div>
+
+    <div class="dict">
+      <h3>📖 常用黑话速查表</h3>
+      <div class="dict-grid" id="dictGrid"></div>
+    </div>
+
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+      <p class="note">收录 20 条高频职场黑话。真实产品接入 LLM 实时翻译，支持自定义人设 + 上下文语境。</p>
+    </div>
+  </div>
+
+  <script>
+    let mode = 'b2h';
+
+    function setMode(m) {
+      mode = m;
+      document.getElementById('btnB2H').className = m === 'b2h' ? 'on' : '';
+      document.getElementById('btnH2B').className = m === 'h2b' ? 'on' : '';
+      document.getElementById('inputLabel').textContent = m === 'b2h' ? '输入一句职场黑话' : '输入你想说的（人话）';
+      document.getElementById('inputText').placeholder = m === 'b2h'
+        ? '比如：我们需要对齐一下颗粒度…'
+        : '比如：这活根本做不完…';
+      document.getElementById('inputText').value = '';
+      document.getElementById('output').className = 'output';
+    }
+
+    const dict = [
+      ['对齐颗粒度', '把细节说清楚，别各做各的'],
+      ['打通闭环', '从开始到结束走一遍，别卡在半路'],
+      ['赋能', '帮你（反正不是我亲自做）'],
+      ['抓手', '一个可操作的具体切入点'],
+      ['底层逻辑', '这件事最根本的原因'],
+      ['顶层设计', '大方向规划（通常还没想好细节）'],
+      ['沉淀方法论', '把你做的东西总结成文档'],
+      ['快速迭代', '先做个垃圾出来，然后慢慢改'],
+      ['痛点', '烦死了但没人解决的事'],
+      ['场景化', '说一个具体例子'],
+      ['拉通', '把相关部门的人凑到一起聊'],
+      ['对标', '抄同行的'],
+      ['颗粒度', '详细程度'],
+      ['打法', '怎么做'],
+      ['心智', '用户脑子里对我们的印象'],
+      ['护城河', '别人抄不了的东西'],
+      ['组合拳', '同时用好几招'],
+      ['倒逼', '已经晚了，赶紧补'],
+      ['复盘', '出事了，说说谁的锅'],
+      ['延迟满足感', '今年不加薪，再加加油'],
+    ];
+
+    // 渲染词典
+    document.getElementById('dictGrid').innerHTML = dict.map(([biz, human]) =>
+      `<div class="dict-item"><div class="biz">${biz}</div><div class="hum">${human}</div></div>`
+    ).join('');
+
+    function translate() {
+      const text = document.getElementById('inputText').value.trim();
+      const out = document.getElementById('output');
+      if (!text) { out.className = 'output'; return; }
+
+      if (mode === 'b2h') {
+        // 黑话→人话：匹配词典
+        let translated = text;
+        let matches = [];
+        dict.forEach(([biz, human]) => {
+          if (text.includes(biz)) {
+            translated = translated.replace(biz, `<b>${human}</b>`);
+            matches.push({ biz, human });
+          }
+        });
+
+        if (matches.length === 0) {
+          out.innerHTML = `<div class="msg human">
+            <div class="label">🧑 人话</div>
+            这句黑话太高阶了，词典还没收录。<br><br>
+            🤔 试试看：是不是想说「<b>${generateGuess(text)}</b>」？
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${generateGuess(text).replace(/'/g, "\\'")}')">📋</button>
+          </div>`;
+        } else {
+          let html = `<div class="msg biz">
+            <div class="label">🏢 原始黑话</div>
+            ${highlightBiz(text, matches)}
+          </div>`;
+          html += `<div class="msg human">
+            <div class="label">🧑 翻译成人话</div>
+            ${humanTranslate(text, matches)}
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('${humanTranslate(text, matches).replace(/<br>/g,'\\n').replace(/<[^>]*>/g,'').replace(/'/g, "\\'")}')">📋</button>
+          </div>`;
+          out.innerHTML = html;
+        }
+      } else {
+        // 人话→黑话
+        const bizResult = bizify(text);
+        out.innerHTML = `<div class="msg human">
+          <div class="label">🧑 你说的</div>
+          ${text}
+        </div>
+        <div class="msg biz">
+          <div class="label">🏢 翻译成黑话（老板爱听版）</div>
+          ${bizResult}
+          <button class="copy-btn" onclick="navigator.clipboard.writeText('${bizResult.replace(/<br>/g,'\\n').replace(/<[^>]*>/g,'').replace(/'/g, "\\'")}')">📋</button>
+        </div>`;
+      }
+      out.className = 'output show';
+    }
+
+    function highlightBiz(text, matches) {
+      let result = text;
+      matches.forEach(({biz}) => {
+        result = result.replace(biz, `<mark style="background:#ffcccc;padding:2px 4px;border-radius:3px;">${biz}</mark>`);
+      });
+      return result;
+    }
+
+    function humanTranslate(text, matches) {
+      // 模拟LLM：串联所有匹配词的翻译 + 一句话总结
+      const translations = matches.map(({biz, human}) => `「${biz}」= ${human}`);
+      let result = translations.join('<br>');
+      if (matches.length >= 3) {
+        result += `<br><br>📌 <b>一句话：</b>${generateSummary(matches)}`;
+      }
+      return result;
+    }
+
+    function generateSummary(matches) {
+      const summaries = matches.map(m => m.human);
+      return `你要${summaries.join('，然后')}。说白了就是${summaries.slice(-1)[0].split('，')[0]}。`;
+    }
+
+    function generateGuess(text) {
+      if (text.includes('抓手') || text.includes('赋能') || text.includes('闭环')) {
+        return '找到一个具体的方案并且落地';
+      }
+      return '这件事需要更具体地推进一下';
+    }
+
+    function bizify(text) {
+      // 人话→黑话：简单模式匹配
+      let result = text;
+      const rules = [
+        [/做不完|来不及/g, '需要合理评估资源投入，在当前时间窗口内聚焦高优事项'],
+        [/没时间|太忙/g, '当前带宽不足，需要重新排布优先级'],
+        [/我不知道|不会做/g, '这个方向还需要进一步探索和沉淀'],
+        [/没钱|预算不够/g, '需要在投入产出比上做更精细的测算'],
+        [/太难了|搞不定/g, '这个方案复杂度较高，建议分阶段迭代交付'],
+        [/加钱|涨薪/g, '需要对齐市场竞争力，建立有吸引力的激励体系'],
+        [/抄别人的/g, '对标行业最佳实践'],
+        [/再想想|拖着/g, '这件事需要更充分的论证后再推动'],
+        [/随便做做|糊弄/g, 'MVP 先行验证核心假设'],
+        [/不清楚|不懂/g, '信息还没拉通，需要对齐一下'],
+      ];
+
+      let replaced = false;
+      rules.forEach(([re, biz]) => {
+        if (re.test(result)) {
+          result = result.replace(re, biz);
+          replaced = true;
+        }
+      });
+
+      if (!replaced) {
+        // 没匹配到规则，加上通用黑话后缀
+        result += '<br><br>建议：对齐各方预期后，形成可落地的一站式方案，分阶段迭代交付，沉淀为标准化打法。';
+      }
+
+      return result;
+    }
+
+    // 主题
+    (function() {
+      const html = document.documentElement;
+      function set(t) {
+        html.setAttribute('data-theme', t);
+        if (t === 'system') {
+          html.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      }
+      set(localStorage.getItem('creative-lab-theme') || 'system');
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('creative-lab-theme') === 'system') set('system');
+      });
+    })();
+  </script>
+</body>
+</html>
