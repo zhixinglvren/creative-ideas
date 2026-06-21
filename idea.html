@@ -131,6 +131,16 @@
         ],
         demoUrl: "demo-personal-board/"
       },
+      "mouthpiece": {
+        description: "有些话你知道该说，但不知道怎么说。催款、拒绝、谈薪——AI 出三个版本帮你选。",
+        sections: [
+          { title: "🎯 场景", text: "人生有太多「开口难」时刻：催甲方付款怕得罪客户，拒绝同事饭局怕不合群，跟老板谈涨薪怕被认为计较。你脑子里演练了一百遍，最后发出的是「好的👌」。" },
+          { title: "💡 方案", text: "选场景 → AI 出 3 个版本——直球版（清晰直接）、优雅版（情商在线）、阴阳怪气版（让你会心一笑）。三种语气，同一种意思。选择最像你的那个，复制、粘贴、发送。" },
+          { title: "🔧 技术", text: "场景模板 + 角色规则引擎 + 语气分类器。预置 6 个高频场景 × 3 种语气。真实产品：LLM 根据用户自定义场景和语气偏好，即时生成措辞，支持自定义程度调节（礼貌程度、正式程度、幽默程度）。" },
+          { title: "📈 为什么值得做", html: "沟通焦虑是全球性痛点——Grammarly 做「正确」，我们做「得体」。社交货币产品：截图分享就是天然传播。可扩展：会议发言稿、朋友圈文案、道歉信、分手信——所有「开口难」都是需求。" }
+        ],
+        demoUrl: "demo-mouthpiece/"
+      },
       "biz-translator": {
         description: "老板说「对齐颗粒度」，你听到的是「又要加班了」。黑话伤害打工人的精神世界——这里帮你拆弹。",
         sections: [
@@ -211,11 +221,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️'};
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官'};
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 

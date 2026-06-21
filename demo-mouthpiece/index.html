@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>开口难 · AI 嘴替 — Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f2; --card: #ffffff; --border: #e0dcd0;
+      --text: #2c2416; --muted: #8c8070; --accent: #6c5ce7;
+      --tag-bg: #f0edff; --tag-text: #5a4ad1;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1c1e; --card: #252728; --border: #3a3c3d;
+      --text: #e8e8ec; --muted: #98989e; --accent: #a29bfe;
+      --tag-bg: #2d2840; --tag-text: #a29bfe;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--muted);
+      text-decoration: none; font-size: 0.88rem; margin-bottom: 20px; }
+    .hero { text-align: center; margin-bottom: 24px; }
+    .hero h1 { font-size: 1.5rem; color: var(--text); margin-bottom: 4px; }
+    .hero .sub { color: var(--muted); font-size: 0.85rem; }
+
+    /* 场景卡片 */
+    .scene-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px; margin-bottom: 24px;
+    }
+    .scene-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; cursor: pointer; transition: all 0.2s;
+    }
+    .scene-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .scene-card.active { border-color: var(--accent); background: var(--tag-bg); }
+    .scene-card .emoji { font-size: 1.4rem; margin-bottom: 6px; }
+    .scene-card .title { font-size: 0.85rem; font-weight: 700; margin-bottom: 2px; }
+    .scene-card .context { font-size: 0.72rem; color: var(--muted); }
+
+    /* 结果 */
+    .results { display: none; }
+    .results.show { display: block; }
+
+    .version {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 20px; margin-bottom: 12px; position: relative;
+    }
+    .version .ver-tag {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-size: 0.7rem; font-weight: 700; margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+    .version .ver-tag.direct { background: #fdecea; color: #c0392b; }
+    .version .ver-tag.grace { background: #eaf2f8; color: #2980b9; }
+    .version .ver-tag.sass { background: #fef9e7; color: #b7950b; }
+    [data-theme="dark"] .version .ver-tag.direct { background: #3d1a1a; color: #e74c3c; }
+    [data-theme="dark"] .version .ver-tag.grace { background: #1a2a3d; color: #3498db; }
+    [data-theme="dark"] .version .ver-tag.sass { background: #3d351a; color: #f1c40f; }
+    .version .content { font-size: 0.9rem; line-height: 1.8; }
+    .version .copy-btn {
+      position: absolute; top: 16px; right: 16px; background: none; border: none;
+      color: var(--muted); cursor: pointer; font-size: 0.78rem; padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .version .copy-btn:hover { background: var(--border); }
+    .version .copy-btn.copied { color: var(--accent); }
+
+    .tip {
+      text-align: center; padding: 20px 0 30px; font-size: 0.78rem; color: var(--muted);
+    }
+    .footer { text-align: center; padding: 40px 0 24px; }
+    .footer a { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+    .footer .note { margin-top: 10px; font-size: 0.72rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="../index.html" class="back">← 返回创意实验室</a>
+    <div class="hero">
+      <h1>🤐 开口难 · AI 嘴替</h1>
+      <p class="sub">那些你不敢说的话，AI 帮你说出来</p>
+    </div>
+
+    <div class="scene-grid" id="sceneGrid">
+      <div class="scene-card active" onclick="pickScene('payment')">
+        <div class="emoji">💰</div>
+        <div class="title">催甲方付款</div>
+        <div class="context">项目已验收，款还不到</div>
+      </div>
+      <div class="scene-card" onclick="pickScene('reject')">
+        <div class="emoji">🍲</div>
+        <div class="title">拒绝同事饭局</div>
+        <div class="context">不想去但不想得罪人</div>
+      </div>
+      <div class="scene-card" onclick="pickScene('quiet')">
+        <div class="emoji">🔇</div>
+        <div class="title">请室友安静</div>
+        <div class="context">凌晨还在外放短视频</div>
+      </div>
+      <div class="scene-card" onclick="pickScene('raise')">
+        <div class="emoji">📈</div>
+        <div class="title">跟老板谈涨薪</div>
+        <div class="context">业绩达标但不知道怎么开口</div>
+      </div>
+      <div class="scene-card" onclick="pickScene('blind')">
+        <div class="emoji">💔</div>
+        <div class="title">拒绝相亲对象</div>
+        <div class="context">聊了两周，实在没感觉</div>
+      </div>
+      <div class="scene-card" onclick="pickScene('boundary')">
+        <div class="emoji">🚫</div>
+        <div class="title">拒绝额外工作</div>
+        <div class="context">8点下班被塞新活</div>
+      </div>
+    </div>
+
+    <div class="results show" id="results"></div>
+    <div class="tip" id="tip">👆 选场景 → 选版本 → 一键复制 → 发送搞定</div>
+
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+      <p class="note">预置 6 个高频开口难场景。真实产品接入 LLM 生成任意场景的优雅措辞，支持自定义语气（温柔/幽默/强势）。</p>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      payment: {
+        context: '项目已验收，合同约定 30 天付款，已过 45 天。对方采购一直说「在走流程」。',
+        versions: [
+          { tag: 'direct', label: '🎯 直球版', text: '王总好，XX项目验收至今已过45天，按合同约定应在30天内付款。目前我们这边的现金流压力比较大，方便确认一下本周能到吗？如果流程上有卡点，我可以配合提供任何材料。' },
+          { tag: 'grace', label: '🎀 优雅版', text: '王总您好～最近在整理项目收尾工作，正好看到 XX 项目验收已经一个半月了，想跟您确认一下付款进度。不急不急，主要是我们财务这边月底需要结账，如果能在这周走完就再好不过了。有什么需要我配合的随时说～' },
+          { tag: 'sass', label: '😏 阴阳怪气版', text: '王总好呀，我来提醒一下——不是催款啦，主要是怕您忘了。XX项目的款，咱合同上说30天，现在已经过去45天了。我们老板问我这是长期存款还是应收款，我说可能是「正在走流程的理财产品」。这周能到吗？🥺' },
+        ]
+      },
+      reject: {
+        context: '周五下班前，同事在群里约周六聚餐。你不想去（想宅着/有安排/就是不想社交），但怕不去被说不合群。',
+        versions: [
+          { tag: 'direct', label: '🎯 直球版', text: '谢邀！这周末有安排了，下次一定。你们吃好喝好～' },
+          { tag: 'grace', label: '🎀 优雅版', text: '好想去啊！但这周末答应了家人要陪他们，真的脱不开身。下次我请客补上！求发照片让我云吃饭 🥹' },
+          { tag: 'sass', label: '😏 阴阳怪气版', text: '家人们，我最近社交电池只剩 5%，这周末需要回血充电。你们吃，我的心与你们同在。如果这算不合群的话，那我在精神上合群 🙏' },
+        ]
+      },
+      quiet: {
+        context: '合租室友凌晨 1 点在客厅外放短视频。你已经忍了好几晚，今晚终于想开口了。',
+        versions: [
+          { tag: 'direct', label: '🎯 直球版', text: '嗨，已经挺晚了，能不能戴上耳机？我明天要早起。谢谢啦。' },
+          { tag: 'grace', label: '🎀 优雅版', text: '不好意思打扰你呀～我睡眠比较浅，客厅的声音传过来我这边听得挺清楚的。能不能麻烦用耳机呀？真的特别感谢 🙏 需要的话我这儿有个备用蓝牙耳机可以给你用。' },
+          { tag: 'sass', label: '😏 阴阳怪气版', text: '宝，你外放的那个视频好像有个隐藏功能：戴上耳机看的话，全世界只有你能听到，而我——我能睡着。试试？' },
+        ]
+      },
+      raise: {
+        context: '入职两年，业绩 M+，但薪资一直没动。最近发现同级别的同事薪资比我高 20%。',
+        versions: [
+          { tag: 'direct', label: '🎯 直球版', text: '老板，想约您聊一下我的薪酬。这两年业绩一直 M+，也承担了 XX 项目的主导，但我了解到现在薪资和同级市场水平有差距。您看我们什么时候方便详细聊一下调整方案？' },
+          { tag: 'grace', label: '🎀 优雅版', text: '老板好～想跟您约个时间聊聊我的职业发展和薪酬。这两年我能感受到自己的成长，也做出了一些成果。想听听您对我下个阶段的期望，以及薪酬上是否有调整的空间。' },
+          { tag: 'sass', label: '😏 阴阳怪气版', text: '老板，我最近在做一个「投入产出比」的测算——发现我这两年产出是 M+，但薪酬曲线几乎水平。我想问一下，公司是不是在测试一个叫「用热爱发电」的新薪酬模式？如果是的话，我先了解一下退出机制。' },
+        ]
+      },
+      blind: {
+        context: '朋友介绍相亲，聊了两周。对方人不错，但就是没感觉。不想继续浪费彼此时间，也不想让介绍人难堪。',
+        versions: [
+          { tag: 'direct', label: '🎯 直球版', text: '这两周聊下来感觉你是个挺好的人，但我觉得我们更适合做朋友。不希望耽误你的时间，也不想让介绍人尴尬。祝你早日找到对的人。' },
+          { tag: 'grace', label: '🎀 优雅版', text: '真的很高兴认识你，这两周聊得很愉快。但我认真想了想，感觉我们生活的方向不太一样，可能继续发展的话对彼此都是将就。不想浪费你的时间和期待，真心祝福你～也谢谢 XX 的介绍 🙏' },
+          { tag: 'sass', label: '😏 阴阳怪气版', text: '经过两周的深入交流，我发现你最大的问题是——太好了。好到我找不到 bug，这让我很不安。我觉得你需要一个能欣赏你的完美的人，而我显然还需要再进化几年。不耽误你了，你值得更好的。👋' },
+        ]
+      },
+      boundary: {
+        context: '周五下午 5:50，老板突然在群里 @ 你：「这个需求客户周一要，周末辛苦一下。」但实际上并不紧急。',
+        versions: [
+          { tag: 'direct', label: '🎯 直球版', text: '收到。我评估了一下，这个需求的工作量大概需要 2-3 天。周一交付的话时间非常紧。能不能先做核心部分周一交付，剩下的下周三补齐？' },
+          { tag: 'grace', label: '🎀 优雅版', text: '好的老板，我先盘点一下这个需求的交付范围。目前看起来完整交付至少需要 2-3 个工作日，如果周一要给客户看的话，我建议我们聚焦最核心的 XX 功能，先有个能演示的版本。这样周末效率也会高很多。您觉得呢？' },
+          { tag: 'sass', label: '😏 阴阳怪气版', text: '收到。我刚好在做一个时间管理实验：周五晚上接到周一要的活，看能不能通过不睡觉来完成。目前实验数据支持 48 小时连续工作，但是代码质量会趋近于屎山。贵客户想要快，还是想要能跑的？' },
+        ]
+      }
+    };
+
+    let currentScene = 'payment';
+
+    function pickScene(key) {
+      currentScene = key;
+      document.querySelectorAll('.scene-card').forEach(el => el.classList.remove('active'));
+      document.querySelector(`.scene-card[onclick="pickScene('${key}')"]`)?.classList.add('active');
+      render();
+    }
+
+    function render() {
+      const scene = data[currentScene];
+      if (!scene) return;
+
+      const ctx = scene.context;
+      let html = `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:0.82rem;color:var(--muted);line-height:1.6;">
+        <span style="font-weight:700;color:var(--text);">📋 情景：</span>${ctx}
+      </div>`;
+
+      scene.versions.forEach(v => {
+        html += `<div class="version">
+          <div class="ver-tag ${v.tag}">${v.label}</div>
+          <div class="content">${v.text}</div>
+          <button class="copy-btn" onclick="copyText(this, \`${v.text.replace(/`/g, '\\`').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}\`)">📋 复制</button>
+        </div>`;
+      });
+
+      document.getElementById('results').innerHTML = html;
+      document.getElementById('results').className = 'results show';
+      document.getElementById('tip').style.display = 'none';
+    }
+
+    function copyText(btn, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 复制'; btn.classList.remove('copied'); }, 1500);
+      }).catch(() => {
+        btn.textContent = '❌ 失败';
+        setTimeout(() => { btn.textContent = '📋 复制'; }, 1500);
+      });
+    }
+
+    // 初始化
+    render();
+
+    // 主题
+    (function() {
+      const html = document.documentElement;
+      function set(t) {
+        html.setAttribute('data-theme', t);
+        if (t === 'system') {
+          html.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      }
+      set(localStorage.getItem('creative-lab-theme') || 'system');
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('creative-lab-theme') === 'system') set('system');
+      });
+    })();
+  </script>
+</body>
+</html>
