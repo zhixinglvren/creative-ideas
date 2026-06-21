@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人生错题本 — Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f2; --card: #ffffff; --border: #e0dcd0;
+      --text: #2c2416; --muted: #8c8070;
+      --ink: #2c2c2c; --tag-bg: #f0ebe0;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1c1e; --card: #252728; --border: #3a3c3d;
+      --text: #e8e8ec; --muted: #98989e;
+      --ink: #d8d8dc; --tag-bg: #2a2c2d;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Serif SC', serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 28px 20px 60px; }
+    .back { display: inline-flex; align-items: center; gap: 6px; color: #8c8070;
+      text-decoration: none; font-size: 0.88rem; margin-bottom: 20px; }
+    .hero { text-align: center; margin-bottom: 28px; }
+    .hero h1 { font-size: 1.5rem; color: var(--ink); margin-bottom: 6px; }
+    .hero .sub { color: var(--muted); font-size: 0.85rem; }
+
+    /* 输入 */
+    .entry-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 20px;
+    }
+    .entry-card label {
+      display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px;
+      font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .entry-card textarea {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 14px; font-size: 0.92rem; font-family: inherit; resize: vertical;
+      min-height: 80px; outline: none; background: var(--bg); color: var(--text);
+    }
+    .entry-card textarea:focus { border-color: #8c8070; }
+    .entry-card textarea::placeholder { color: var(--muted); opacity: 0.4; font-size: 0.85rem; }
+    .entry-card .row { display: flex; gap: 10px; margin-top: 12px; }
+    .entry-card select {
+      flex: 1; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.85rem; font-family: inherit; background: var(--bg); color: var(--text);
+      outline: none; cursor: pointer;
+    }
+    .entry-card button {
+      padding: 10px 24px; background: var(--ink); color: var(--bg); border: none;
+      border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-family: inherit;
+      font-weight: 600; transition: opacity 0.2s;
+    }
+    .entry-card button:hover { opacity: 0.85; }
+    [data-theme="dark"] .entry-card button { color: #1a1c1e; background: #d8d8dc; }
+
+    /* 错题列表 */
+    .error-list { margin-bottom: 24px; }
+    .error-item {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px 18px; margin-bottom: 10px; display: flex; gap: 14px;
+      align-items: flex-start; transition: border-color 0.2s;
+    }
+    .error-item:hover { border-color: #8c8070; }
+    .error-item .date-badge {
+      flex-shrink: 0; width: 52px; text-align: center; font-size: 0.7rem; color: var(--muted);
+      line-height: 1.4; padding-top: 2px;
+    }
+    .error-item .date-badge .day { font-size: 1.3rem; font-weight: 700; color: var(--ink); }
+    .error-item .body { flex: 1; }
+    .error-item .body .text { font-size: 0.9rem; line-height: 1.6; margin-bottom: 6px; }
+    .error-item .body .tag {
+      display: inline-block; background: var(--tag-bg); border-radius: 4px;
+      padding: 2px 8px; font-size: 0.7rem; color: var(--muted);
+    }
+
+    /* 分析面板 */
+    .analysis {
+      background: var(--card); border: 2px solid #8c8070; border-radius: 14px;
+      padding: 24px; display: none; margin-bottom: 20px;
+    }
+    .analysis.show { display: block; }
+    .analysis h3 { font-size: 0.95rem; margin-bottom: 16px; color: var(--ink); }
+    .pattern { margin-bottom: 16px; }
+    .pattern .p-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+    .pattern .p-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+    .pattern .p-bar {
+      height: 6px; background: var(--border); border-radius: 3px; margin-top: 8px;
+    }
+    .pattern .p-fill {
+      height: 6px; background: #8c8070; border-radius: 3px; transition: width 0.5s;
+    }
+
+    .footer { text-align: center; padding: 40px 0 24px; }
+    .footer a { color: #8c8070; text-decoration: none; font-size: 0.9rem; }
+    .footer .note { margin-top: 10px; font-size: 0.72rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="../index.html" class="back">← 返回创意实验室</a>
+    <div class="hero">
+      <h1>📝 人生错题本</h1>
+      <p class="sub">你不是在犯不同的错误——你是在反复掉进同一个坑</p>
+    </div>
+
+    <div class="entry-card">
+      <label>记一笔错</label>
+      <textarea id="errorText" placeholder="比如：跟老板谈涨薪时一紧张就答应了第一个数，事后发现完全可以多要20%…" maxlength="200"></textarea>
+      <div class="row">
+        <select id="errorType">
+          <option value="">选类型（可选）</option>
+          <option value="冲动决策">冲动决策</option>
+          <option value="过度承诺">过度承诺</option>
+          <option value="逃避冲突">逃避冲突</option>
+          <option value="完美主义">完美主义</option>
+          <option value="轻信他人">轻信他人</option>
+          <option value="拖延">拖延</option>
+        </select>
+        <button onclick="addError()">📝 记下</button>
+      </div>
+    </div>
+
+    <div class="error-list" id="errorList"></div>
+    <div class="analysis" id="analysis"></div>
+
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+      <p class="note">Demo 预置了 6 条模拟错题来展示 AI 模式识别。真实产品支持无限记录 + LLM 语义聚类。</p>
+    </div>
+  </div>
+
+  <script>
+    const STORE_KEY = 'error-book';
+
+    // 预置错题
+    const defaults = [
+      { date: '2025-03', text: '项目初期太想把所有东西做完美，花了三周打磨一个后来砍掉的功能。', type: '完美主义' },
+      { date: '2025-06', text: '明明觉得对方报价不合理，但不好意思还价，最后多花了不少冤枉钱。', type: '逃避冲突' },
+      { date: '2025-09', text: '朋友借钱时说一个月还，我连借条都没让写。到现在还没还完。', type: '轻信他人' },
+      { date: '2025-10', text: '周五下午答应周一早上交付，周末两天没出门。最后周一还是没做完。', type: '过度承诺' },
+      { date: '2026-01', text: '跳槽时 HR 问期望薪资，我说了一个数，对方立刻答应了。那一刻我就知道我要低了。', type: '冲动决策' },
+      { date: '2026-03', text: '为了一个细节调了三天的 CSS 动画，产品说完全没注意到这个变化。', type: '完美主义' },
+    ];
+
+    let errors = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (!errors || errors.length === 0) {
+      errors = defaults;
+      localStorage.setItem(STORE_KEY, JSON.stringify(errors));
+    }
+
+    function save() { localStorage.setItem(STORE_KEY, JSON.stringify(errors)); }
+
+    function addError() {
+      const text = document.getElementById('errorText').value.trim();
+      const type = document.getElementById('errorType').value;
+      if (!text) return;
+      const now = new Date();
+      errors.unshift({
+        date: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`,
+        text, type
+      });
+      save();
+      document.getElementById('errorText').value = '';
+      document.getElementById('errorType').value = '';
+      render();
+    }
+
+    function removeError(idx) {
+      errors.splice(idx, 1);
+      save(); render();
+    }
+
+    function analyze() {
+      if (errors.length < 3) return null;
+      const count = {};
+      const examples = {};
+      errors.forEach(e => {
+        const t = e.type || '未分类';
+        count[t] = (count[t] || 0) + 1;
+        if (!examples[t]) examples[t] = e.text;
+      });
+      const sorted = Object.entries(count).sort((a,b) => b[1]-a[1]);
+      const total = errors.length;
+      const topCount = sorted[0] ? sorted[0][1] : 0;
+      return { sorted, total, topCount, examples };
+    }
+
+    function render() {
+      // 列表
+      const list = document.getElementById('errorList');
+      list.innerHTML = errors.length === 0
+        ? `<div style="text-align:center;padding:30px;color:var(--muted);font-size:0.9rem;">还没有记录。「犯错不丢人，不承认才丢人」—— 记下第一条吧</div>`
+        : errors.map((e, i) => `
+          <div class="error-item">
+            <div class="date-badge">
+              <div class="day">${e.date.split('-')[1]}</div>
+              ${e.date.split('-')[0]}月
+            </div>
+            <div class="body">
+              <div class="text">${e.text}</div>
+              <span class="tag">${e.type || '未分类'}</span>
+            </div>
+            <button onclick="removeError(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0 4px;" title="删除">×</button>
+          </div>`).join('');
+
+      // 分析
+      const anal = document.getElementById('analysis');
+      const a = analyze();
+      if (!a) { anal.className = 'analysis'; return; }
+      anal.className = 'analysis show';
+
+      const maxCount = a.sorted[0][1];
+      let html = `<h3>🔍 AI 模式识别（基于 ${a.total} 条记录）</h3>`;
+      html += `<div style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;">
+        你的 TOP 错误模式：<b style="color:var(--ink);">${a.sorted[0][0]}</b> — 出现 ${a.topCount} 次，占 ${Math.round(a.topCount/a.total*100)}%</div>`;
+
+      a.sorted.forEach(([type, cnt]) => {
+        const pct = Math.round(cnt / a.total * 100);
+        html += `<div class="pattern">
+          <div class="p-name">${type} <span style="color:var(--muted);font-weight:400;">×${cnt}</span></div>
+          <div class="p-desc">${getInsight(type)}</div>
+          <div class="p-bar"><div class="p-fill" style="width:${pct}%"></div></div>
+        </div>`;
+      });
+
+      html += `<div style="margin-top:16px;padding:14px;background:var(--tag-bg);border-radius:8px;font-size:0.83rem;line-height:1.7;color:var(--muted);">
+        <b style="color:var(--ink);">💊 给你的处方：</b><br>${getPrescription(a.sorted[0][0])}
+      </div>`;
+
+      anal.innerHTML = html;
+      // 动画
+      setTimeout(() => {
+        document.querySelectorAll('.p-fill').forEach(el => { el.style.width = el.style.width; });
+      }, 100);
+    }
+
+    function getInsight(type) {
+      const m = {
+        '完美主义': '你不是在「打磨」，是在「逃避发布」。每次完美主义发作 = 延迟了一次外部反馈 = 错过一次校准机会。',
+        '冲动决策': '面对压力时，你倾向于「快速解决当下焦虑」而非「选择最优解」。这是人类决策系统最古老的 bug。',
+        '逃避冲突': '你用「算了」换来了短期的和平，但长期在支付一笔隐形的「委屈税」。这笔税没有发票，但你的身体在记账。',
+        '过度承诺': '你的嘴比你的手跑得快。问题不是能力不够，是「答应时只想了理想情况，没想意外情况」。',
+        '轻信他人': '你相信人本善。这没错。但「善良的意图」和「靠谱的执行」之间隔着一道你总是跳过不看的墙。',
+        '拖延': '不是懒。拖延是「完美主义 + 恐惧失败」的结合体：不做就不会失败。但拖着不做 = 已经失败了。',
+      };
+      return m[type] || '这是你独特的错误模式。建议认真回顾每次犯错时的上下文——同样的情景，你是不是总会做同样的选择？';
+    }
+
+    function getPrescription(type) {
+      const m = {
+        '完美主义': '下次做东西时，给自己设一个人工截止时间——不是「做完」，是「发布」。发布一个 60 分版本比打磨一个永远的 100 分版本有价值 100 倍。',
+        '冲动决策': '下次面对压力决策时，做一件事：说「我 24 小时后回复你」。就这一句话，能过滤掉 80% 的冲动决策。',
+        '逃避冲突': '把「算了」换成「我需要一点时间想一下」。你没说 Yes，也没说 No，你买了思考时间。这是最低成本的边界建立方式。',
+        '过度承诺': '答应时间 = 你估计的时间 × 2 + 1 天缓冲。不是为了缓慢，是为了不食言。食言一次的信誉损失需要五次说到做到才能修复。',
+        '轻信他人': '相信动机，但验证能力。问你借钱/找你合作的人，问自己：他过去一年对别人的承诺兑现了多少？数据比感动靠谱。',
+        '拖延': '用「我先做 5 分钟」代替「我必须做完了」。你一旦开始了，惯性会带你走。但「必须做完」的想法会阻止你开始。',
+      };
+      return m[type] || '建议你找一件最近犯错的事，写下：「当时的信息环境是什么样的」「如果同样的场景再来一次，我会怎么做」。不是后悔，是存档。';
+    }
+
+    // 主题
+    (function() {
+      const html = document.documentElement;
+      function set(t) {
+        html.setAttribute('data-theme', t);
+        if (t === 'system') {
+          html.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      }
+      set(localStorage.getItem('creative-lab-theme') || 'system');
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('creative-lab-theme') === 'system') set('system');
+      });
+    })();
+
+    render();
+  </script>
+</body>
+</html>

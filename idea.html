@@ -131,6 +131,16 @@
         ],
         demoUrl: "demo-personal-board/"
       },
+      "error-book": {
+        description: "你不是在犯不同的错误——你是在反复掉进同一个坑。记下来、找模式、打补丁。",
+        sections: [
+          { title: "🎯 场景", text: "每个人都会犯错。但大多数人今天犯的错和五年前犯的错本质一样——只是场景换了。因为你没有系统性地回顾自己犯过的错。" },
+          { title: "💡 方案", text: "一个「个人错误数据库」：随手记下每次懊悔的瞬间 → AI 自动归类模式 → 发现你反复掉进的坑 → 给出可执行的「打补丁」处方。不是用来后悔，是用来校准。" },
+          { title: "🔧 技术", text: "自由文本输入 → LLM 语义分类（冲动决策/逃避冲突/过度承诺/完美主义等）→ 时间序列聚类 → 自动生成个性化模式报告。Demo 预置 6 条错题 + 规则分析引擎。" },
+          { title: "📈 为什么值得做", html: "「个人数据」赛道最大未开发的金矿。Fitbit 告诉你走了多少步，Duolingo 告诉你学了多少词——但没人告诉你「你的人生决策模式是什么样的」。错题本是最轻量的入口，但长期价值巨大：你的错误模式就是你的操作系统漏洞。" }
+        ],
+        demoUrl: "demo-error-book/"
+      },
       "anti-guide": {
         description: "你去了小红书收藏的「此生必去」——发现是一排 300 人排队的栈道。没人告诉你别去哪。整个旅行内容生态只推荐，不动退。",
         sections: [
@@ -191,11 +201,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️'};
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略'};
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本'};
       return m[id] || id;
     }
 
