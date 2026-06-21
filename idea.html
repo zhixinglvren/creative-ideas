@@ -131,6 +131,16 @@
         ],
         demoUrl: "demo-personal-board/"
       },
+      "biz-translator": {
+        description: "老板说「对齐颗粒度」，你听到的是「又要加班了」。黑话伤害打工人的精神世界——这里帮你拆弹。",
+        sections: [
+          { title: "🎯 场景", text: "每天的会议、邮件、OKR 评审——全是黑话。你以为只有你不懂？其实每个人都在假装懂。结果是：听的人猜，说的人演，活干偏了没人知道。" },
+          { title: "💡 方案", text: "双向翻译器。黑话→人话：输入老板的话，翻译成「你实际需要做的事」。人话→黑话：输入你想说的，翻译成老板爱听的版本（不改原意，只换包装）。" },
+          { title: "🔧 技术", text: "规则引擎匹配常见黑话词汇表（20 条）+ 模式匹配生成翻译。真实产品 LLM 做语义翻译，支持自定义人设（你的老板/你的客户）自适应措辞。" },
+          { title: "📈 为什么值得做", html: "每一个打工人都是潜在用户。画面感极强——截图就是天然 meme。企业版可集成到 Slack/飞书/钉钉，做消息实时黑话翻译。最轻量的 B2B SaaS 切入点。" }
+        ],
+        demoUrl: "demo-biz-translator/"
+      },
       "error-book": {
         description: "你不是在犯不同的错误——你是在反复掉进同一个坑。记下来、找模式、打补丁。",
         sections: [
@@ -201,11 +211,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝'};
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本'};
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官'};
       return m[id] || id;
     }
 
