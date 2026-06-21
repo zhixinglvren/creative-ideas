@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>会议复盘官 — Demo</title>
+<style>
+:root {
+  --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+  --text: #2c2416; --muted: #8c8070;
+  --accent: #e07a5f; --green: #2e8b57; --red: #c0392b;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+}
+.wrapper { max-width: 800px; margin: 0 auto; padding: 32px 20px 60px; }
+
+.back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent);
+  text-decoration: none; font-size: 0.9rem; margin-bottom: 24px; }
+.back:hover { text-decoration: underline; }
+
+header { text-align: center; margin-bottom: 32px; }
+header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+header .sub { color: var(--muted); font-size: 0.9rem; }
+
+/* ── 样本选择器 ── */
+.samples {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.sample-btn {
+  flex: 1; min-width: 130px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; cursor: pointer; text-align: left;
+  font-family: inherit; transition: all 0.15s;
+}
+.sample-btn:hover, .sample-btn.active { border-color: var(--accent); background: #e07a5f11; }
+.sample-btn .s-icon { font-size: 1.2rem; }
+.sample-btn .s-title { font-size: 0.82rem; font-weight: 700; margin-top: 4px; }
+.sample-btn .s-desc { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+/* ── 报告区 ── */
+.report {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px; margin-bottom: 24px;
+}
+
+/* 总分卡 */
+.score-row {
+  display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;
+}
+.score-card {
+  flex: 1; min-width: 100px; text-align: center;
+  background: #faf7f2; border-radius: 10px; padding: 18px 12px;
+}
+.score-card .val { font-size: 2rem; font-weight: 800; }
+.score-card .label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+.val-a { color: var(--green); } .val-b { color: #e67e22; } .val-c { color: var(--red); }
+
+/* 图 */
+.chart-section { margin-bottom: 24px; }
+.chart-section h3 { font-size: 0.95rem; margin-bottom: 10px; color: var(--text); }
+
+/* 发言分布 */
+.speaker-bars { display: flex; flex-direction: column; gap: 8px; }
+.speaker-row { display: flex; align-items: center; gap: 10px; }
+.speaker-row .name { width: 80px; font-size: 0.82rem; text-align: right; flex-shrink: 0; }
+.speaker-row .bar-wrap {
+  flex: 1; background: #e8e2d6; border-radius: 6px; height: 18px; overflow: hidden;
+}
+.speaker-row .bar-fill {
+  height: 100%; border-radius: 6px; transition: width 0.5s;
+}
+.speaker-row .pct { width: 50px; font-size: 0.78rem; color: var(--muted); flex-shrink: 0; }
+
+.bar-1 { background: #e07a5f; } .bar-2 { background: #5f9ea0; }
+.bar-3 { background: #b8860b; } .bar-4 { background: #8b7d6b; }
+
+/* 话题兜圈 */
+.loop-card {
+  background: #fff3cd; border: 1px solid #ffc10744; border-radius: 8px;
+  padding: 14px 16px; margin-bottom: 10px; font-size: 0.85rem;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.loop-card .loop-icon { font-size: 1.2rem; flex-shrink: 0; }
+.loop-card .loop-body { line-height: 1.5; }
+.loop-card .loop-topic { font-weight: 700; }
+.loop-card .loop-times { color: var(--red); font-weight: 700; }
+
+/* 打断 */
+.interrupt-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid var(--border); font-size: 0.82rem;
+}
+.interrupt-item .from { font-weight: 700; color: var(--red); }
+.interrupt-item .to { color: var(--muted); }
+.interrupt-item .cnt { margin-left: auto; font-weight: 700; }
+
+/* 决策密度 */
+.decision-timeline {
+  position: relative; padding-left: 20px; border-left: 2px solid var(--border);
+}
+.decision-item {
+  position: relative; margin-bottom: 14px; font-size: 0.85rem;
+}
+.decision-item::before {
+  content: ''; position: absolute; left: -26px; top: 4px;
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.decision-item.yes::before { background: var(--green); }
+.decision-item.no::before { background: var(--red); }
+.decision-item .time { font-size: 0.72rem; color: var(--muted); }
+.decision-item .verdict { font-weight: 700; margin: 2px 0; }
+
+/* 评语 */
+.verdict-box {
+  background: linear-gradient(135deg, #e07a5f11, #e07a5f08);
+  border: 1px solid var(--accent); border-radius: 10px;
+  padding: 20px; margin-top: 24px;
+}
+.verdict-box h3 { font-size: 1rem; margin-bottom: 8px; }
+.verdict-box p { font-size: 0.88rem; line-height: 1.7; color: var(--muted); }
+.verdict-box .grade {
+  font-size: 3rem; text-align: center; margin-bottom: 10px;
+}
+
+footer {
+  text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 32px;
+}
+footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="../index.html" class="back">← 返回创意实验室</a>
+
+  <header>
+    <h1>🔍 会议复盘官</h1>
+    <p class="sub">选一个会议样本，看看它到底开得怎么样</p>
+  </header>
+
+  <div class="samples" id="samples"></div>
+
+  <div class="report" id="report">
+    <p style="text-align:center;color:var(--muted);padding:40px;">👆 选一个会议开始分析</p>
+  </div>
+
+  <footer>
+    Demo · <a href="https://github.com/zhixinglvren/creative-ideas">zhixinglvren/creative-ideas</a>
+  </footer>
+</div>
+
+<script>
+const meetings = [
+  {
+    id: 'prd-review',
+    icon: '📋',
+    title: 'PRD 评审会',
+    desc: '产品需求评审 · 5人 · 60分钟',
+    speakers: [
+      { name: '产品经理·张', pct: 58, color: 'bar-1' },
+      { name: '前端·李', pct: 12, color: 'bar-2' },
+      { name: '后端·王', pct: 10, color: 'bar-3' },
+      { name: '设计·陈', pct: 8, color: 'bar-4' },
+      { name: '测试·赵', pct: 12, color: 'bar-2' }
+    ],
+    loops: [
+      { topic: '"这个字段要不要可配置"', times: 4, detail: '讨论了 4 轮，每次都是产品说"先保留"，没有结论。' },
+      { topic: '"权限粒度到按钮还是页面"', times: 3, detail: '技术方案不停在按钮级和页面级之间摇摆，架构师没参会。' }
+    ],
+    interruptions: [
+      { from: '产品经理·张', to: '后端·王', count: 5 },
+      { from: '产品经理·张', to: '前端·李', count: 3 },
+      { from: '前端·李', to: '设计·陈', count: 1 }
+    ],
+    decisions: [
+      { time: '10:12', text: '确定使用现有权限框架，不重新开发', verdict: '✅ 已决策', cls: 'yes' },
+      { time: '10:28', text: '手机号验证改为选填 → "再想想"', verdict: '❌ 未决策', cls: 'no' },
+      { time: '10:45', text: '首页改版排期下个迭代', verdict: '✅ 已决策', cls: 'yes' },
+      { time: '11:05', text: '字段配置化方案 → "调研后再定"', verdict: '❌ 未决策', cls: 'no' },
+      { time: '11:18', text: '权限粒度 → "等架构师回来"', verdict: '❌ 未决策', cls: 'no' }
+    ],
+    grade: 'C',
+    gradeLabel: '效率偏低',
+    verdict: '产品经理占据了 58% 的发言时间，两个关键决策被推到了"下次再议"。会议最大的问题是：需要拍板的人（架构师）没在场，导致 3 个话题无法形成结论。建议：会前确认关键决策者是否出席，否则议程应调整为"信息同步"而非"决策会"。',
+    score: 47,
+    health: 38,
+    density: 40
+  },
+  {
+    id: 'sprint-retro',
+    icon: '🔄',
+    title: '迭代回顾会',
+    desc: 'Sprint Retro · 8人 · 45分钟',
+    speakers: [
+      { name: 'Scrum Master', pct: 22, color: 'bar-1' },
+      { name: '开发·A', pct: 18, color: 'bar-2' },
+      { name: '开发·B', pct: 16, color: 'bar-3' },
+      { name: '开发·C', pct: 14, color: 'bar-4' },
+      { name: 'PO', pct: 12, color: 'bar-2' },
+      { name: '其他', pct: 18, color: 'bar-3' }
+    ],
+    loops: [
+      { topic: '"测试环境不稳定"', times: 3, detail: '3 个人分别提了同一个问题但以为在说不同的事。' }
+    ],
+    interruptions: [
+      { from: 'Scrum Master', to: '开发·A', count: 2 },
+      { from: 'PO', to: '开发·B', count: 1 }
+    ],
+    decisions: [
+      { time: '14:08', text: '测试环境问题 → 分配专人跟进', verdict: '✅ 已决策', cls: 'yes' },
+      { time: '14:22', text: 'Code Review 流程优化', verdict: '✅ 已决策', cls: 'yes' },
+      { time: '14:35', text: '下个 Sprint 减少 20% 任务量', verdict: '✅ 已决策', cls: 'yes' }
+    ],
+    grade: 'B',
+    gradeLabel: '基本合格',
+    verdict: '发言分布相对均衡，会议按时在 45 分钟内结束，3 个 Action Item 都有明确负责人。可改进：8 人略多——开发 C 全程基本沉默，可以考虑是否真的需要参加。1 个话题被 3 人重复提起说明会前缺少信息同步。',
+    score: 68,
+    health: 72,
+    density: 60
+  },
+  {
+    id: 'brainstorm',
+    icon: '💡',
+    title: '头脑风暴会',
+    desc: '新功能创意 · 6人 · 90分钟',
+    speakers: [
+      { name: '运营·刘', pct: 35, color: 'bar-1' },
+      { name: '产品·周', pct: 30, color: 'bar-2' },
+      { name: '设计·吴', pct: 13, color: 'bar-3' },
+      { name: '开发·郑', pct: 8, color: 'bar-4' },
+      { name: '实习生·马', pct: 2, color: 'bar-2' },
+      { name: '市场·孙', pct: 12, color: 'bar-3' }
+    ],
+    loops: [
+      { topic: '"要不要做 AI 推荐"', times: 5, detail: '讨论了 5 轮，每次回到"竞品已经有了所以我们也得有"——没有技术可行性评估。' },
+      { topic: '"用户增长渠道"', times: 3, detail: '在"抖音投流"和"B站合作"之间反复横跳，缺少数据支撑。' }
+    ],
+    interruptions: [
+      { from: '运营·刘', to: '开发·郑', count: 4 },
+      { from: '产品·周', to: '实习生·马', count: 2 }
+    ],
+    decisions: [
+      { time: '15:10', text: '"下季度重点功能" → 无结论', verdict: '❌ 未决策', cls: 'no' },
+      { time: '15:45', text: '"是否做 AI 推荐" → 需调研', verdict: '❌ 未决策', cls: 'no' }
+    ],
+    grade: 'D',
+    gradeLabel: '急需改进',
+    verdict: '90 分钟头脑风暴，2 个核心问题没有一个形成结论。运营和产品主导了 65% 的发言，开发几乎全程静音（但技术可行性恰恰是最关键的）。核心问题是：没有事先定义"产出标准"——好创意的标准是什么？谁有最终裁决权？这些缺位让会议变成了漫无边际的聊天。',
+    score: 28,
+    health: 25,
+    density: 15
+  }
+];
+
+const bars = document.getElementById('samples');
+const reportDiv = document.getElementById('report');
+
+bars.innerHTML = meetings.map(m => `
+  <button class="sample-btn" data-id="${m.id}">
+    <div class="s-icon">${m.icon}</div>
+    <div class="s-title">${m.title}</div>
+    <div class="s-desc">${m.desc}</div>
+  </button>
+`).join('');
+
+bars.addEventListener('click', e => {
+  const btn = e.target.closest('.sample-btn');
+  if (!btn) return;
+  document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const id = btn.dataset.id;
+  const m = meetings.find(x => x.id === id);
+  render(m);
+});
+
+function render(m) {
+  const gradeColor = m.grade === 'D' ? 'var(--red)' : m.grade === 'C' ? '#e67e22' : m.grade === 'B' ? '#5f9ea0' : 'var(--green)';
+
+  reportDiv.innerHTML = `
+    <div class="verdict-box" style="margin-top:0;margin-bottom:20px;">
+      <div class="grade" style="color:${gradeColor}">${m.grade}</div>
+      <h3 style="text-align:center;">${m.gradeLabel}</h3>
+    </div>
+
+    <div class="score-row">
+      <div class="score-card"><div class="val val-${m.score < 40 ? 'c' : m.score < 60 ? 'b' : 'a'}">${m.score}</div><div class="label">综合评分</div></div>
+      <div class="score-card"><div class="val val-${m.health < 40 ? 'c' : m.health < 60 ? 'b' : 'a'}">${m.health}</div><div class="label">参与健康度</div></div>
+      <div class="score-card"><div class="val val-${m.density < 40 ? 'c' : m.density < 60 ? 'b' : 'a'}">${m.density}</div><div class="label">决策密度</div></div>
+    </div>
+
+    <div class="chart-section">
+      <h3>🗣️ 发言时间分布</h3>
+      <div class="speaker-bars">
+        ${m.speakers.map(s => `
+          <div class="speaker-row">
+            <span class="name">${s.name}</span>
+            <div class="bar-wrap"><div class="bar-fill ${s.color}" style="width:${s.pct}%"></div></div>
+            <span class="pct">${s.pct}%</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <h3>🔁 话题兜圈检测</h3>
+      ${m.loops.map(l => `
+        <div class="loop-card">
+          <span class="loop-icon">🔄</span>
+          <div class="loop-body">
+            <span class="loop-topic">${l.topic}</span> — 兜了 <span class="loop-times">${l.times} 圈</span><br>
+            ${l.detail}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="chart-section">
+      <h3>✋ 被打断记录</h3>
+      ${m.interruptions.map(i => `
+        <div class="interrupt-item">
+          <span class="from">${i.from}</span>
+          <span>打断了</span>
+          <span class="to">${i.to}</span>
+          <span class="cnt">${i.count} 次</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="chart-section">
+      <h3>✅ 决策时间线</h3>
+      <div class="decision-timeline">
+        ${m.decisions.map(d => `
+          <div class="decision-item ${d.cls}">
+            <span class="time">${d.time}</span>
+            <div class="verdict">${d.verdict}</div>
+            <div>${d.text}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="verdict-box">
+      <h3>📝 AI 点评</h3>
+      <p>${m.verdict}</p>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "meeting-autopsy": {
+        description: "你开了一场两小时的会，感觉被浪费了——但说不清浪费在哪。会议记录记下了每一句话，却没人告诉你这会是开得好还是烂。",
+        sections: [
+          { title: "🎯 场景", text: "远程办公时代，每天 3-5 场会。你感觉其中一半可以不开。但你拿不出数据——「感觉这会在浪费时间」说服不了任何人。最痛苦的是：你知道问题在哪（那个人又说了一个小时），但没法量化。" },
+          { title: "💡 方案", text: "上传会议转写文本 → AI 生成「会议质量报告」：发言时间分布、话题兜圈检测、被打断次数、决策密度评分、综合健康度。不是记录会议，是给会议做体检——告诉你哪里有病，为什么有病，下次怎么避免。" },
+          { title: "🔧 技术", text: "Demo 使用规则引擎模拟分析 3 种典型低效会议。真实产品：对接 Zoom/Teams/飞书转写 API → LLM 分析对话模式（发言分布、话题循环、打断统计、决策提取）→ 生成结构化诊断报告。可集成到企业 IM 做会后的自动化推送。" },
+          { title: "📈 为什么值得做", html: "全球每天数十亿小时花在会议上。McKinsey 研究：高管 50% 以上的会议时间被认为是低效的。Zoom 年营收 $4.5B 只解决了「能开会」，没人解决「会开得好不好」。这是会议 SaaS 生态的最后一个未被占领的环节——会后分析。入口轻，扩展路径清晰：周报→月报→部门会议效率排行→企业会议健康度大盘。" }
+        ],
+        demoUrl: "demo-meeting-autopsy/"
+      },
       "parent-translator": {
         description: "一通电话里，父母说「隔壁老王家孩子考上公务员了」，你听到的是「又在比」。他们真正想说的是：「我在担心你的未来」。",
         sections: [
@@ -221,11 +231,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
