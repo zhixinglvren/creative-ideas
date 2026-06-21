@@ -131,6 +131,16 @@
         ],
         demoUrl: "demo-personal-board/"
       },
+      "anti-guide": {
+        description: "你去了小红书收藏的「此生必去」——发现是一排 300 人排队的栈道。没人告诉你别去哪。整个旅行内容生态只推荐，不动退。",
+        sections: [
+          { title: "🎯 场景", text: "攒了五天年假，刷了两周攻略，到目的地发现：秘境全是人、小众餐厅菜单有 6 种语言、拍的照片和小红书一模一样。浪费时间不可怕——浪费年假才可怕。" },
+          { title: "💡 方案", text: "反向推荐引擎：输入城市 → 输出「别去」热门景点（带真实评论数据支撑）+「去这里」替代方案（距离近、体验好、人少）→ 告诉你省了多少时间。个性化：你不介意排队？不劝退。带父母？劝退爬山路线。" },
+          { title: "🔧 技术", text: "Demo 含厦门/杭州/成都/西安 4 城 12 组反攻略。真实产品爬取评论 → LLM 识别「期望-落差」模式 → 生成个性化劝退。不是有人骂就劝退——是普遍觉得不值才劝退。" },
+          { title: "📈 为什么值得做", html: "每个人都被网红景点坑过。「我去了 100 个小红书推荐的景点，73 个都不值」天然适合传播。商业模式：OTA 分销佣金 + 替代景点推荐 = 天然交易闭环。暑期出行高峰时间窗口。" }
+        ],
+        demoUrl: "demo-anti-guide/"
+      },
       "bubble-breaker": {
         description: "你每天刷到的内容都在强化你已有的观点。算法把你裹进越来越厚的信息茧房。你觉得自己在「获取信息」，实际上在「反复确认自己是对的」。",
         sections: [
@@ -181,11 +191,11 @@
     }
 
     function getIcon(id) {
-      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧'};
+      const m = {'parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器'};
+      const m = {'parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略'};
       return m[id] || id;
     }
 

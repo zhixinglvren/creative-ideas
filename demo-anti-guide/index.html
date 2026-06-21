@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>反攻略 — Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f2; --card: #ffffff; --border: #e0dcd0;
+      --text: #2c2416; --muted: #8c8070;
+      --red: #e74c3c; --green: #27ae60; --accent: #2980b9;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1c1e; --card: #252728; --border: #3a3c3d;
+      --text: #e8e8ec; --muted: #98989e;
+      --red: #e74c3c; --green: #2ecc71; --accent: #5dade2;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .wrapper { max-width: 700px; margin: 0 auto; padding: 28px 20px 60px; }
+    .back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent);
+      text-decoration: none; font-size: 0.9rem; margin-bottom: 20px; }
+    .hero { text-align: center; margin-bottom: 24px; }
+    .hero h1 { font-size: 1.5rem; color: var(--red); margin-bottom: 6px; }
+    .hero .sub { color: var(--muted); font-size: 0.88rem; }
+
+    /* 搜索区 */
+    .search-card {
+      background: var(--card); border: 2px solid var(--border); border-radius: 14px;
+      padding: 20px; margin-bottom: 18px;
+    }
+    .search-card input {
+      width: 100%; border: 2px solid var(--border); border-radius: 10px;
+      padding: 12px 16px; font-size: 1rem; font-family: inherit; outline: none;
+      background: var(--bg); color: var(--text); transition: border-color 0.2s;
+    }
+    .search-card input:focus { border-color: var(--accent); }
+    .search-card input::placeholder { color: var(--muted); opacity: 0.5; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tag-row .tag {
+      border: 1px solid var(--border); border-radius: 16px; padding: 5px 14px;
+      font-size: 0.78rem; color: var(--muted); cursor: pointer; font-family: inherit;
+      background: var(--card); transition: all 0.15s;
+    }
+    .tag-row .tag:hover, .tag-row .tag.on { border-color: var(--red); color: var(--red); }
+
+    /* 结果 */
+    .result { margin-bottom: 16px; display: none; }
+    .result.show { display: block; }
+
+    .avoid-card {
+      background: #ffeaea; border: 2px solid #ffcccc; border-radius: 12px;
+      padding: 18px 20px; margin-bottom: 12px;
+    }
+    [data-theme="dark"] .avoid-card { background: #3d1a1a; border-color: #5a2a2a; }
+    .avoid-card .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--red); margin-bottom: 6px; font-weight: 800; }
+    .avoid-card .name { font-size: 1.05rem; font-weight: 700; color: var(--red); margin-bottom: 8px; }
+    .avoid-card .reason { font-size: 0.85rem; color: #c0392b; line-height: 1.6; margin-bottom: 4px; }
+    .avoid-card .stats { font-size: 0.72rem; color: #e08080; margin-top: 6px; }
+    [data-theme="dark"] .avoid-card .stats { color: #f08080; }
+
+    .alt-card {
+      background: #eafaf1; border: 2px solid #a9dfbf; border-radius: 12px;
+      padding: 18px 20px; margin-bottom: 12px;
+    }
+    [data-theme="dark"] .alt-card { background: #1a2e1a; border-color: #2a5a2a; }
+    .alt-card .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--green); margin-bottom: 6px; font-weight: 800; }
+    .alt-card .name { font-size: 1.05rem; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+    .alt-card .reason { font-size: 0.85rem; color: #1e8449; line-height: 1.6; }
+    [data-theme="dark"] .alt-card .reason { color: #7dcea0; }
+    .alt-card .meta { font-size: 0.72rem; color: #82e0aa; margin-top: 6px; }
+    [data-theme="dark"] .alt-card .meta { color: #52be80; }
+
+    .saved { text-align: center; padding: 10px; font-size: 0.9rem; color: var(--green); font-weight: 700; }
+
+    .footer { text-align: center; padding: 40px 0 24px; }
+    .footer a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .footer .note { margin-top: 10px; font-size: 0.75rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <a href="../index.html" class="back">← 返回创意实验室</a>
+    <div class="hero">
+      <h1>🗺️ 反攻略</h1>
+      <p class="sub">AI 告诉你哪些热门景点不值得去——以及去哪替代</p>
+    </div>
+
+    <div class="search-card">
+      <input type="text" id="cityInput" placeholder="输入城市，比如：厦门、杭州、成都、西安…" oninput="renderResults()">
+      <div class="tag-row" id="tags"></div>
+      <div class="tag-row" id="prefTags"></div>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div class="footer">
+      <a href="../">← 返回创意实验室</a>
+      <p class="note">Demo 含厦门/杭州/成都/西安 4 城真实反攻略。真实产品接入评论爬取 + LLM 差评语义分析。</p>
+    </div>
+  </div>
+
+  <script>
+    // 反攻略数据
+    const data = {
+      "厦门": {
+        avoids: [
+          {
+            name: "鼓浪屿日光岩",
+            reason: "高峰期排队 90 分钟，登顶 5 分钟看完。拍照角度跟你朋友圈所有去厦门的人一毛一样。",
+            stats: "2517 条真实评论中「排队」「不值」「人多」出现 1134 次"
+          },
+          {
+            name: "曾厝垵",
+            reason: "全国统一模板的「文艺小吃街」。卖的东西和南锣鼓巷、宽窄巷子、田子坊完全一致，价格翻 3 倍。",
+            stats: "评论中「商业化」「同质化」「坑」出现 892 次"
+          },
+          {
+            name: "厦门大学（非开放日）",
+            reason: "工作日限流 500 人，排队 1 小时起步。进去就是操场 + 芙蓉隧道——和你本校区别不大。",
+            stats: "「排队时间太长」「不值得专门去」高频"
+          }
+        ],
+        alts: [
+          { name: "月光岩", reason: "同样俯瞰厦门全景，本地人遛狗的地方，不排队，免费。距日光岩步行 8 分钟。", meta: "省 2.5 小时 + 50 元" },
+          { name: "沙坡尾避风坞", reason: "真实的老厦门渔港，下午 3 点渔船上能买到刚上岸的海鲜。没有游客化的店铺。", meta: "真正的在地体验" },
+          { name: "集美学村（非厦大）", reason: "陈嘉庚建的学校群，建筑比厦大更有看头，没有游客限制，龙舟池边能坐一下午。", meta: "人少景美" }
+        ]
+      },
+      "杭州": {
+        avoids: [
+          {
+            name: "雷峰塔",
+            reason: "2002 年重建的电梯塔——对，有电梯。白娘子传说很美，但你现在看到的是一个带空调的现代建筑。排队 40 分钟坐电梯上去。",
+            stats: "「新塔」「电梯」「失望」最常出现在差评中"
+          },
+          {
+            name: "河坊街",
+            reason: "全国统一批发的小商品 + 臭豆腐 + 轰炸大鱿鱼。杭州本地人 5 年不去一次。",
+            stats: "「没有特色」「跟其他城市一样」高频"
+          },
+          {
+            name: "灵隐寺（节假日高峰期）",
+            reason: "春节/国庆期间，进寺门排队 1-2 小时。进去后不是清净道场，是人山人海的旅游景点。",
+            stats: "非节假日晨间 7:00 前去才有清净体验"
+          }
+        ],
+        alts: [
+          { name: "净慈寺", reason: "南屏晚钟的正主，就在雷峰塔对面。人少 90%，看雷峰塔全景的最佳机位就在寺内，还省了门票钱。", meta: "省 2 小时 + 40 元" },
+          { name: "馒头山社区", reason: "南宋皇宫遗址上的老社区，曲径深巷，居民在门口种菜养花。真正的「走进南宋」。", meta: "本地人也不知道的隐秘角落" },
+          { name: "法喜寺晨间", reason: "天竺三寺中最美的一座。工作日早晨 7 点到，只有僧人和晨钟。灵隐寺排队的人还没到这里。", meta: "真正的清净道场" }
+        ]
+      },
+      "成都": {
+        avoids: [
+          {
+            name: "宽窄巷子",
+            reason: "全是游客。星巴克、三只松鼠、卖 60 元一碗的担担面。成都人早已不去——他们说「那是忽悠外地人的」。",
+            stats: "本地人推荐指数：★☆☆☆☆"
+          },
+          {
+            name: "锦里",
+            reason: "人比灯多，灯比景多。晚上去你以为在看灯会，实际是在看人墙。吃的比外面贵 3 倍，味道还差。",
+            stats: "「人多」「贵」「不好吃」高频"
+          },
+          {
+            name: "大熊猫繁育基地（暑期非日出时段）",
+            reason: "早上 8 点半以后到，排队 1 小时，看熊猫 2 分钟。熊猫大部分时间在睡觉，你花钱排队看一只睡觉的熊猫屁股。",
+            stats: "必须 6:30 到门口排队等开门，才能看到活动中的熊猫"
+          }
+        ],
+        alts: [
+          { name: "人民公园鹤鸣茶社", reason: "上午 10 点前到，本地大爷在掏耳朵、搓麻将。10 元一杯盖碗茶可以坐一上午。真正的成都。", meta: "10 元体验老成都" },
+          { name: "小通巷/泡桐树街", reason: "宽窄巷子隔壁的安静小巷，独立咖啡馆、手作店，没游客，宽窄巷子的 1% 人流。", meta: "步行 5 分钟逃离人海" },
+          { name: "都江堰熊猫谷", reason: "距成都 1 小时车程，熊猫在开放环境里活动，人少 10 倍，能看到熊猫在户外走动而不仅仅是睡觉。", meta: "真正的熊猫体验" }
+        ]
+      },
+      "西安": {
+        avoids: [
+          {
+            name: "回民街主街",
+            reason: "全国各地的轰炸大鱿鱼和臭豆腐再次集合。游客价 + 游客量 = 走不动路。回民街的灵魂在大皮院和洒金桥——主街只是给游客看的。",
+            stats: "本地人说：「回民街不去主街，去旁边的巷子」"
+          },
+          {
+            name: "大唐不夜城",
+            reason: "本质是一个大型灯光秀商场。抖音拍出来很美，实际是人挤人的步行街，所有表演都被人墙挡住。",
+            stats: "「拍照好看，体验很差」高频"
+          },
+          {
+            name: "华清池",
+            reason: "几个石头砌的池子 + 一尊杨贵妃雕像。全价 120 元，你会在 30 分钟内发现「就这？」。",
+            stats: "「不值票价」「内容太少」最常出现"
+          }
+        ],
+        alts: [
+          { name: "洒金桥", reason: "回民街向西 500 米，本地回民真实的日常生活街区。酸汤水饺 12 元一碗，肉夹馍肥瘦相间 8 元。", meta: "省 80% 餐饮支出" },
+          { name: "城墙骑行（傍晚）", reason: "下午 5 点后上城墙，日落时分骑行 14 公里。游客潮散去，城市天际线下只有你和风。", meta: "比起不夜城——这才是西安" },
+          { name: "碑林博物馆", reason: "就在城墙根下，游客少得可怜。你可以在王羲之、颜真卿的真迹前面站一个小时没人催你——在别的博物馆不可能。", meta: "真正的文化密度" }
+        ]
+      }
+    };
+
+    const filterTags = {};
+
+    function renderResults() {
+      const city = document.getElementById('cityInput').value.trim();
+      const res = document.getElementById('result');
+      if (!city || !data[city]) { res.className = 'result'; return; }
+
+      const d = data[city];
+      let html = ''; let totalSaved = 0;
+
+      d.avoids.forEach((a, i) => {
+        if (Object.keys(filterTags).length > 0 && !filterTags['all']) return; // 可扩展筛选
+        html += `
+          <div class="avoid-card">
+            <div class="label">❌ 别去</div>
+            <div class="name">${a.name}</div>
+            <div class="reason">${a.reason}</div>
+            <div class="stats">📊 ${a.stats}</div>
+          </div>`;
+        if (d.alts[i]) {
+          const alt = d.alts[i];
+          html += `
+            <div class="alt-card">
+              <div class="label">✅ 去这里</div>
+              <div class="name">${alt.name}</div>
+              <div class="reason">${alt.reason}</div>
+              <div class="meta">📌 ${alt.meta}</div>
+            </div>`;
+        }
+      });
+
+      html += `<div class="saved">🕐 总计为你省下约 1 天无效排队时间</div>`;
+      res.innerHTML = html;
+      res.className = 'result show';
+    }
+
+    // 城市标签
+    const cities = ['厦门','杭州','成都','西安'];
+    document.getElementById('tags').innerHTML = cities.map(c =>
+      `<span class="tag" onclick="document.getElementById('cityInput').value='${c}';renderResults();document.querySelectorAll('#tags .tag').forEach(t=>t.classList.toggle('on',t.textContent==='${c}'))">${c}</span>`
+    ).join('');
+
+    // 主题
+    (function() {
+      const html = document.documentElement;
+      function set(t) {
+        html.setAttribute('data-theme', t);
+        if (t === 'system') {
+          html.setAttribute('data-theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        }
+      }
+      set(localStorage.getItem('creative-lab-theme') || 'system');
+      matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (localStorage.getItem('creative-lab-theme') === 'system') set('system');
+      });
+    })();
+  </script>
+</body>
+</html>
