@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沉没成本照妖镜 — Demo</title>
+<style>
+:root {
+  --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+  --text: #2c2416; --muted: #8c8070;
+  --accent: #e07a5f; --green: #2e8b57; --red: #c0392b;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+}
+.wrapper { max-width: 700px; margin: 0 auto; padding: 32px 20px 60px; }
+.back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent);
+  text-decoration: none; font-size: 0.9rem; margin-bottom: 24px; }
+.back:hover { text-decoration: underline; }
+header { text-align: center; margin-bottom: 32px; }
+header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+header .sub { color: var(--muted); font-size: 0.9rem; }
+
+/* 场景选择 */
+.scenes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.scene-btn {
+  flex: 1; min-width: 120px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 12px; cursor: pointer; text-align: center;
+  font-family: inherit; transition: all 0.15s;
+}
+.scene-btn:hover, .scene-btn.active { border-color: var(--accent); background: #e07a5f11; }
+.scene-btn .s-icon { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+.scene-btn .s-title { font-size: 0.82rem; font-weight: 700; }
+.scene-btn .s-desc { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 28px; margin-bottom: 20px;
+}
+.card h3 { font-size: 1rem; margin-bottom: 14px; color: var(--text); }
+
+/* 投入条目 */
+.input-row {
+  display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;
+}
+.input-row label {
+  width: 90px; font-size: 0.85rem; color: var(--muted); flex-shrink: 0;
+}
+.input-row input {
+  flex: 1; min-width: 80px; background: #faf7f2; border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; color: var(--text);
+  font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+.input-row input:focus { border-color: var(--accent); }
+.input-row .unit { font-size: 0.8rem; color: var(--muted); width: 30px; flex-shrink: 0; }
+
+.btn {
+  display: block; width: 100%; background: var(--accent); color: #fff; border: none;
+  border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: background 0.2s;
+}
+.btn:hover { background: #c96a50; }
+
+/* 结果 */
+.result { display: none; }
+.mirror {
+  text-align: center; padding: 20px; background: linear-gradient(135deg, #2c2416, #1a1a1a);
+  border-radius: var(--radius); margin-bottom: 20px; color: #e8e8ec;
+}
+.mirror .reflection {
+  font-size: 6rem; line-height: 1; margin-bottom: 8px;
+}
+.mirror .m-text {
+  font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;
+}
+.mirror .m-sub {
+  font-size: 0.82rem; color: #98989e;
+}
+
+.metrics { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.metric {
+  flex: 1; min-width: 110px; text-align: center; background: var(--card);
+  border: 1px solid var(--border); border-radius: 10px; padding: 18px 10px;
+}
+.metric .m-val { font-size: 1.6rem; font-weight: 800; }
+.metric .m-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+.m-red { color: var(--red); } .m-amber { color: #e67e22; } .m-green { color: var(--green); }
+
+.insight { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px 24px; margin-bottom: 14px; }
+.insight h3 { font-size: 0.9rem; margin-bottom: 6px; }
+.insight p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+.warning {
+  background: #fff3cd; border: 1px solid #ffc10744; border-radius: 10px;
+  padding: 16px 20px; margin-bottom: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.warning .w-icon { font-size: 1.3rem; flex-shrink: 0; }
+.warning .w-text { font-size: 0.85rem; line-height: 1.6; }
+.warning .w-text strong { color: var(--red); }
+
+.reset-link { text-align: center; margin-top: 20px; }
+.reset-link a { color: var(--accent); text-decoration: none; font-size: 0.85rem; cursor: pointer; }
+.reset-link a:hover { text-decoration: underline; }
+
+footer { text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 40px; }
+footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="../index.html" class="back">← 返回创意实验室</a>
+  <header>
+    <h1>🪞 沉没成本照妖镜</h1>
+    <p class="sub">选一个场景，看看你继续亏下去的真实代价</p>
+  </header>
+
+  <div class="scenes" id="scenes"></div>
+  <div id="main"></div>
+
+  <footer>
+    Demo · <a href="https://github.com/zhixinglvren/creative-ideas">zhixinglvren/creative-ideas</a>
+  </footer>
+</div>
+
+<script>
+const scenes = [
+  {
+    id: 'job', icon: '💼', title: '想离职的工作', desc: '投入 3 年，每天痛苦',
+    fields: [
+      { key: 'months', label: '已投入', unit: '个月', val: 36 },
+      { key: 'hoursPerDay', label: '日均耗时', unit: '小时', val: 9 },
+      { key: 'salary', label: '月薪折算', unit: '万/月', val: 2.5 },
+      { key: 'altOffer', label: '替代机会', unit: '万/月', val: 3.0 }
+    ],
+    analysis: {
+      totalHours: 36*22*9,
+      moneyLost: (3.0-2.5)*36,
+      verdict: '你已经在这个职位上投入了 3 年。按每天 9 小时算，你付出了 <strong>7,128 小时</strong>——这相当于 891 个工作日，或者 3.5 年标准工时。你拒绝了月薪高 5k 的机会，36 个月累计损失 <strong>18 万元</strong>。更可怕的是——每多待一个月，你又多亏 5k。',
+      trap: '「再熬一年就能升职」「现在走这三年就白费了」——这不是在坚持，是在用明天的筹码给昨天的亏损补仓。损失的三年不会因为你再亏一年就变回来。',
+      bias: '承诺升级 (Escalation of Commitment)'
+    }
+  },
+  {
+    id: 'project', icon: '🚧', title: '烂尾副项目', desc: '个人项目，越做越焦虑',
+    fields: [
+      { key: 'months', label: '已投入', unit: '个月', val: 8 },
+      { key: 'hoursPerWeek', label: '每周耗时', unit: '小时', val: 15 },
+      { key: 'cost', label: '已花费', unit: '万元', val: 1.2 },
+      { key: 'altProject', label: '替代项目估值', unit: '万元', val: 5 }
+    ],
+    analysis: {
+      totalHours: 8*4.3*15,
+      moneyLost: 5 - (1.2),
+      verdict: '你在这个项目上花了 8 个月，累计 <strong>516 小时</strong>，相当于 64 个完整工作日。每个周末和晚上都搭进去了。你放弃了一个估值 5 万的机会来做这件事。持续投入的不仅是时间——是你本可以用来探索更有价值方向的生命。',
+      trap: '「就差最后一步了」「已经做了 8 个月不能半途而废」——没有用户的副项目不存在「半途」，只存在「止损点」。你已经证明了你能坚持 8 个月，这本身就是资产，不需要继续证明。',
+      bias: '沉没成本谬误 (Sunk Cost Fallacy)'
+    }
+  },
+  {
+    id: 'relationship', icon: '💔', title: '消耗型关系', desc: '两年了，累比快乐多',
+    fields: [
+      { key: 'months', label: '已投入', unit: '个月', val: 24 },
+      { key: 'fightsPerWeek', label: '每周争执', unit: '次', val: 3 },
+      { key: 'happyRatio', label: '快乐占比', unit: '%', val: 30 },
+      { key: 'newChance', label: '新可能评分', unit: '/10', val: 7 }
+    ],
+    analysis: {
+      totalHours: 0,
+      moneyLost: 0,
+      verdict: '24 个月，每周 3 次争执——累计 <strong>约 288 次冲突</strong>。只有 30% 的时间你是真正快乐的。你在这段关系里的「回报率」是负数。一段关系不是靠「已经两年了」来维持的——是靠「明天还愿意醒来」来维持的。',
+      trap: '「都在一起两年了」「ta 会改的」「下一个不一定更好」——恐惧未知让你留在已知的痛苦里。你不离开不是因为对方值得，是因为你害怕承认这两年判断失误。',
+      bias: '损失厌恶 (Loss Aversion) + 维持现状偏差 (Status Quo Bias)'
+    }
+  }
+];
+
+const scenesDiv = document.getElementById('scenes');
+const main = document.getElementById('main');
+
+scenesDiv.innerHTML = scenes.map(s => `
+  <button class="scene-btn" data-id="${s.id}">
+    <span class="s-icon">${s.icon}</span>
+    <span class="s-title">${s.title}</span>
+    <span class="s-desc">${s.desc}</span>
+  </button>
+`).join('');
+
+let activeScene = null;
+
+scenesDiv.addEventListener('click', e => {
+  const btn = e.target.closest('.scene-btn');
+  if (!btn) return;
+  document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeScene = scenes.find(s => s.id === btn.dataset.id);
+  showForm();
+});
+
+function showForm() {
+  const s = activeScene;
+  main.innerHTML = `
+    <form id="calcForm" class="card">
+      <h3>📊 你的真实投入</h3>
+      ${s.fields.map(f => `
+        <div class="input-row">
+          <label>${f.label}</label>
+          <input type="number" id="f-${f.key}" value="${f.val}" step="0.1">
+          <span class="unit">${f.unit}</span>
+        </div>
+      `).join('')}
+      <button type="submit" class="btn">🔮 照一照</button>
+    </form>
+    <div class="result" id="result"></div>
+  `;
+
+  document.getElementById('calcForm').addEventListener('submit', e => {
+    e.preventDefault();
+    calculate();
+  });
+}
+
+function calculate() {
+  const s = activeScene;
+  const vals = {};
+  s.fields.forEach(f => {
+    vals[f.key] = parseFloat(document.getElementById('f-'+f.key).value) || 0;
+  });
+
+  const resultDiv = document.getElementById('result');
+  resultDiv.style.display = 'block';
+
+  // 计算投入
+  let totalHours = 0;
+  if (vals.months && vals.hoursPerDay) totalHours = vals.months * 22 * vals.hoursPerDay;
+  else if (vals.months && vals.hoursPerWeek) totalHours = vals.months * 4.3 * vals.hoursPerWeek;
+
+  const months = vals.months || 0;
+  const moneyDiff = (vals.altOffer || vals.altProject || 0) - (vals.salary || vals.cost || 0);
+  const moneyMonths = moneyDiff > 0 ? moneyDiff * Math.max(1, months) : moneyDiff;
+
+  const message = s.analysis.verdict
+    .replace('7,128', totalHours.toLocaleString())
+    .replace('516', totalHours.toLocaleString())
+    .replace('18 万元', ((vals.altOffer - vals.salary) * months).toFixed(0) + ' 万元')
+    .replace('3.5 年', (totalHours/(22*9)).toFixed(0) + ' 年');
+
+  const emoji = moneyDiff > 10 ? '😱' : moneyDiff > 3 ? '😰' : '😟';
+
+  resultDiv.innerHTML = `
+    <div class="mirror">
+      <div class="reflection">${emoji}</div>
+      <div class="m-text">你这面镜子不太好看</div>
+      <div class="m-sub">但至少你现在看清了</div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="m-val m-red">${totalHours.toLocaleString()}</div>
+        <div class="m-label">累计投入小时</div>
+      </div>
+      <div class="metric">
+        <div class="m-val m-red">${Math.abs(moneyDiff).toFixed(1)} 万/月</div>
+        <div class="m-label">机会成本</div>
+      </div>
+      <div class="metric">
+        <div class="m-val m-amber">${months}</div>
+        <div class="m-label">持续月数</div>
+      </div>
+    </div>
+
+    <div class="insight">
+      <h3>📝 真实代价</h3>
+      <p>${message}</p>
+    </div>
+
+    <div class="warning">
+      <span class="w-icon">⚠️</span>
+      <div class="w-text">
+        <strong>你正在犯的认知偏误：${s.analysis.bias}</strong><br>
+        ${s.analysis.trap}
+      </div>
+    </div>
+
+    <div class="insight">
+      <h3>🔮 如果现在止损</h3>
+      <p>你失去的不是「${months}个月的努力」——你失去的是一段已经结束的过去。你获得的是：从现在开始的每个月不再继续亏损。过去的${months}个月教会了你什么对自己重要，这不是浪费，是学费。</p>
+    </div>
+
+    <div class="reset-link">
+      <a onclick="resetForm()">↺ 换个场景再算</a>
+    </div>
+  `;
+
+  window.scrollTo({ top: resultDiv.offsetTop - 40, behavior: 'smooth' });
+}
+
+function resetForm() {
+  document.getElementById('result').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

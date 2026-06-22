@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "sunk-cost-mirror": {
+        description: "你在一个坑里待了两年。不是不想出来，是觉得已经待了两年现在出来太亏。你的大脑在骗你——它把「过去投入了什么」和「未来该做什么」混在一起了。",
+        sections: [
+          { title: "🎯 场景", text: "一份想离职的工作、一个越做越焦虑的副项目、一段快乐比争吵少的关系。你不是看不清，是「已经投入了这么多」让你不敢看清。沉没成本不是成本——经济学家 200 年前就说过了——但你的大脑不听。" },
+          { title: "💡 方案", text: "选场景 → 填入你的真实投入（时间、金钱、精力）→ AI 帮你算三笔账：你已经亏了多少、你每个月还在继续亏多少、你放弃的机会值多少。不给建议，只给数据——然后问你：看完这个，你还想继续吗？" },
+          { title: "🔧 技术", text: "Demo 覆盖 3 个高频沉没成本陷阱（工作/项目/关系），含结构化计算引擎 + 认知偏误检测。真实产品接入 LLM 做对话式诊断，识别用户盲区 + 个性化止损路径规划。" },
+          { title: "📈 为什么值得做", html: "行为经济学拿了 3 个诺贝尔奖证明了同一件事：人是非理性的。沉没成本谬误是人类认知最底层、最普遍、最昂贵的 bug。这不是「帮你做决定」的产品——是「让你别自我欺骗」的产品。从知识付费（决策课）到金融应用（止损提醒），变现路径多元。" }
+        ],
+        demoUrl: "demo-sunk-cost-mirror/"
+      },
       "meeting-autopsy": {
         description: "你开了一场两小时的会，感觉被浪费了——但说不清浪费在哪。会议记录记下了每一句话，却没人告诉你这会是开得好还是烂。",
         sections: [
@@ -231,11 +241,11 @@
     }
 
     function getIcon(id) {
-      const m = {'meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
