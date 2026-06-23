@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订阅刺客 — Demo</title>
+<style>
+:root {
+  --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+  --text: #2c2416; --muted: #8c8070;
+  --accent: #e07a5f; --green: #2e8b57; --red: #c0392b;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+}
+.wrapper { max-width: 640px; margin: 0 auto; padding: 32px 20px 60px; }
+.back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent);
+  text-decoration: none; font-size: 0.9rem; margin-bottom: 24px; }
+.back:hover { text-decoration: underline; }
+header { text-align: center; margin-bottom: 28px; }
+header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+header .sub { color: var(--muted); font-size: 0.9rem; }
+
+/* 问卷 */
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin-bottom: 18px;
+}
+.card h3 { font-size: 0.95rem; margin-bottom: 14px; }
+.choice-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px;
+  background: var(--bg); cursor: pointer; font-size: 0.82rem; font-family: inherit;
+  transition: all 0.15s; color: var(--text);
+}
+.chip:hover, .chip.sel { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.btn {
+  display: block; width: 100%; background: var(--accent); color: #fff; border: none;
+  border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; margin-top: 8px; transition: background 0.2s;
+}
+.btn:hover { background: #c96a50; }
+
+/* 结果 */
+.result { display: none; }
+.bill {
+  background: linear-gradient(135deg, #2c2416, #1a1a1a); color: #e8e8ec;
+  border-radius: var(--radius); padding: 28px 24px; margin-bottom: 20px; text-align: center;
+}
+.bill .b-total { font-size: 3rem; font-weight: 800; color: var(--red); margin-bottom: 6px; }
+.bill .b-label { font-size: 0.85rem; color: #98989e; }
+
+.leak-list { margin-bottom: 20px; }
+.leak-item {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px;
+}
+.leak-item .l-icon { font-size: 1.6rem; flex-shrink: 0; }
+.leak-item .l-info { flex: 1; }
+.leak-item .l-name { font-weight: 700; font-size: 0.9rem; }
+.leak-item .l-detail { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.leak-item .l-cost { font-weight: 700; color: var(--red); font-size: 0.9rem; text-align: right; white-space: nowrap; }
+
+.verdict-box {
+  background: #fff3cd; border: 1px solid #ffc10744; border-radius: 10px;
+  padding: 16px 20px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px;
+}
+.verdict-box .v-icon { font-size: 1.2rem; flex-shrink: 0; }
+.verdict-box .v-text { font-size: 0.85rem; line-height: 1.7; }
+
+.reset-link { text-align: center; margin-top: 16px; }
+.reset-link a { color: var(--accent); text-decoration: none; font-size: 0.85rem; cursor: pointer; }
+.reset-link a:hover { text-decoration: underline; }
+
+footer { text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 36px; }
+footer a { color: var(--accent); text-decoration: none; }
+
+.progress-bar {
+  height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 20px; overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="../index.html" class="back">← 返回创意实验室</a>
+  <header>
+    <h1>🗡️ 订阅刺客</h1>
+    <p class="sub">回答 5 个问题，看看你钱包漏了多少</p>
+  </header>
+
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+  <div id="survey"></div>
+  <div class="result" id="result"></div>
+
+  <footer>
+    Demo · <a href="https://github.com/zhixinglvren/creative-ideas">zhixinglvren/creative-ideas</a>
+  </footer>
+</div>
+
+<script>
+// 5 大类别的订阅刺客
+const categories = {
+  streaming: { icon:'📺', items:[
+    { name:'爱奇艺/优酷/腾讯视频', monthly:25 },
+    { name:'Netflix', monthly:70 },
+    { name:'B站大会员', monthly:15 },
+    { name:'Spotify / QQ音乐', monthly:12 },
+    { name:'Disney+', monthly:60 }
+  ]},
+  cloud: { icon:'☁️', items:[
+    { name:'iCloud 扩容', monthly:6 },
+    { name:'百度网盘 SVIP', monthly:30 },
+    { name:'Google One', monthly:15 },
+    { name:'Dropbox / 坚果云', monthly:20 },
+    { name:'Notion / 语雀会员', monthly:12 }
+  ]},
+  apps: { icon:'📱', items:[
+    { name:'付费 App 订阅（日记/记账/番茄钟）', monthly:18 },
+    { name:'VPN', monthly:25 },
+    { name:'Canva / Figma', monthly:40 },
+    { name:'Grammarly / 写作工具', monthly:30 },
+    { name:'专业软件许可（Adobe等）', monthly:55 }
+  ]},
+  health: { icon:'💪', items:[
+    { name:'健身房月卡', monthly:200 },
+    { name:'Keep / 健身 App', monthly:25 },
+    { name:'冥想 App', monthly:15 }
+  ]},
+  knowledge: { icon:'📚', items:[
+    { name:'得到 / 樊登读书', monthly:22 },
+    { name:'知乎盐选', monthly:19 },
+    { name:'Medium / Substack', monthly:30 },
+    { name:'极客时间 / 慕课网', monthly:35 }
+  ]}
+};
+
+const questions = [
+  { q:'📺 你平时看视频/听音乐用哪些？', key:'streaming', type:'multi', opts:['国内视频平台','Netflix/Disney+','B站','音乐流媒体','都不用'] },
+  { q:'☁️ 你用云存储/在线文档吗？', key:'cloud', type:'multi', opts:['iCloud','百度网盘','Google云盘','笔记类（Notion等）','都不用'] },
+  { q:'📱 你手机上有付费 App 吗？', key:'apps', type:'multi', opts:['效率/日记类','VPN','设计/写作工具','专业软件','很少付费App'] },
+  { q:'💪 你在健身/健康上有花钱吗？', key:'health', type:'multi', opts:['健身房年/月卡','健身App','冥想/睡眠App','没有'] },
+  { q:'📚 你在知识付费上订阅了什么？', key:'knowledge', type:'multi', opts:['读书/听书会员','知乎/社区会员','海外内容（Medium等）','在线课程','没有'] }
+];
+
+let answers = {}; let step = 0;
+
+renderStep();
+
+function renderStep() {
+  const q = questions[step];
+  let html = `<div class="card"><h3>问题 ${step+1}/${questions.length} · ${q.q}</h3><div class="choice-row">`;
+  q.opts.forEach((opt, i) => {
+    const sel = answers[q.key] && answers[q.key].includes(i);
+    html += `<button class="chip${sel?' sel':''}" data-idx="${i}">${opt}</button>`;
+  });
+  html += `</div></div>`;
+  if (step === questions.length - 1) {
+    html += '<button class="btn" id="submitBtn">🔪 开始扫描</button>';
+  } else {
+    html += '<button class="btn" id="nextBtn">下一步 →</button>';
+  }
+  document.getElementById('survey').innerHTML = html;
+  document.getElementById('progress').style.width = `${(step/questions.length)*100}%`;
+
+  document.querySelectorAll('.chip').forEach(c => {
+    c.onclick = () => {
+      const idx = parseInt(c.dataset.idx);
+      if (!answers[q.key]) answers[q.key] = [];
+      const arr = answers[q.key];
+      const pos = arr.indexOf(idx);
+      if (pos > -1) arr.splice(pos,1); else arr.push(idx);
+      c.classList.toggle('sel');
+    };
+  });
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (nextBtn) nextBtn.onclick = () => { step++; renderStep(); };
+
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.onclick = scan;
+}
+
+function scan() {
+  // 根据回答生成泄漏清单
+  const leaks = [];
+  questions.forEach((q, qi) => {
+    const ans = answers[q.key] || [];
+    const cat = categories[q.key];
+    // 根据选择映射到具体项目
+    ans.forEach(idx => {
+      const items = cat.items;
+      if (idx < items.length) {
+        // 随机决定是否"遗忘"（让结果更有趣）
+        if (Math.random() < 0.6 + idx * 0.08) {
+          const item = items[idx];
+          const months = Math.floor(Math.random() * 12) + 3;
+          const lastUsed = Math.floor(Math.random() * months) + 1;
+          leaks.push({
+            icon: cat.icon,
+            name: item.name,
+            monthly: item.monthly,
+            months,
+            lastUsed,
+            detail: `${months} 个月前开始订阅，最近 ${lastUsed} 个月没用过`
+          });
+        }
+      }
+    });
+  });
+
+  // 确保至少有一些结果
+  if (leaks.length < 2) {
+    // 注入一些通用泄漏
+    const spares = [
+      { icon:'📺', name:'某视频会员（上个剧追完就忘取消了）', monthly:25, months:6, lastUsed:4, detail:'6 个月前订阅，4 个月没打开过' },
+      { icon:'☁️', name:'iCloud 50GB（照片其实只有 15GB）', monthly:6, months:12, lastUsed:12, detail:'从没用超过 15GB，但付了一年' },
+    ];
+    spares.forEach(s => leaks.push(s));
+  }
+
+  const totalAnnual = leaks.reduce((s, l) => s + l.monthly * 12, 0);
+  const totalMonthly = leaks.reduce((s, l) => s + l.monthly, 0);
+
+  document.getElementById('survey').style.display = 'none';
+  document.querySelector('.progress-bar').style.display = 'none';
+  const result = document.getElementById('result');
+  result.style.display = 'block';
+
+  const emoji = totalAnnual > 3000 ? '🩸' : totalAnnual > 1000 ? '😰' : '🤔';
+
+  result.innerHTML = `
+    <div class="bill">
+      <div class="b-label">你每年的沉默支出约</div>
+      <div class="b-total">¥${totalAnnual.toLocaleString()}</div>
+      <div class="b-label">每月 ¥${totalMonthly} · 发现了 ${leaks.length} 个漏洞</div>
+    </div>
+
+    <div class="leak-list">
+      ${leaks.map(l => `
+        <div class="leak-item">
+          <span class="l-icon">${l.icon}</span>
+          <div class="l-info">
+            <div class="l-name">${l.name}</div>
+            <div class="l-detail">${l.detail}</div>
+          </div>
+          <div class="l-cost">¥${l.monthly*12}/年</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="verdict-box">
+      <span class="v-icon">${emoji}</span>
+      <div class="v-text">
+        如果现在花 <strong>10 分钟</strong> 去 App Store / 微信支付 / 支付宝 里把这些取消掉，你每年多出 <strong>¥${totalAnnual.toLocaleString()}</strong>。这不是省钱，是止血。
+      </div>
+    </div>
+
+    <div class="reset-link">
+      <a onclick="location.reload()">↺ 重新扫描</a>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

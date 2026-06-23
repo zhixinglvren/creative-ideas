@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "subscription-assassin": {
+        description: "你记不记得 8 个月前那个免费试用？它早就不免费了——而你刚刚又付了一个月。你不是不在乎钱，你是忘了钱在流走。",
+        sections: [
+          { title: "🎯 场景", text: "App Store 订阅、视频会员、云存储、SaaS 工具、健身房年卡——你签的时候觉得「一个月才几十块」，但你忘了取消。一个不可怕，可怕的是你同时有 5 个。每年几千块就这么沉默地流走了。" },
+          { title: "💡 方案", text: "回答几个关于你生活习惯的问题 → AI 扫描你可能遗忘的订阅类型 → 估算每项月费 + 你已持续支付多久 → 算出年度沉默支出总额。不是替你取消——是让你看清楚账单上那些你不再看但还在付的东西。" },
+          { title: "🔧 技术", text: "Demo 用问卷式规则引擎模拟订阅扫描（流媒体/云存储/App订阅/健身/知识付费 5 大类别）。真实产品：对接银行账单 OCR → 自动识别周期性扣款 → 标记「最近 N 天未使用」的订阅 → 生成一键取消指引。" },
+          { title: "📈 为什么值得做", html: "2025 年全球订阅经济规模超 $1.5 万亿，平均每人有 4.5 个付费订阅，其中 30% 是「僵尸订阅」（不再使用但仍付费）。这是一个反订阅疲劳的产品——不让你订更多，而是帮你清理。模式清晰：免费扫描 + 付费自动追踪/提醒。" }
+        ],
+        demoUrl: "demo-subscription-assassin/"
+      },
       "sunk-cost-mirror": {
         description: "你在一个坑里待了两年。不是不想出来，是觉得已经待了两年现在出来太亏。你的大脑在骗你——它把「过去投入了什么」和「未来该做什么」混在一起了。",
         sections: [
@@ -241,11 +251,11 @@
     }
 
     function getIcon(id) {
-      const m = {'sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
