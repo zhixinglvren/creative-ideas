@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "pet-price-guide",
+      "icon": "🐾",
+      "title": "宠物医疗价格指南",
+      "tagline": "宠物看病不花冤枉钱——同城同病，价格透明",
+      "status": "live",
+      "category": "宠物经济"
+    },
+    {
       "id": "second-opinion",
       "icon": "🩺",
       "title": "就医第二意见",

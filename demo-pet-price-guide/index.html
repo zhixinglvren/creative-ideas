@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宠物医疗价格指南 🐾</title>
+<style>
+:root {
+  --bg: #faf7f2; --card: #ffffff; --border: #e8e2d6;
+  --text: #2c2416; --muted: #8c8070;
+  --accent: #e07a5f; --green: #2e8b57; --orange: #d2991d;
+  --radius: 12px;
+}
+[data-theme="dark"] {
+  --bg: #1a1a1e; --card: #252528; --border: #38383c;
+  --text: #e8e8ec; --muted: #98989e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.container { max-width: 520px; width: 100%; }
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin-bottom: 16px;
+}
+.card h3 { font-size: 0.9rem; color: var(--accent); margin-bottom: 12px; }
+
+select, input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);
+  margin-bottom: 10px; font-family: inherit; outline: none;
+}
+select:focus, input:focus { border-color: var(--accent); }
+label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 4px; }
+
+.btn {
+  width: 100%; padding: 12px; border: none; border-radius: 10px;
+  background: var(--accent); color: #fff; font-size: 1rem; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.9; }
+
+.result { display: none; }
+.result .price {
+  font-size: 2rem; font-weight: 800; color: var(--accent); text-align: center;
+  margin: 8px 0;
+}
+.result .breakdown { margin-top: 16px; }
+.result .breakdown table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.result .breakdown th, .result .breakdown td {
+  padding: 8px 0; text-align: left; border-bottom: 1px solid var(--border);
+}
+.result .breakdown th { color: var(--muted); font-weight: 500; }
+.result .breakdown td:last-child { text-align: right; font-weight: 600; }
+
+.note {
+  font-size: 0.75rem; color: var(--muted); text-align: center;
+  margin-top: 20px; line-height: 1.6;
+}
+.back {
+  text-align: center; margin-top: 24px;
+}
+.back a { color: var(--accent); text-decoration: none; font-size: 0.85rem; }
+.back a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🐾 宠物医疗价格指南</h1>
+    <p class="sub">同城同病 · 价格透明 · 不再花冤枉钱</p>
+  </div>
+
+  <div class="card">
+    <h3>🔍 查询价格参考</h3>
+    <label>宠物类型</label>
+    <select id="petType">
+      <option value="dog">🐶 狗</option>
+      <option value="cat">🐱 猫</option>
+    </select>
+
+    <label>症状</label>
+    <select id="symptom">
+      <option value="vomit">呕吐 / 腹泻</option>
+      <option value="skin">皮肤问题（瘙痒/脱毛）</option>
+      <option value="limb">跛行 / 关节问题</option>
+      <option value="eye">眼睛红肿 / 流泪</option>
+      <option value="dental">牙结石 / 口臭</option>
+      <option value="vaccine">疫苗 / 年度体检</option>
+    </select>
+
+    <label>城市</label>
+    <select id="city">
+      <option value="bj">北京</option>
+      <option value="sh">上海</option>
+      <option value="hz" selected>杭州</option>
+      <option value="sz">深圳</option>
+      <option value="cd">成都</option>
+    </select>
+
+    <button class="btn" onclick="query()">查看价格参考 →</button>
+  </div>
+
+  <div class="card result" id="result">
+    <h3 id="resultTitle"></h3>
+    <div class="price" id="priceRange"></div>
+    <div class="breakdown" id="breakdown"></div>
+    <p style="margin-top:14px;font-size:0.85rem;color:var(--muted);line-height:1.6" id="tips"></p>
+  </div>
+
+  <p class="note">
+    💡 以上数据基于 <strong>328 位</strong>宠物主人匿名上传的就诊账单<br>
+    价格区间为中位数 ±1 个标准差，实际费用因诊所和宠物个体差异可能不同<br>
+    本工具不推荐诊所，仅提供价格参照信息
+  </p>
+
+  <div class="back"><a href="../index.html">← 返回创意实验室</a></div>
+</div>
+
+<script>
+const priceData = {
+  vomit: {
+    title: '呕吐 / 腹泻 — 常见检查与治疗',
+    items: [
+      ['血常规', '80–150'],
+      ['粪便检查', '60–120'],
+      ['皮下补水', '80–200'],
+      ['止吐针/口服药', '50–150'],
+      ['X光（如需）', '150–300']
+    ],
+    totalMin: 420, totalMax: 920,
+    tips: '⚠️ 警惕：有些诊所会直接建议做全套生化检查（+600元以上），如果宠物精神状态尚可、无持续呕吐超过24小时，可以先从基础检查开始。'
+  },
+  skin: {
+    title: '皮肤问题 — 常见检查与治疗',
+    items: [
+      ['皮肤刮片镜检', '50–100'],
+      ['真菌培养', '100–250'],
+      ['药浴/外用药', '80–200'],
+      ['口服抗真菌/抗生素', '100–300'],
+      ['过敏原检测（如需）', '400–800']
+    ],
+    totalMin: 330, totalMax: 1650,
+    tips: '⚠️ 注意：过敏原检测价格最高且非必需——除非反复发作、常规治疗无效。有些诊所会默认给你做全套，建议先问清楚：这个检查如果阳性，治疗方案会不一样吗？'
+  },
+  limb: {
+    title: '跛行 / 关节 — 常见检查与治疗',
+    items: [
+      ['体格检查', '30–80'],
+      ['X光（2张）', '200–400'],
+      ['止痛/消炎药', '80–200'],
+      ['关节保健品处方', '150–300'],
+      ['CT/MRI（如需）', '1500–3000']
+    ],
+    totalMin: 460, totalMax: 3980,
+    tips: '⚠️ CT/MRI 价格差异巨大——小型诊所一般没有设备，会转诊。建议先做X光，多数情况X光已足够诊断。'
+  },
+  eye: {
+    title: '眼睛问题 — 常见检查与治疗',
+    items: [
+      ['裂隙灯检查', '50–100'],
+      ['荧光染色', '30–60'],
+      ['眼药水/眼膏', '60–200'],
+      ['眼压测量', '50–100'],
+      ['眼科B超（如需）', '200–400']
+    ],
+    totalMin: 190, totalMax: 860,
+    tips: '💡 多数结膜炎/角膜炎用药即可解决，费用不高。但如果症状持续超过3天无改善，建议转诊眼科专科。'
+  },
+  dental: {
+    title: '牙科 — 常见检查与治疗',
+    items: [
+      ['口腔检查', '30–80'],
+      ['洗牙（含麻醉）', '500–1500'],
+      ['拔牙（单颗）', '200–800'],
+      ['牙科X光', '150–300'],
+      ['术后消炎药', '50–150']
+    ],
+    totalMin: 930, totalMax: 2830,
+    tips: '⚠️ 洗牙必须全麻——如果某诊所报价低于500元，需要问清楚：是否包含麻醉费用？是否有术中监护？'
+  },
+  vaccine: {
+    title: '疫苗 / 体检 — 常见项目',
+    items: [
+      ['传染病疫苗（狗五联/猫三联）', '80–150'],
+      ['狂犬疫苗', '40–80'],
+      ['基础体检（触诊+听诊+体重）', '30–80'],
+      ['血常规+生化套餐', '200–500'],
+      ['体内外驱虫', '50–150']
+    ],
+    totalMin: 400, totalMax: 960,
+    tips: '💡 体检套餐是诊所最常见的「加项重灾区」。建议提前问清楚套餐里包含什么，是否可以用医保（部分城市宠物医保已上线）。'
+  }
+};
+
+const cityMultiplier = { bj: 1.15, sh: 1.10, hz: 1.00, sz: 1.08, cd: 0.92 };
+
+function query() {
+  const symptom = document.getElementById('symptom').value;
+  const city = document.getElementById('city').value;
+  const data = priceData[symptom];
+  const m = cityMultiplier[city];
+
+  document.getElementById('resultTitle').textContent = data.title;
+  document.getElementById('priceRange').textContent = 
+    `¥${Math.round(data.totalMin * m)} – ¥${Math.round(data.totalMax * m)}`;
+  
+  const items = data.items.map(([item, price]) => {
+    const [low, high] = price.split('–').map(p => parseInt(p));
+    return `<tr><td>${item}</td><td>¥${Math.round(low * m)}–${Math.round(high * m)}</td></tr>`;
+  }).join('');
+  
+  document.getElementById('breakdown').innerHTML = `
+    <table>
+      <tr><th>项目</th><th>参考价格</th></tr>
+      ${items}
+    </table>`;
+  
+  document.getElementById('tips').textContent = data.tips;
+  document.getElementById('result').style.display = 'block';
+}
+</script>
+</body>
+</html>

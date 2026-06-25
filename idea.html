@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "pet-price-guide": {
+        description: "你的毛孩子吐了，你抱着它冲进最近的一家宠物医院。医生说「抽血+拍片+挂水，2000块」。你不知道贵不贵——但你的狗很难受，你没法货比三家。宠物医疗的价格，是人医疗之外最大的信息黑洞。",
+        sections: [
+          { title: "🎯 场景", text: "中国宠物数量超过 1.2 亿只，宠物医疗市场近 700 亿，年增 20% 以上。但价格完全黑箱——同样的血常规检查，不同诊所差价 3-5 倍。宠物主人在「毛孩子难受 + 价格不透明」的双重焦虑下，基本是医院说多少就付多少。人看病有医保定价目录，宠物看病什么都没有——这是一个每年数百亿规模的定价真空。" },
+          { title: "💡 方案", text: "众包型宠物医疗价格指南。宠物主人匿名上传就诊账单（症状+检查项目+花费+城市）→ AI 整理同城同病种的「价格参考区间」→ 输入症状和城市，立刻看到「在你所在区域，处理这个症状通常花费 ¥X-Y，标准检查流程包括 A/B/C」。不是推荐诊所，不是挂号平台——纯粹是让宠物主人在走进诊所前有一个心理价位。就像买车前看汽车之家报价，看病前看宠物价格指南。" },
+          { title: "💰 商业模式", text: "C 端免费查询（核心流量入口）。B 端变现：（1）宠物保险公司的精准定价数据服务——知道同城同类治疗的实际成本分布；（2）优质诊所认证——愿意公开合理定价的诊所获得流量倾斜和「价格透明认证」标签。不是广告位，是信任背书。" },
+          { title: "🛡️ 壁垒", html: "<b>数据网络效应</b>：上传的账单越多，价格区间越准，吸引的用户越多——典型的多边网络效应，后来者追赶成本极高。<br><b>社区信任</b>：宠物主人对「被宰」的愤怒是极强的社区驱动力，小红书/B站上宠物看病踩坑帖子常年火爆。<br><b>时机</b>：宠物经济爆发期，90/95 后宠物主占比超 50%，将宠物视为家庭成员，付费意愿强但对信息不对等容忍度极低。" }
+        ],
+        demoUrl: "demo-pet-price-guide/"
+      },
       "second-opinion": {
         description: "你刚被诊断出需要手术，医生说「尽快安排」。你慌了——真的非做不可吗？有没有更好的方案？在中国，跨院找顶级专家复核诊断几乎不可能，除非你有关系。这个产品就是解决这个信息黑洞。",
         sections: [
@@ -271,11 +281,11 @@
     }
 
     function getIcon(id) {
-      const m = {'second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
