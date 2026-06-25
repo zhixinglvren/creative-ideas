@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "deadline-oracle",
+      "icon": "🔮",
+      "title": "截止日预言家",
+      "tagline": "AI 预测你真正会拖到什么时候",
+      "status": "live",
+      "category": "个人效率"
+    },
+    {
       "id": "subscription-assassin",
       "icon": "🗡️",
       "title": "订阅刺客",

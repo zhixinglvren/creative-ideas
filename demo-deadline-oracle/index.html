@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>截止日预言家 🔮</title>
+<style>
+:root {
+  --bg: #1a1a2e; --card: #16213e; --border: #0f3460;
+  --text: #e8e8ec; --muted: #7b8aa2; --accent: #e94560;
+  --accent2: #0f3460; --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 36px; max-width: 520px; width: 100%; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+}
+h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted);
+  margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.form-group input, .form-group select {
+  width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; font-size: 0.95rem; color: var(--text); outline: none;
+  font-family: inherit; transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+.slider-row { display: flex; align-items: center; gap: 12px; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.slider-row .val { font-size: 0.95rem; font-weight: 700; min-width: 30px; text-align: right; }
+
+.predict-btn {
+  width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px;
+  padding: 14px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 6px;
+  font-family: inherit; transition: background 0.2s;
+}
+.predict-btn:hover { background: #d3354c; }
+
+.result { display: none; margin-top: 24px; }
+.result.show { display: block; }
+
+.compare-box {
+  display: flex; gap: 14px; margin-bottom: 18px;
+}
+.compare-half {
+  flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px; text-align: center;
+}
+.compare-half .label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+.compare-half .date { font-size: 1.3rem; font-weight: 700; }
+.compare-half.planned .date { color: #4ecca3; }
+.compare-half.predicted .date { color: var(--accent); }
+
+.insight-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
+}
+.insight-box h3 { font-size: 0.85rem; color: var(--accent); margin-bottom: 8px; }
+.insight-box p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+.insight-box .gap {
+  font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-top: 8px;
+}
+
+.home-link {
+  display: block; text-align: center; margin-top: 28px; color: var(--muted);
+  font-size: 0.8rem; text-decoration: none;
+}
+.home-link:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔮 截止日预言家</h1>
+  <p class="sub">按你的拖延习惯，预测真实完成时间</p>
+
+  <div class="form-group">
+    <label>📋 任务名称</label>
+    <input type="text" id="taskName" placeholder="比如：Q3 OKR 汇报 PPT" value="">
+  </div>
+
+  <div class="form-group">
+    <label>📅 截止日期</label>
+    <input type="date" id="deadline" value="">
+  </div>
+
+  <div class="form-group">
+    <label>⏱️ 预估需要多少小时</label>
+    <input type="number" id="effort" placeholder="比如：8" min="0.5" step="0.5" value="8">
+  </div>
+
+  <div class="form-group">
+    <label>📂 任务类型</label>
+    <select id="taskType">
+      <option value="creative">🎨 创意类（写方案/设计/写作）</option>
+      <option value="coding">💻 开发类（写代码/调试）</option>
+      <option value="admin">📋 事务类（填表/报销/审批）</option>
+      <option value="writing">✍️ 文档类（报告/邮件/周报）</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>🦥 你的拖延倾向</label>
+    <div class="slider-row">
+      <span style="font-size:0.75rem;color:var(--muted)">轻微</span>
+      <input type="range" id="procrastination" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value">
+      <span class="val">5</span>
+      <span style="font-size:0.75rem;color:var(--muted)">严重</span>
+    </div>
+  </div>
+
+  <button class="predict-btn" onclick="predict()">🔮 预言我的完成日</button>
+
+  <div class="result" id="result">
+    <div class="compare-box">
+      <div class="compare-half planned">
+        <div class="label">📅 计划完成</div>
+        <div class="date" id="plannedDate">—</div>
+      </div>
+      <div class="compare-half predicted">
+        <div class="label">🔮 预测完成</div>
+        <div class="date" id="predictedDate">—</div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <h3>📊 拖延分析</h3>
+      <p id="analysis"></p>
+      <p class="gap" id="gapText"></p>
+    </div>
+  </div>
+
+  <a href="../index.html" class="home-link">← 返回创意实验室</a>
+</div>
+
+<script>
+// 设置默认日期为 7 天后
+const d = new Date();
+d.setDate(d.getDate() + 7);
+document.getElementById('deadline').value = d.toISOString().split('T')[0];
+
+function predict() {
+  const name = document.getElementById('taskName').value || '未命名任务';
+  const deadline = new Date(document.getElementById('deadline').value);
+  const effort = parseFloat(document.getElementById('effort').value) || 8;
+  const taskType = document.getElementById('taskType').value;
+  const procrastLvl = parseInt(document.getElementById('procrastination').value);
+
+  // 每种任务类型的拖延系数
+  const typeDelay = {
+    creative: 2.1,
+    coding: 1.5,
+    admin: 3.0,
+    writing: 1.8
+  };
+
+  // 拖延等级 → 乘数
+  const procrastMultiplier = 0.4 + (procrastLvl * 0.18);
+
+  // 天数差
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysUntilDeadline = Math.max(1, Math.ceil((deadline - today) / (1000 * 60 * 60 * 24)));
+
+  // 核心算法：实际天数 = 任务所需天数 × 任务类型延迟系数 × 拖延乘数
+  const effortDays = Math.ceil(effort / 6); // 每天 6 有效小时
+  const predictedDays = Math.round(effortDays * typeDelay[taskType] * procrastMultiplier);
+
+  const predictedDate = new Date(today);
+  predictedDate.setDate(predictedDate.getDate() + predictedDays);
+
+  const fmt = d => `${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+
+  document.getElementById('plannedDate').textContent = fmt(deadline);
+  document.getElementById('predictedDate').textContent = fmt(predictedDate);
+
+  const gap = predictedDays - daysUntilDeadline;
+  let analysis = '';
+  let gapText = '';
+
+  if (gap <= 0) {
+    analysis = `🟢 「${name}」预测在截止日前 <strong>${Math.abs(gap)}</strong> 天完成。你说不定这次真的能行——或者你低估了工作量。`;
+    gapText = `提前 ${Math.abs(gap)} 天 ✅`;
+  } else if (gap <= 3) {
+    analysis = `🟡 「${name}」预测会比截止日晚 <strong>${gap}</strong> 天。最后一晚通宵能赶上的级别——但你已经连续这么干好几次了。${taskType === 'admin' ? '事务类任务是拖延症重灾区，因为"不重要所以不急"。' : ''}`;
+    gapText = `延迟 ${gap} 天 ⚠️`;
+  } else if (gap <= 7) {
+    analysis = `🟠 「${name}」预测比截止日晚 <strong>${gap}</strong> 天。这是需要提前两周开始但你打算下周才动手的经典模式。${taskType === 'creative' ? '创意类任务拖延成本极高——灵感不会因为你 deadline 到了就出现。' : ''}`;
+    gapText = `延迟 ${gap} 天 🔶`;
+  } else {
+    analysis = `🔴 「${name}」预测比截止日晚 <strong>${gap}</strong> 天。${procrastLvl >= 7 ? '拖延等级拉满，' : ''}按历史模式，你会在截止日前三天才开始恐慌，然后后悔为什么没早点动手。这不是预测，这是历史重演。`;
+    gapText = `延迟 ${gap} 天 🔴`;
+  }
+
+  document.getElementById('analysis').innerHTML = analysis;
+  document.getElementById('gapText').textContent = gapText;
+  document.getElementById('result').classList.add('show');
+}
+
+// 回车触发预测
+document.addEventListener('keydown', e => { if (e.key === 'Enter') predict(); });
+</script>
+</body>
+</html>

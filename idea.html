@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "deadline-oracle": {
+        description: "你计划周五写完报告——结果周一凌晨还在改。不是你不努力，是你的大脑对「还需要多久」有系统性认知偏差。这个工具不帮你计划，它预测你会拖到什么时候——在你写下计划的那一秒，就直接告诉你真相。",
+        sections: [
+          { title: "🎯 场景", text: "每次接到任务，你估算「这要 8 小时，周四开始正好」。结果你周三在看视频，周四在发呆，周五下午才开始动——然后发现实际需要 20 小时。你不是不靠谱，你犯了全世界最普遍的项目管理错误：planning fallacy（计划谬误）。" },
+          { title: "💡 方案", text: "输入任务名、截止日、预估耗时、任务类型 → 基于你的拖延倾向和任务类型的历史延迟模式，AI 直接告诉你「按你的习惯，你大概率会在 X 月 X 日完成」。不给你建议、不催你、不帮你做计划——只给你一个诚实的预测。" },
+          { title: "🔧 技术", text: "Demo 使用规则引擎模拟：任务类型（创意/开发/事务/文档）× 拖延等级（1-10）× 工作量计算延迟系数 → 生成预测日期。真实产品：接入个人日历 + 历史完成任务数据 → 学习个人拖延模式 → 个性化预测模型。" },
+          { title: "📈 为什么值得做", html: "Planning fallacy 是 Kahneman 发现的最稳健的认知偏误之一——影响每个人，从学生到 CEO。Todoist 帮你列任务，日历帮你排时间，但没人告诉你「你的计划本身就是错的」。这个产品的差异化在于：不是帮人「成功」，而是帮人「认清失败」。B2C 从个人时间管理切入社交传播（截图分享预测结果），B2B 延伸到项目管理的 deadline 风险评估。" }
+        ],
+        demoUrl: "demo-deadline-oracle/"
+      },
       "subscription-assassin": {
         description: "你记不记得 8 个月前那个免费试用？它早就不免费了——而你刚刚又付了一个月。你不是不在乎钱，你是忘了钱在流走。",
         sections: [
@@ -251,11 +261,11 @@
     }
 
     function getIcon(id) {
-      const m = {'subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
