@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "second-opinion": {
+        description: "你刚被诊断出需要手术，医生说「尽快安排」。你慌了——真的非做不可吗？有没有更好的方案？在中国，跨院找顶级专家复核诊断几乎不可能，除非你有关系。这个产品就是解决这个信息黑洞。",
+        sections: [
+          { title: "🎯 场景", text: "中国每年完成超过 6000 万例住院手术。研究显示，冠状动脉支架、甲状腺切除、剖腹产等手术存在显著的过度使用。患者手握诊断报告，却无法判断医生的建议是否最优——这不是医学问题，这是一个信息不对称问题。" },
+          { title: "💡 方案", text: "患者上传病历（CT、化验单、诊断报告）→ AI 预处理并结构化 → 匹配对应专科的顶尖三甲专家 → 48 小时内出具书面第二意见。核心不是「初诊问诊」，而是「已有诊断的独立复核」：诊断对不对？手术是不是必须？有没有创伤更小的替代方案？" },
+          { title: "💰 商业模式", text: "患者为每次第二意见付费 500–2000 元（远低于一台不必要手术的费用）。平台抽成 20–30%，专家获得专业咨询收入。高频切入点：甲状腺结节切除、剖腹产、关节置换、肿瘤手术。可延伸至企业健康福利、保险公司的术前审核通道。" },
+          { title: "🛡️ 壁垒", html: "<b>供给侧</b>：三甲医院副高以上专家的信任与合作网络，非技术能复制。<br><b>数据侧</b>：病历结构化 AI + 科室匹配知识图谱。<br><b>合规侧</b>：不取代医嘱，仅提供第二意见参考——法律风险可控。<br><b>时机</b>：互联网诊疗政策逐步放开，患者自主意识觉醒，过度医疗的社会讨论持续升温。" }
+        ],
+        demoUrl: "demo-second-opinion/"
+      },
       "deadline-oracle": {
         description: "你计划周五写完报告——结果周一凌晨还在改。不是你不努力，是你的大脑对「还需要多久」有系统性认知偏差。这个工具不帮你计划，它预测你会拖到什么时候——在你写下计划的那一秒，就直接告诉你真相。",
         sections: [
@@ -261,11 +271,11 @@
     }
 
     function getIcon(id) {
-      const m = {'deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 

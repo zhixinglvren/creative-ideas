@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>就医第二意见 🩺</title>
+<style>
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --orange: #d2991d; --red: #f85149;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.container { max-width: 600px; width: 100%; }
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+
+.steps { display: flex; justify-content: center; gap: 0; margin-bottom: 24px; }
+.step-dot {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
+  font-weight: 700; color: var(--muted); position: relative; z-index: 1;
+}
+.step-dot.active { background: var(--accent); color: #fff; }
+.step-dot.done { background: var(--green); color: #fff; }
+.step-line {
+  width: 48px; height: 2px; background: var(--border); align-self: center; margin: 0 -2px;
+}
+.step-line.done { background: var(--green); }
+.step-labels { display: flex; justify-content: center; gap: 0; margin-top: 6px; font-size: 0.7rem; color: var(--muted); }
+.step-labels span { width: 80px; text-align: center; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px; min-height: 300px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+.form-group select, .form-group textarea {
+  width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; font-size: 0.9rem; color: var(--text); font-family: inherit;
+  outline: none; resize: vertical;
+}
+.form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+.form-group textarea { min-height: 80px; }
+
+.btn {
+  width: 100%; padding: 13px; border: none; border-radius: 10px; font-size: 1rem;
+  font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #4c8ed6; }
+.btn-green { background: var(--green); color: #000; }
+.btn-outline {
+  background: transparent; border: 1px solid var(--border); color: var(--text); margin-top: 10px;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.status-bar {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px;
+}
+.status-bar .icon { font-size: 1.5rem; }
+.status-bar .info { flex: 1; }
+.status-bar .info .title { font-weight: 600; font-size: 0.9rem; }
+.status-bar .info .desc { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin: 16px 0; overflow: hidden; }
+.progress-bar .fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.8s ease; }
+
+.opinion-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+  margin-top: 14px;
+}
+.opinion-card .expert {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.opinion-card .expert .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.opinion-card .expert .name { font-weight: 700; }
+.opinion-card .expert .title { font-size: 0.78rem; color: var(--muted); }
+.opinion-card .verdict { font-size: 0.95rem; line-height: 1.7; }
+.opinion-card .tag {
+  display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem;
+  font-weight: 600; margin-right: 6px;
+}
+.tag-confirm { background: #1a3a2a; color: var(--green); }
+.tag-diverge { background: #3a2a1a; color: var(--orange); }
+.tag-alt { background: #1a2a3a; color: var(--accent); }
+
+.price-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
+  margin-top: 18px; display: flex; justify-content: space-between; align-items: center;
+}
+.price-box .label { font-size: 0.82rem; color: var(--muted); }
+.price-box .amount { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+
+.home-link { display: block; text-align: center; margin-top: 24px; color: var(--muted); font-size: 0.8rem; text-decoration: none; }
+.home-link:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🩺 就医第二意见</h1>
+    <p class="sub">确诊之后，手术之前 —— 让顶尖专家帮你再看一次</p>
+  </div>
+
+  <div class="steps" id="stepsDots">
+    <div class="step-dot active" data-step="1">1</div><div class="step-line"></div>
+    <div class="step-dot" data-step="2">2</div><div class="step-line"></div>
+    <div class="step-dot" data-step="3">3</div>
+  </div>
+  <div class="step-labels">
+    <span>提交诊断</span><span>AI 预处理</span><span>专家复核</span>
+  </div>
+
+  <div class="card">
+    <!-- Screen 1: Input -->
+    <div class="screen active" id="screen1">
+      <div class="form-group">
+        <label>🏥 诊断科室</label>
+        <select id="dept">
+          <option value="cardio">心血管内科 — 冠心病/支架建议</option>
+          <option value="thyroid">甲状腺外科 — 结节/切除建议</option>
+          <option value="ortho">骨科 — 关节置换/脊柱手术建议</option>
+          <option value="gyn">妇产科 — 子宫肌瘤/剖腹产建议</option>
+          <option value="onco" selected>肿瘤科 — 肿瘤切除/放化疗方案</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>📋 初步诊断结果</label>
+        <textarea id="diagnosis" placeholder="例如：胸部 CT 发现右肺上叶 1.8cm 结节，边缘毛糙，建议手术切除...">胃镜发现胃窦部2.5cm隆起性病变，活检病理提示中分化腺癌，建议根治性手术切除。腹部CT未见明显转移。</textarea>
+      </div>
+      <div class="form-group">
+        <label>💰 所在城市（影响专家匹配和定价）</label>
+        <select id="city">
+          <option>北京</option><option>上海</option><option>广州</option>
+          <option selected>杭州</option><option>成都</option><option>武汉</option>
+          <option>其他省会城市</option><option>地级市/县城</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="submitCase()">提交病历 →</button>
+    </div>
+
+    <!-- Screen 2: Processing -->
+    <div class="screen" id="screen2">
+      <div class="status-bar"><div class="icon">📤</div><div class="info"><div class="title">提交成功</div><div class="desc">病历已上传，等待 AI 结构化处理</div></div></div>
+      <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+      <p style="color:var(--muted);font-size:0.8rem;text-align:center;margin:10px 0;" id="statusText">AI 正在提取关键病灶信息...</p>
+    </div>
+
+    <!-- Screen 3: Result -->
+    <div class="screen" id="screen3">
+      <div class="status-bar"><div class="icon">✅</div><div class="info"><div class="title">第二意见已出具</div><div class="desc">上海交通大学附属胸科医院 · 胸外科</div></div></div>
+      <div class="opinion-card" id="opinionCard"></div>
+      <div class="price-box">
+        <span class="label">本次第二意见费用</span>
+        <span class="amount">¥1,200</span>
+      </div>
+      <button class="btn btn-green" style="margin-top:14px;" onclick="resetDemo()">🔄 重新演示</button>
+    </div>
+  </div>
+
+  <a href="../index.html" class="home-link">← 返回创意实验室</a>
+</div>
+
+<script>
+const opinions = {
+  onco: {
+    dept: '胸外科',
+    hospital: '上海交通大学附属胸科医院',
+    expert: '陈教授',
+    expertTitle: '主任医师 · 博导 · 胸部肿瘤外科学组委员',
+    verdict: '同意原诊断（中分化腺癌），但手术方案存在优化空间：<br><br>1. <b>分期需要明确</b>：建议补充超声内镜（EUS）评估浸润深度和淋巴结转移，避免直接开腹。<br><br>2. <b>手术方式商榷</b>：如 EUS 确认 T1/T2 且无淋巴结转移，可考虑 ESD（内镜黏膜下剥离术）而非根治性胃切除——创伤显著更小。<br><br>3. <b>切勿仓促</b>：胃癌从确诊到规范手术的窗口期通常有 4-6 周，足够完善术前分期。建议术前会诊病理切片、完成 EUS+增强 CT 三维重建后再制定手术方案。',
+    tags: [{ cls: 'tag-confirm', text: '诊断一致' }, { cls: 'tag-alt', text: '方案有替代选择' }]
+  },
+  cardio: {
+    dept: '心内科', hospital: '北京阜外医院', expert: '刘教授', expertTitle: '主任医师 · 介入心脏病学专家',
+    verdict: '诊断意见与贵院一致（冠心病 三支病变），但对支架数量有不同看法：<br><br>1. 回旋支中段 50% 狭窄，FFR 指导下可能无需支架。<br><br>2. 建议先完成冠脉 FFR 检查再决定——可能从 3 个支架减为 2 个。<br><br>3. 如为稳定型心绞痛，药物治疗 + 生活方式干预可获得与支架相近的远期效果。',
+    tags: [{ cls: 'tag-diverge', text: '支架数量分歧' }, { cls: 'tag-alt', text: '建议补充检查' }]
+  },
+  thyroid: {
+    dept: '甲状腺外科', hospital: '北京协和医院', expert: '王教授', expertTitle: '主任医师 · 内分泌外科',
+    verdict: '原诊断：甲状腺结节 TI-RADS 4a，建议手术切除。<br><br>复核意见：TI-RADS 4a 恶性风险仅 5-10%，当前指南不推荐直接手术。建议：<br><br>1. 先行超声引导下细针穿刺活检（FNA）。<br><br>2. 如 FNA 阴性，每 6-12 个月超声随访即可。<br><br>3. 如未做 FNA 就建议手术，属于过度治疗。',
+    tags: [{ cls: 'tag-diverge', text: '不推荐手术' }]
+  },
+  ortho: {
+    dept: '骨科', hospital: '北京大学第三医院', expert: '李教授', expertTitle: '主任医师 · 运动医学',
+    verdict: '诊断半月板撕裂明确，但手术时机需要商榷：<br><br>1. 如无关节交锁，保守治疗（康复训练）3 个月修复成功率约 60%。<br><br>2. 不建议在急性期（伤后 2 周内）手术——先消肿、恢复关节活动度。<br><br>3. 保守治疗无效再考虑关节镜，完全来得及。',
+    tags: [{ cls: 'tag-alt', text: '可先保守治疗' }]
+  },
+  gyn: {
+    dept: '妇产科', hospital: '复旦大学附属妇产科医院', expert: '张教授', expertTitle: '主任医师 · 妇科肿瘤',
+    verdict: '诊断：子宫肌瘤（多发，最大 5.2cm），建议子宫全切。<br><br>复核意见：<br><br>1. 5.2cm 肌瘤不具备全切指征——尤其对于有保留生育意愿的女性。<br><br>2. 建议先尝试肌瘤剔除术或高强度聚焦超声（HIFU），创伤远小于全切。<br><br>3. 无症状的肌瘤可以不做任何干预、定期随访。',
+    tags: [{ cls: 'tag-diverge', text: '不同意全切方案' }]
+  }
+};
+
+function submitCase() {
+  document.getElementById('screen1').classList.remove('active');
+  document.getElementById('screen2').classList.add('active');
+  updateSteps(2);
+
+  const fill = document.getElementById('progressFill');
+  const status = document.getElementById('statusText');
+  const steps = ['AI 正在提取关键病灶信息...', '匹配专科专家库...', '专家资质核验通过', '病历分发给复核专家', '专家在线阅片...', '第二意见生成中...'];
+
+  let p = 0;
+  const iv = setInterval(() => {
+    p += Math.random() * 15 + 8;
+    if (p >= 100) { p = 100; clearInterval(iv); showResult(); }
+    fill.style.width = p + '%';
+    const idx = Math.min(Math.floor(p / 18), steps.length - 1);
+    status.textContent = steps[idx];
+    if (p >= 100) { status.textContent = '✅ 第二意见已生成'; updateSteps(3); }
+  }, 400);
+}
+
+function showResult() {
+  setTimeout(() => {
+    document.getElementById('screen2').classList.remove('active');
+    document.getElementById('screen3').classList.add('active');
+    const dept = document.getElementById('dept').value;
+    const o = opinions[dept];
+    const deptEl = document.getElementById('screen3').querySelector('.desc');
+    deptEl.textContent = o.hospital + ' · ' + o.dept;
+    const card = document.getElementById('opinionCard');
+    card.innerHTML = `
+      <div class="expert">
+        <div class="avatar">👨‍⚕️</div>
+        <div><div class="name">${o.expert}</div><div class="title">${o.expertTitle}</div></div>
+      </div>
+      <div style="margin-bottom:10px">${o.tags.map(t => `<span class="tag ${t.cls}">${t.text}</span>`).join('')}</div>
+      <div class="verdict">${o.verdict}</div>
+    `;
+  }, 500);
+}
+
+function updateSteps(n) {
+  document.querySelectorAll('.step-dot').forEach(d => {
+    const s = parseInt(d.dataset.step);
+    d.classList.remove('active', 'done');
+    if (s < n) d.classList.add('done');
+    if (s === n) d.classList.add('active');
+  });
+  document.querySelectorAll('.step-line').forEach((l, i) => {
+    l.classList.toggle('done', i + 1 < n);
+  });
+}
+
+function resetDemo() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen1').classList.add('active');
+  document.getElementById('progressFill').style.width = '0%';
+  updateSteps(1);
+}
+
+updateSteps(1);
+</script>
+</body>
+</html>

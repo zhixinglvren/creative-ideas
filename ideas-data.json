@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "second-opinion",
+      "icon": "🩺",
+      "title": "就医第二意见",
+      "tagline": "确诊之后，手术之前——让顶尖专家帮你再看一次",
+      "status": "live",
+      "category": "医疗健康"
+    },
+    {
       "id": "deadline-oracle",
       "icon": "🔮",
       "title": "截止日预言家",
