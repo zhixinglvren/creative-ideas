@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "reno-guard",
+      "icon": "🏗️",
+      "title": "装修避坑事务所",
+      "tagline": "一口价监理，不按装修金额抽佣——让你的钱花在刀刃上",
+      "status": "live",
+      "category": "家装服务"
+    },
+    {
       "id": "pet-price-guide",
       "icon": "🐾",
       "title": "宠物医疗价格指南",
