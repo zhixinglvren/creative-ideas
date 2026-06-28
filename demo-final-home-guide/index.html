@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>终宅指南 🪦</title>
+<style>
+:root {
+  --bg: #f5f3ef; --card: #ffffff; --border: #e0dcd4;
+  --text: #2c2416; --muted: #8c8070;
+  --accent: #5b7b6a; --green: #3d7a52; --warn: #c47f3a;
+  --radius: 12px;
+}
+[data-theme="dark"] {
+  --bg: #1a1a1d; --card: #232326; --border: #38383c;
+  --text: #e8e8ec; --muted: #98989e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.container { max-width: 520px; width: 100%; }
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin-bottom: 16px;
+}
+.card h3 { font-size: 0.9rem; color: var(--accent); margin-bottom: 12px; }
+
+select, input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);
+  margin-bottom: 10px; font-family: inherit; outline: none;
+}
+select:focus, input:focus { border-color: var(--accent); }
+label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 4px; }
+
+.btn {
+  width: 100%; padding: 12px; border: none; border-radius: 10px;
+  background: var(--accent); color: #fff; font-size: 1rem; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.9; }
+
+.results { display: none; }
+.results.show { display: block; }
+
+.price-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.price-row:last-child { border-bottom: none; }
+.price-row .name { font-weight: 600; font-size: 0.9rem; }
+.price-row .detail { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.price-row .cost { text-align: right; }
+.price-row .cost .num { font-size: 1.15rem; font-weight: 700; color: var(--accent); }
+.price-row .cost .unit { font-size: 0.75rem; color: var(--muted); }
+
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 4px; }
+.tag-low { background: #d4edda; color: #155724; }
+.tag-mid { background: #fff3cd; color: #856404; }
+.tag-high { background: #f8d7da; color: #721c24; }
+[data-theme="dark"] .tag-low { background: #1a3c1f; }
+[data-theme="dark"] .tag-mid { background: #3d350f; }
+[data-theme="dark"] .tag-high { background: #3d1519; }
+
+.warn-box {
+  background: #fff8e1; border-left: 4px solid var(--warn); padding: 12px 16px;
+  border-radius: 0 var(--radius) var(--radius) 0; margin-top: 16px; font-size: 0.82rem;
+  color: #7a5c1e;
+}
+[data-theme="dark"] .warn-box { background: #2d2814; color: #c4a44a; }
+.warn-box strong { color: var(--warn); }
+
+.footer { text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>终宅指南 <span style="font-size:1.2rem">🪦</span></h1>
+    <p class="sub">告别价格黑箱 · 让每一程走得安详</p>
+  </div>
+
+  <div class="card">
+    <h3>📍 选择城市与预算</h3>
+    <label>所在城市</label>
+    <select id="city">
+      <option value="hangzhou">杭州</option>
+      <option value="shanghai">上海</option>
+      <option value="beijing">北京</option>
+      <option value="guangzhou">广州</option>
+    </select>
+    <label>预算范围（万元）</label>
+    <select id="budget">
+      <option value="0-10">10万以内</option>
+      <option value="10-30">10-30万</option>
+      <option value="30-50">30-50万</option>
+      <option value="50+">50万以上</option>
+    </select>
+    <label>偏好类型</label>
+    <select id="type">
+      <option value="all">不限</option>
+      <option value="traditional">传统墓穴</option>
+      <option value="eco">生态葬（树葬/花坛葬）</option>
+      <option value="columbarium">壁葬/塔葬</option>
+    </select>
+    <button class="btn" onclick="search()">🔍 查询陵园信息</button>
+  </div>
+
+  <div class="card results" id="results">
+    <h3>🏞️ 查询结果</h3>
+    <div id="resultList"></div>
+  </div>
+
+  <div class="warn-box" id="warnBox" style="display:none">
+    <strong>⚠️ 价格警示：</strong>同城同类型墓地价格差异可达 <strong>3-8倍</strong>。陵园销售常以"风水宝地""最后几席"制造稀缺感。建议实地考察至少 <strong>3家以上</strong>再做决定。
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">🔒 本工具仅提供市场参考价，不做销售导流</p>
+    <p style="font-size:0.78rem; color:var(--muted);">数据来源：公开陵园报价 + 用户匿名贡献</p>
+  </div>
+
+  <div class="footer">终宅指南 · 让信息对称，让选择无悔</div>
+</div>
+
+<script>
+const data = {
+  hangzhou: [
+    {name:'南山陵园', type:'traditional', price:28, unit:'万元/双穴', desc:'市区核心位置，交通便利', level:'mid'},
+    {name:'半山公墓', type:'traditional', price:8, unit:'万元/双穴', desc:'性价比高，离市区较远', level:'low'},
+    {name:'钱江陵园', type:'traditional', price:45, unit:'万元/双穴', desc:'江景墓区，高端定位', level:'high'},
+    {name:'安贤园', type:'traditional', price:18, unit:'万元/双穴', desc:'环境优美，名人墓区', level:'mid'},
+    {name:'龙居寺公墓', type:'traditional', price:5, unit:'万元/双穴', desc:'价格实惠，配套一般', level:'low'},
+    {name:'径山竹茶园', type:'eco', price:3, unit:'万元/树葬', desc:'生态环保，禅意设计', level:'low'},
+    {name:'安贤园生态区', type:'eco', price:6, unit:'万元/花坛葬', desc:'花葬+纪念墙', level:'mid'},
+    {name:'南山陵园壁葬区', type:'columbarium', price:2, unit:'万元/格位', desc:'节地葬式，价格最低', level:'low'},
+    {name:'杭州殡仪馆骨灰堂', type:'columbarium', price:0.8, unit:'万元/格位', desc:'临时寄存，非永久', level:'low'},
+  ],
+  shanghai: [
+    {name:'福寿园', type:'traditional', price:68, unit:'万元/双穴', desc:'上海标杆陵园，名人荟萃', level:'high'},
+    {name:'滨海古园', type:'traditional', price:25, unit:'万元/双穴', desc:'奉贤，海景墓区', level:'mid'},
+    {name:'松鹤墓园', type:'traditional', price:35, unit:'万元/双穴', desc:'嘉定，口碑老园', level:'mid'},
+    {name:'长安墓园', type:'traditional', price:15, unit:'万元/双穴', desc:'嘉定，性价比之选', level:'low'},
+    {name:'福寿园海港陵园', type:'eco', price:12, unit:'万元/树葬', desc:'生态葬示范区', level:'mid'},
+  ],
+  beijing: [
+    {name:'八宝山革命公墓', type:'traditional', price:80, unit:'万元/双穴', desc:'仅限特定人群', level:'high'},
+    {name:'万安公墓', type:'traditional', price:45, unit:'万元/双穴', desc:'海淀，历史悠久', level:'high'},
+    {name:'天寿陵园', type:'traditional', price:30, unit:'万元/双穴', desc:'昌平，环境优越', level:'mid'},
+    {name:'九公山长城纪念林', type:'eco', price:8, unit:'万元/树葬', desc:'怀柔，长城脚下', level:'low'},
+    {name:'朝阳陵园', type:'traditional', price:12, unit:'万元/双穴', desc:'东五环外', level:'low'},
+  ],
+  guangzhou: [
+    {name:'银河烈士陵园', type:'traditional', price:20, unit:'万元/双穴', desc:'天河，市区陵园', level:'mid'},
+    {name:'金钟墓园', type:'traditional', price:15, unit:'万元/双穴', desc:'花都区', level:'low'},
+    {name:'正果万安园', type:'traditional', price:8, unit:'万元/双穴', desc:'增城，远郊实惠', level:'low'},
+    {name:'新塘公墓', type:'eco', price:3, unit:'万元/树葬', desc:'生态环保葬', level:'low'},
+  ]
+};
+
+function search() {
+  const city = document.getElementById('city').value;
+  const budget = document.getElementById('budget').value;
+  const type = document.getElementById('type').value;
+  const items = data[city] || [];
+
+  let filtered = items;
+  if (type !== 'all') filtered = filtered.filter(i => i.type === type);
+  if (budget === '0-10') filtered = filtered.filter(i => i.price <= 10);
+  else if (budget === '10-30') filtered = filtered.filter(i => i.price > 10 && i.price <= 30);
+  else if (budget === '30-50') filtered = filtered.filter(i => i.price > 30 && i.price <= 50);
+  else if (budget === '50+') filtered = filtered.filter(i => i.price > 50);
+
+  const resultsDiv = document.getElementById('results');
+  const resultList = document.getElementById('resultList');
+  const warnBox = document.getElementById('warnBox');
+
+  resultsDiv.classList.add('show');
+  warnBox.style.display = filtered.length > 1 ? 'block' : 'none';
+
+  if (filtered.length === 0) {
+    resultList.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px;">暂未找到匹配的陵园，请调整筛选条件</p>';
+    return;
+  }
+
+  resultList.innerHTML = filtered.sort((a,b) => a.price - b.price).map(i => {
+    const tagClass = i.level === 'low' ? 'tag-low' : i.level === 'mid' ? 'tag-mid' : 'tag-high';
+    const tagText = i.level === 'low' ? '实惠' : i.level === 'mid' ? '中等' : '高端';
+    return `
+    <div class="price-row">
+      <div>
+        <div class="name">${i.name} <span class="tag ${tagClass}">${tagText}</span></div>
+        <div class="detail">${i.desc}</div>
+      </div>
+      <div class="cost">
+        <div class="num">${i.price}万</div>
+        <div class="unit">${i.unit}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "final-home-guide",
+      "icon": "🪦",
+      "title": "终宅指南",
+      "tagline": "告别价格黑箱——让每一程走得安详",
+      "status": "live",
+      "category": "银发经济"
+    },
+    {
       "id": "reno-guard",
       "icon": "🏗️",
       "title": "装修避坑事务所",
