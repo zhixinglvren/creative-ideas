@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="system">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鉴宝参谋 🏺</title>
+<style>
+:root {
+  --bg: #f5f3ef; --card: #ffffff; --border: #e0dcd4;
+  --text: #2c2416; --muted: #8c8070;
+  --accent: #8b5e3c; --accent2: #c9a96e;
+  --radius: 12px;
+}
+[data-theme="dark"] {
+  --bg: #1a1a1d; --card: #232326; --border: #38383c;
+  --text: #e8e8ec; --muted: #98989e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.container { max-width: 520px; width: 100%; }
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin-bottom: 16px;
+}
+.card h3 { font-size: 0.9rem; color: var(--accent); margin-bottom: 12px; }
+
+select, textarea, input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);
+  margin-bottom: 10px; font-family: inherit; outline: none; resize: vertical;
+}
+select:focus, textarea:focus, input:focus { border-color: var(--accent); }
+label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 4px; }
+textarea { min-height: 80px; }
+
+.btn {
+  width: 100%; padding: 12px; border: none; border-radius: 10px;
+  background: var(--accent); color: #fff; font-size: 1rem; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.results { display: none; }
+.results.show { display: block; }
+
+.expert-card {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 16px; background: var(--bg); border-radius: 10px; margin-bottom: 12px;
+}
+.expert-card .avatar {
+  width: 48px; height: 48px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+  flex-shrink: 0; color: #fff;
+}
+.expert-card .info { flex: 1; }
+.expert-card .name { font-weight: 700; font-size: 0.95rem; }
+.expert-card .title { font-size: 0.78rem; color: var(--muted); }
+.expert-card .rating { font-size: 0.75rem; color: var(--accent2); margin-top: 2px; }
+
+.meter-row {
+  display: flex; justify-content: space-between; font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.meter-bar {
+  height: 8px; background: var(--border); border-radius: 4px;
+  overflow: hidden; margin-bottom: 10px;
+}
+.meter-fill {
+  height: 100%; border-radius: 4px; transition: width 0.6s ease;
+}
+.meter-fill.good { background: #3d7a52; }
+.meter-fill.warn { background: #c47f3a; }
+.meter-fill.bad { background: #c0392b; }
+
+.range-box {
+  text-align: center; padding: 20px;
+  background: var(--bg); border-radius: 10px; margin: 16px 0;
+}
+.range-box .price {
+  font-size: 2rem; font-weight: 800; color: var(--accent);
+}
+.range-box .label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.tag {
+  display: inline-block; font-size: 0.7rem; padding: 3px 10px;
+  border-radius: 12px; margin: 2px; font-weight: 600;
+}
+.tag-green { background: #2e8b5722; color: #2e8b57; border: 1px solid #2e8b5744; }
+.tag-yellow { background: #b8860b22; color: #b8860b; border: 1px solid #b8860b44; }
+.tag-red { background: #c0392b22; color: #c0392b; border: 1px solid #c0392b44; }
+
+.steps { display: flex; gap: 8px; margin-bottom: 20px; }
+.step {
+  flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px;
+  font-size: 0.72rem; background: var(--border); color: var(--muted);
+  transition: all 0.3s;
+}
+.step.active { background: var(--accent); color: #fff; }
+.step .num { font-size: 1.1rem; font-weight: 800; display: block; }
+
+.contact {
+  text-align: center; padding: 12px; font-size: 0.82rem; color: var(--muted);
+}
+.contact a { color: var(--accent); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🏺 鉴宝参谋</h1>
+    <p class="sub">你想买的古董，让行家先看——不做冤大头</p>
+  </div>
+
+  <div class="steps" id="steps">
+    <div class="step active" id="step1"><span class="num">1</span>描述藏品</div>
+    <div class="step" id="step2"><span class="num">2</span>匹配专家</div>
+    <div class="step" id="step3"><span class="num">3</span>出具报告</div>
+  </div>
+
+  <div id="formArea">
+    <div class="card">
+      <h3>📝 描述你的藏品</h3>
+      <label>藏品类别</label>
+      <select id="category">
+        <option value="">— 请选择 —</option>
+        <option value="ceramics">陶瓷 (官窑/民窑/青花/粉彩)</option>
+        <option value="jade">玉器 (和田玉/翡翠/古玉)</option>
+        <option value="painting">书画 (古代/近现代/当代)</option>
+        <option value="bronze">铜器 (青铜器/铜镜/佛像)</option>
+        <option value="furniture">家具 (明清家具/文房)</option>
+        <option value="misc">杂项 (钱币/邮票/古籍)</option>
+      </select>
+      <label>卖家报价 (元)</label>
+      <input type="number" id="askPrice" placeholder="卖家要价多少？" min="0" step="100">
+      <label>来源渠道</label>
+      <select id="source">
+        <option value="">— 请选择 —</option>
+        <option value="auction">拍卖行</option>
+        <option value="live">直播间/电商</option>
+        <option value="market">古玩城/地摊</option>
+        <option value="friend">朋友/熟人转让</option>
+        <option value="inherit">家传</option>
+      </select>
+      <label>补充描述</label>
+      <textarea id="desc" placeholder="年代、款识、品相、尺寸等关键信息…"></textarea>
+      <button class="btn" id="submitBtn" onclick="analyze()">🔍 开始鉴定</button>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+</div>
+
+<script>
+const experts = {
+  ceramics: { name: '周明远', title: '景德镇陶瓷大学客座教授', avatar: '🏺', exp: '32年', rate: 4.9, tags: ['官窑','民窑','断代'], credible: true },
+  jade: { name: '马玉恒', title: '中国玉文化研究会理事', avatar: '💎', exp: '28年', rate: 4.8, tags: ['和田玉','翡翠','古玉'], credible: true },
+  painting: { name: '林潇然', title: '故宫博物院书画组研究员', avatar: '🖌️', exp: '25年', rate: 4.9, tags: ['古代书画','近现代','题跋'], credible: true },
+  bronze: { name: '钟鼎铭', title: '国家博物馆青铜器修复专家', avatar: '🗿', exp: '35年', rate: 4.7, tags: ['青铜','铭文','铜镜'], credible: true },
+  furniture: { name: '王木心', title: '中国家具协会传统家具专委会', avatar: '🪑', exp: '30年', rate: 4.8, tags: ['明清','文房','材质'], credible: true },
+  misc: { name: '宝通', title: '资深杂项收藏鉴定师', avatar: '🪙', exp: '27年', rate: 4.6, tags: ['钱币','邮票','古籍'], credible: true }
+};
+
+const riskProfiles = [
+  { source: 'auction', baseRisk: 0.2, desc: '拍卖行有初步审核，但不对真伪担责' },
+  { source: 'live', baseRisk: 0.6, desc: '直播间古玩假货率超70%，需格外谨慎' },
+  { source: 'market', baseRisk: 0.5, desc: '古玩城良莠不齐，建议货比三家' },
+  { source: 'friend', baseRisk: 0.35, desc: '熟人交易有信任缓冲，但专业鉴定不可省' },
+  { source: 'inherit', baseRisk: 0.15, desc: '家传物品真品概率较高，但仍建议专家过眼' }
+];
+
+function analyze() {
+  const cat = document.getElementById('category').value;
+  const ask = parseFloat(document.getElementById('askPrice').value) || 0;
+  const src = document.getElementById('source').value;
+  const desc = document.getElementById('desc').value.trim();
+
+  if (!cat || !ask || !src) {
+    alert('请填写藏品类别、卖家报价和来源渠道');
+    return;
+  }
+
+  document.getElementById('step1').classList.remove('active');
+
+  // Simulate processing
+  setTimeout(() => {
+    document.getElementById('step2').classList.add('active');
+  }, 800);
+
+  setTimeout(() => {
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step3').classList.add('active');
+  }, 1800);
+
+  setTimeout(() => {
+    const expert = experts[cat];
+    const risk = riskProfiles.find(r => r.source === src);
+    const finalRisk = Math.min(0.95, risk.baseRisk + (desc.length < 10 ? 0.15 : 0) + (ask > 500000 ? 0.1 : 0));
+
+    // Simulated market value range
+    const baseLow = Math.round(ask * (0.2 + Math.random() * 0.3) / 100) * 100;
+    const baseHigh = Math.round(ask * (1.1 + Math.random() * 0.8) / 100) * 100;
+
+    const verdict = finalRisk > 0.6 ? 'warn' : finalRisk > 0.35 ? 'caution' : 'ok';
+
+    const verdictText = {
+      warn: '⚠️ 高风险 — 强烈建议委托线下实物鉴定后再付款',
+      caution: '⚡ 中等风险 — 建议获取第二意见再决策',
+      ok: '✅ 风险可控 — 但仍建议请一位对口专家过眼'
+    };
+
+    const riskClass = verdict === 'warn' ? 'bad' : verdict === 'caution' ? 'warn' : 'good';
+    const riskPercent = Math.round(finalRisk * 100);
+
+    let html = `
+      <div class="card">
+        <h3>👤 匹配专家</h3>
+        <div class="expert-card">
+          <div class="avatar">${expert.avatar}</div>
+          <div class="info">
+            <div class="name">${expert.name}</div>
+            <div class="title">${expert.title}</div>
+            <div class="rating">⭐ ${expert.rate} · ${expert.exp}从业经验 · ${expert.tags.map(t => `<span class="tag tag-green">${t}</span>`).join(' ')}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 风险评分</h3>
+        <div class="meter-row"><span>真伪风险</span><span>${riskPercent}%</span></div>
+        <div class="meter-bar"><div class="meter-fill ${riskClass}" style="width:${riskPercent}%"></div></div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">${risk.desc}</p>
+        <p style="font-size:0.9rem;font-weight:600;margin-top:12px;color:${verdict === 'warn' ? '#c0392b' : verdict === 'caution' ? '#c47f3a' : '#3d7a52'};">${verdictText[verdict]}</p>
+      </div>
+
+      <div class="card">
+        <h3>💰 市场参考价</h3>
+        <div class="range-box">
+          <div class="price">¥ ${baseLow.toLocaleString()} ~ ${baseHigh.toLocaleString()}</div>
+          <div class="label">同类藏品近期成交价区间（仅供参考）</div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);text-align:center;">
+          卖家报价 ¥${ask.toLocaleString()} ${ask > baseHigh ? '← 高于市场参考上限，需审慎' : ask < baseLow ? '← 低于市场参考下限，注意"漏"可能是坑' : '← 在合理区间内'}
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>📋 建议行动</h3>
+        <ul style="font-size:0.85rem;color:var(--muted);padding-left:20px;line-height:1.8;">
+          <li>委托对口专家进行线下实物鉴定（费用 ¥${(200 + Math.random() * 800).toFixed(0)}）</li>
+          <li>要求卖家提供来源证明/传承记录</li>
+          <li>大额交易建议通过平台担保交易（收取成交价1%）</li>
+          <li>保存本次鉴定报告，作为交易参考依据</li>
+        </ul>
+      </div>
+
+      <div style="text-align:center;margin-top:16px;">
+        <button class="btn" onclick="location.reload()" style="width:auto;padding:10px 36px;">🔄 鉴定下一件</button>
+      </div>
+
+      <div class="contact">
+        真实鉴定需求？联系 <a href="mailto:zhixinglvren@163.com">zhixinglvren@163.com</a>
+      </div>
+    `;
+
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('results').innerHTML = html;
+    document.getElementById('results').classList.add('show');
+  }, 2400);
+}
+</script>
+</body>
+</html>

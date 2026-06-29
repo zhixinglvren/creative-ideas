@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "treasure-verify",
+      "icon": "🏺",
+      "title": "鉴宝参谋",
+      "tagline": "你想买的古董，让行家先看——不做冤大头",
+      "status": "live",
+      "category": "文玩收藏"
+    },
+    {
       "id": "final-home-guide",
       "icon": "🪦",
       "title": "终宅指南",

@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "treasure-verify": {
+        description: "直播间「清代官窑」标价 8000 块，你犹豫了——真还是假？捡漏还是被坑？古玩市场假货率超 80%，但民间没有一个可信、独立的鉴定入口。",
+        sections: [
+          { title: "🎯 场景", text: "中国古玩市场年交易额超千亿，直播带货让古玩从线下圈子走向大众——但假货率也水涨船高，直播间古玩假货率超 70%。买家面临三方博弈：卖家说「祖传宝贝」，平台说「自行判断」，鉴定机构说「收费三千出证书」（但证书本身也可能是假的）。没有独立、低价、可验证的鉴定入口——这是一个千亿市场的信任真空。" },
+          { title: "💡 方案", text: "第三方鉴定撮合平台。买家描述藏品 + 上传照片 → AI 初步筛查风险等级 → 匹配对口领域专家（瓷器/玉器/书画/铜器/家具）→ 专家远程出具书面鉴定意见 + 市场参考价区间。线下实物鉴定为可选升级服务。平台提供交易担保（类似支付宝模式，确认收货后才放款）。不卖货、不站队——只做鉴定撮合和交易保障。" },
+          { title: "💰 商业模式", text: "C端：线上鉴定 ¥99-299/次，线下实物鉴定 ¥500-2000/次。B端：交易担保按成交价抽佣 1%（千亿市场 × 1% = 十亿级天花板）。后续延伸：收藏品保险、真品证书区块链存证、收藏品资产管理 SaaS。" },
+          { title: "🛡️ 壁垒", html: "<b>专家网络</b>：各细分领域的鉴定专家是稀缺资源，建立信任合作关系需要时间——先发者锁定供给侧。<br><b>鉴定数据</b>：每一次鉴定的案例数据沉淀为知识库，形成「鉴伪案例库」护城河。<br><b>交易担保网络效应</b>：买家越多 → 卖家越愿意接受担保交易 → 买家越多。<br><b>时机</b>：直播电商古玩赛道爆发式增长（抖音文玩直播间日均 GMV 超亿元），但监管严重滞后——消费者保护需求井喷。" }
+        ],
+        demoUrl: "demo-treasure-verify/"
+      },
       "final-home-guide": {
         description: "给老人选墓地，销售说「风水宝地最后几席」，你不知道贵不贵。同城同类型墓地差价可达3-8倍，但这笔钱没法比价——人的最后归宿，不该是一笔糊涂账。",
         sections: [
@@ -291,11 +301,11 @@
     }
 
     function getIcon(id) {
-      const m = {'pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
