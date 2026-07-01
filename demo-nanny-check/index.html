@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>育儿嫂背调 Demo</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f0eb; color: #2c2416; min-height: 100vh; }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 32px 20px; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .sub { color: #8c8070; font-size: 0.9rem; margin-bottom: 28px; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 8px rgba(0,0,0,0.05); }
+  .card h3 { font-size: 0.85rem; color: #8c8070; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #5c5246; }
+  input { width: 100%; padding: 10px 14px; border: 1.5px solid #e0d8cc; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color .2s; }
+  input:focus { border-color: #e07a5f; }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button { width: 100%; padding: 12px; background: #e07a5f; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background .2s; }
+  button:hover { background: #c96a50; }
+  button:disabled { background: #c9bdb2; cursor: not-allowed; }
+  .result { margin-top: 20px; }
+  .item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #faf7f2; border-radius: 8px; margin-bottom: 8px; }
+  .item .label { font-size: 0.85rem; color: #8c8070; }
+  .item .val { font-weight: 600; }
+  .pass { color: #4a9c5d; }
+  .fail { color: #d44; }
+  .warn { color: #e6a23c; }
+  .score { text-align: center; padding: 20px; }
+  .score .num { font-size: 3rem; font-weight: 800; }
+  .score .risk { font-size: 1.1rem; margin-top: 4px; }
+  .history { border-left: 3px solid #e0d8cc; padding-left: 14px; margin-top: 12px; }
+  .history .entry { margin-bottom: 10px; }
+  .history .date { font-size: 0.8rem; color: #8c8070; }
+  .history .text { font-size: 0.9rem; margin-top: 2px; }
+  a.back { display: inline-block; color: #8c8070; text-decoration: none; font-size: 0.85rem; margin-bottom: 16px; }
+  a.back:hover { color: #2c2416; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="../idea.html?id=nanny-check" class="back">← 返回创意详情</a>
+  <h1>👶 育儿嫂背调</h1>
+  <p class="sub">输入育儿嫂信息，立即查验资质真伪 &amp; 查看历史评价</p>
+
+  <div class="card" id="formCard">
+    <h3>📋 查验信息</h3>
+    <div class="row">
+      <div><label>姓名</label><input id="name" placeholder="如：张秀兰" value="张秀兰"></div>
+      <div><label>身份证号</label><input id="idcard" placeholder="18 位" value="330106198502154329"></div>
+    </div>
+    <label style="margin-top:12px;">服务类型</label>
+    <select id="svcType" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8cc;border-radius:8px;font-size:1rem;">
+      <option>月嫂</option>
+      <option selected>育儿嫂</option>
+      <option>住家保姆</option>
+    </select>
+    <button onclick="doCheck()" id="btn">开始背调</button>
+  </div>
+
+  <div class="result" id="result" style="display:none;"></div>
+</div>
+
+<script>
+function doCheck() {
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.textContent = '查验中...';
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.textContent = '重新查验';
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').innerHTML = `
+      <div class="card">
+        <h3>🔍 身份核验</h3>
+        <div class="item"><span class="label">姓名</span><span class="val">${document.getElementById('name').value}</span></div>
+        <div class="item"><span class="label">身份证号</span><span class="val">${document.getElementById('idcard').value}</span></div>
+        <div class="item"><span class="label">身份核验</span><span class="val pass">✓ 通过（人社部联网）</span></div>
+      </div>
+
+      <div class="card">
+        <h3>📜 职业资格</h3>
+        <div class="item"><span class="label">育婴师证</span><span class="val pass">✓ 有效（2023-2028）</span></div>
+        <div class="item"><span class="label">健康证</span><span class="val pass">✓ 有效（有效期至 2027-03）</span></div>
+        <div class="item"><span class="label">月嫂证</span><span class="val fail">✗ 已过期（2021-12）</span></div>
+        <div class="item"><span class="label">催乳师证</span><span class="val warn">⚠ 机构未备案</span></div>
+      </div>
+
+      <div class="card">
+        <h3>⭐ 历史雇主评价（3条）</h3>
+        <div class="history">
+          <div class="entry"><div class="date">2026-03 · 杭州西湖区</div><div class="text">张阿姨很负责，宝宝红屁屁护理很专业。性格好相处，做了6个月直到孩子上托班。</div></div>
+          <div class="entry"><div class="date">2025-06 · 杭州滨江区</div><div class="text">带娃经验确实丰富，但偶尔请假较频繁（家里有事）。总体推荐，沟通好就行。</div></div>
+          <div class="entry"><div class="date">2024-09 · 杭州拱墅区</div><div class="text">第一个月磨合期有些不顺，后面适应了。辅食做得一般，其他不错。</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 综合风险评估</h3>
+        <div class="score">
+          <div class="num" style="color:#e6a23c">72</div>
+          <div class="risk">中等风险 · 建议进一步核实</div>
+        </div>
+        <div style="margin-top:12px;font-size:0.85rem;color:#8c8070;">
+          ⚠ 催乳师证颁发机构未在人社部备案<br>
+          ⚠ 月嫂证已过期<br>
+          💡 建议：当面核实催乳师证机构资质，要求更新月嫂证后再签约
+        </div>
+      </div>
+    `;
+    document.getElementById('formCard').scrollIntoView({behavior:'smooth'});
+  }, 1500);
+}
+</script>
+</body>
+</html>

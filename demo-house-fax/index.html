@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HouseFax · 房子出生证明</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 2rem; text-align: center; border-bottom: 1px solid #334155; }
+.logo { font-size: 2.5rem; margin-bottom: .5rem; }
+.title { font-size: 1.8rem; font-weight: 700; color: #f8fafc; }
+.subtitle { color: #94a3b8; margin-top: .5rem; }
+.container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+.search-box { display: flex; gap: .5rem; margin-bottom: 2rem; }
+.search-box input { flex: 1; padding: 1rem 1.5rem; border-radius: 12px; border: 2px solid #334155; background: #1e293b; color: #f8fafc; font-size: 1rem; outline: none; transition: border .2s; }
+.search-box input:focus { border-color: #3b82f6; }
+.search-box button { padding: 1rem 2rem; border-radius: 12px; border: none; background: #3b82f6; color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .2s; }
+.search-box button:hover { background: #2563eb; }
+.card { background: #1e293b; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; border: 1px solid #334155; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.address { font-size: 1.2rem; font-weight: 600; }
+.score { display: flex; align-items: center; gap: .5rem; }
+.score-badge { padding: .3rem .8rem; border-radius: 20px; font-weight: 700; font-size: .85rem; }
+.score-a { background: #065f46; color: #6ee7b7; }
+.score-b { background: #78350f; color: #fcd34d; }
+.score-c { background: #7f1d1d; color: #fca5a5; }
+.timeline { position: relative; padding-left: 1.5rem; }
+.timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #334155; }
+.event { position: relative; padding: .75rem 0; padding-left: 1.5rem; }
+.event::before { content: ''; position: absolute; left: -2rem; top: 1rem; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; border: 2px solid #1e293b; }
+.event.warn::before { background: #f59e0b; }
+.event.bad::before { background: #ef4444; }
+.event-date { font-size: .8rem; color: #64748b; }
+.event-desc { margin-top: .25rem; }
+.tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.tag { padding: .3rem .7rem; border-radius: 6px; font-size: .8rem; background: #334155; color: #94a3b8; }
+.tag.good { background: #064e3e; color: #6ee7b7; }
+.tag.warn { background: #78350f; color: #fcd34d; }
+.tag.bad { background: #7f1d1d; color: #fca5a5; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+.stat { text-align: center; padding: 1rem; background: #0f172a; border-radius: 12px; }
+.stat-value { font-size: 1.5rem; font-weight: 700; }
+.stat-label { font-size: .8rem; color: #64748b; margin-top: .25rem; }
+.hidden { display: none; }
+.empty { text-align: center; padding: 3rem; color: #64748b; }
+@media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } .search-box { flex-direction: column; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">🏠</div>
+  <div class="title">HouseFax</div>
+  <div class="subtitle">每套房子都有自己的出生证明</div>
+</div>
+<div class="container">
+  <div class="search-box">
+    <input type="text" id="search" placeholder="输入小区名或地址，如：望京花园东区 3-1-502">
+    <button onclick="search()">🔍 查档案</button>
+  </div>
+  <div id="result" class="empty">👆 输入一个地址，查看房子的完整档案</div>
+</div>
+<div class="container">
+  <div class="card" style="border-color: #3b82f6;">
+    <div style="color:#94a3b8;font-size:.85rem;margin-bottom:1rem;">📊 平台数据</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-value">1,247,839</div><div class="stat-label">已建档房屋</div></div>
+      <div class="stat"><div class="stat-value">328</div><div class="stat-label">覆盖城市</div></div>
+      <div class="stat"><div class="stat-value">96.3%</div><div class="stat-label">档案完整率</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB = {
+  "望京花园东区 3-1-502": {
+    score: "B", address: "朝阳区 望京花园东区 3栋1单元502", built: 2012,
+    events: [
+      { date: "2024-03", desc: "卫生间重新做防水", type: "warn" },
+      { date: "2023-11", desc: "物业公司更换（万科 → 龙湖）", type: "" },
+      { date: "2022-08", desc: "房屋交易：张XX → 李XX，成交价 612万", type: "" },
+      { date: "2019-06", desc: "楼上402漏水，本户天花板受损，已修复", type: "warn" },
+      { date: "2018-03", desc: "全屋精装修", type: "" },
+      { date: "2015-11", desc: "房屋交易：开发商 → 张XX，成交价 380万", type: "" },
+      { date: "2012-05", desc: "竣工交付，开发商：首开股份", type: "" }
+    ],
+    tags: [
+      { text: "有过漏水史", cls: "warn" }, { text: "已修复", cls: "good" },
+      { text: "物业稳定", cls: "good" }, { text: "非凶宅", cls: "good" },
+      { text: "精装修", cls: "" }, { text: "无法律纠纷", cls: "good" }
+    ],
+    risk: "中等风险：历史漏水已修复，建议实地检查防水层状况。",
+    valuation: "612万（2022年）→ 当前估值约 580-620万"
+  },
+  "翠苑新村 7-2-301": {
+    score: "C", address: "西湖区 翠苑新村 7栋2单元301", built: 1998,
+    events: [
+      { date: "2025-01", desc: "业委会与物业纠纷，物业费欠缴争议", type: "bad" },
+      { date: "2023-07", desc: "外墙脱落，未全面修复", type: "bad" },
+      { date: "2020-12", desc: "房屋交易：王XX → 赵XX，成交价 218万", type: "" },
+      { date: "2016-05", desc: "线路老化导致小范围电火灾，无人员伤亡", type: "bad" },
+      { date: "1998-10", desc: "竣工交付，开发商：城建集团", type: "" }
+    ],
+    tags: [
+      { text: "设施老化", cls: "bad" }, { text: "物业纠纷", cls: "bad" },
+      { text: "外墙隐患", cls: "bad" }, { text: "火灾史", cls: "bad" },
+      { text: "非凶宅", cls: "good" }, { text: "学区房", cls: "good" }
+    ],
+    risk: "高风险：多起安全隐患记录，建议避开或大幅压价。",
+    valuation: "218万（2020年）→ 当前估值约 190-210万"
+  },
+  "万科金域华府 12-1-801": {
+    score: "A", address: "南山区 万科金域华府 12栋1单元801", built: 2018,
+    events: [
+      { date: "2025-04", desc: "物业满意度调查排名小区第1", type: "good" },
+      { date: "2023-06", desc: "房屋交易：开发商 → 陈XX，成交价 890万", type: "" },
+      { date: "2022-09", desc: "业委会成立，业主自治良好", type: "good" },
+      { date: "2018-12", desc: "竣工交付，开发商：万科", type: "" }
+    ],
+    tags: [
+      { text: "万科物业", cls: "good" }, { text: "业委会健全", cls: "good" },
+      { text: "无维修史", cls: "good" }, { text: "非凶宅", cls: "good" },
+      { text: "精装交付", cls: "good" }, { text: "邻里和睦", cls: "good" }
+    ],
+    risk: "低风险：档案清白，品牌物业，建议关注价格谈判。",
+    valuation: "890万（2023年）→ 当前估值约 950-1050万"
+  }
+};
+
+function search() {
+  const q = document.getElementById("search").value.trim();
+  const resultDiv = document.getElementById("result");
+  const match = DB[q] || Object.entries(DB).find(([k]) => k.includes(q));
+  if (!match) { resultDiv.innerHTML = '<div class="empty">😕 未找到匹配的房屋档案<br><small>试试输入：望京花园东区 3-1-502</small></div>'; return; }
+  const [, data] = match;
+  const scoreCls = data.score === "A" ? "score-a" : data.score === "B" ? "score-b" : "score-c";
+  resultDiv.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div><span class="address">${data.address}</span><br><span style="color:#64748b;font-size:.85rem;">竣工：${data.built}年</span></div>
+        <div class="score"><span class="score-badge ${scoreCls}">${data.score}级</span></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-value">${data.events.length}</div><div class="stat-label">历史记录</div></div>
+        <div class="stat"><div class="stat-value">${data.built}</div><div class="stat-label">建成年份</div></div>
+        <div class="stat"><div class="stat-value">${2026 - data.built}</div><div class="stat-label">房龄(年)</div></div>
+      </div>
+      <div style="font-weight:600;margin-bottom:.5rem;">📋 历史时间线</div>
+      <div class="timeline">${data.events.map(e => `
+        <div class="event ${e.type}">
+          <div class="event-date">${e.date}</div>
+          <div class="event-desc">${e.desc}</div>
+        </div>`).join('')}</div>
+      <div class="tags">${data.tags.map(t => `<span class="tag ${t.cls}">${t.text}</span>`).join('')}</div>
+      <div style="margin-top:1.5rem;padding:1rem;background:#0f172a;border-radius:12px;">
+        <div style="font-weight:600;color:#f8fafc;margin-bottom:.5rem;">🏦 估值区间</div>
+        <div>${data.valuation}</div>
+      </div>
+      <div style="margin-top:.75rem;padding:1rem;background:${data.score === 'A' ? '#064e3e' : data.score === 'B' ? '#78350f' : '#7f1d1d'};border-radius:12px;">
+        <div style="font-weight:600;margin-bottom:.5rem;">⚠️ 风险评估</div>
+        <div>${data.risk}</div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,22 @@
 {
   "ideas": [
     {
+      "id": "nanny-check",
+      "icon": "👶",
+      "title": "育儿嫂背调",
+      "tagline": "别让中介替你背调——孩子的安全，自己查过才放心",
+      "status": "live",
+      "category": "家政服务"
+    },
+    {
+      "id": "house-fax",
+      "icon": "🏠",
+      "title": "房子出生证明",
+      "tagline": "每套二手房都有档案——不再被中介牵着走",
+      "status": "live",
+      "category": "房产交易"
+    },
+    {
       "id": "treasure-verify",
       "icon": "🏺",
       "title": "鉴宝参谋",

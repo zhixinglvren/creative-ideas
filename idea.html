@@ -71,6 +71,26 @@
 
   <script>
     const details = {
+      "nanny-check": {
+        description: "月薪八千还是两万？中介说五年经验是真的五年吗？育儿嫂行业没有信用体系——我们来做。",
+        sections: [
+          { title: "🎯 场景", text: "你刚生完孩子，中介推荐了一位「金牌育儿嫂」，月薪一万八。面试时对答如流。来了一周，发现不会冲奶粉、不会脐带护理、「五年经验」其实是帮亲戚带过孩子。你不敢再换——换一个可能更差。整个行业靠中介单方面背书运转，家长毫无验证手段。" },
+          { title: "💡 方案", text: "育儿嫂背景调查平台：输入姓名+身份证号 → 核实职业资格（人社部联网）、健康证真伪、历史雇主匿名评价 → 生成标准化背调报告。按月订阅（单次 ¥198，月卡 ¥398 无限查）。信息来自公开合规渠道+用户匿名贡献，不做数据买卖。" },
+          { title: "🔧 技术", text: "Demo 展示完整查验流程：输入育儿嫂信息 → 模拟联网核验身份、资格证书、健康证 → 展示历史评价 → 生成风险评分。真实产品需接入政府公开数据接口+搭建匿名评价系统+身份水印防伪造。" },
+          { title: "📈 为什么值得做", html: "中国 0-3 岁婴幼儿约 4800 万，家政市场规模超 3000 亿。育儿嫂是最刚需、最贵、也最不透明的品类。年轻父母愿意为安全付费——「查一次 200 块，比请错人再换省一万」。从一线城市高净值家庭切入，口碑传播极快（母婴群天然传播渠道）。" }
+        ],
+        demoUrl: "demo-nanny-check/"
+      },
+      "house-fax": {
+        description: "你看中一套二手房，中介说「精装拎包入住」。你不知道的是：楼上漏过水、物业正在纠纷、五年前有过火灾。二手房最大的风险不是房价——是你不知道这房子经历过什么。",
+        sections: [
+          { title: "🎯 场景", text: "中国每年约450万套二手房成交，每套交易佣金数万元。但信息极度不对称——买家能查到的只有产权信息，查不到：这房子漏过水吗？物业是否稳定？有没有邻里纠纷？是不是凶宅？所有信息都靠中介一张嘴。买到问题房，维权成本远超购房成本。" },
+          { title: "💡 方案", text: "房屋全生命周期档案平台。为每套房生成一份「出生证明」：从竣工到今天，每一次交易、每一次装修、每一次维修、物业变更记录、邻里纠纷——全部上链存证、透明可查。输入小区和房号，即刻看到完整档案 + 风险评级 + 估值区间。" },
+          { title: "💰 商业模式", text: "C端免费查询基础信息（吸引流量），深度档案（含估值模型/历史维修细节）按次付费 ¥9.9-29.9。B端：房产中介的增值工具、银行的房贷风控辅助、保险公司的房屋险精准定价数据。" },
+          { title: "🛡️ 壁垒", html: "<b>数据采集</b>：整合物业公司、房管局、业委会、社区论坛等多源数据，先发者的数据积累形成壁垒。<br><b>信任资产</b>：低频高额决策场景下，独立第三方的透明档案具有极高的信任溢价。<br><b>时机</b>：中国二手房交易量持续增长，90后首次购房群体对信息透明要求远高于上一代，且区块链存证技术日趋成熟。" }
+        ],
+        demoUrl: "demo-house-fax/"
+      },
       "treasure-verify": {
         description: "直播间「清代官窑」标价 8000 块，你犹豫了——真还是假？捡漏还是被坑？古玩市场假货率超 80%，但民间没有一个可信、独立的鉴定入口。",
         sections: [
@@ -301,11 +321,11 @@
     }
 
     function getIcon(id) {
-      const m = {'treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
