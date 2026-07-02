@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二手价探子 — 别凭感觉砍价</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f0f;color:#e0e0e0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+.container{max-width:680px;width:100%}
+.header{text-align:center;margin-bottom:32px}
+.header h1{font-size:2rem;color:#ff6b35;margin-bottom:8px}
+.header p{color:#888;font-size:0.95rem}
+.search-box{display:flex;gap:8px;margin-bottom:24px}
+.search-box input{flex:1;padding:14px 18px;border:1px solid #333;border-radius:12px;background:#1a1a1a;color:#fff;font-size:1rem;outline:none;transition:border-color 0.2s}
+.search-box input:focus{border-color:#ff6b35}
+.search-box button{padding:14px 24px;background:#ff6b35;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:background 0.2s}
+.search-box button:hover{background:#e55a2a}
+.preset-tags{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.preset-tag{padding:8px 16px;border:1px solid #333;border-radius:20px;background:transparent;color:#aaa;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.preset-tag:hover,.preset-tag.active{background:#ff6b3520;border-color:#ff6b35;color:#ff6b35}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:24px;margin-bottom:20px}
+.card h3{font-size:1.1rem;color:#ff6b35;margin-bottom:12px}
+.price-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.price-bar .label{color:#888;font-size:0.85rem}
+.price-bar .value{font-weight:600}
+.price-range{height:8px;border-radius:4px;background:#2a2a2a;margin:12px 0;position:relative}
+.price-range .fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#4caf50,#ff6b35,#f44336);position:absolute}
+.price-range .marker{position:absolute;top:-6px;width:2px;height:20px;background:#fff;border-radius:1px}
+.platform-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.platform-item{background:#111;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.platform-item .name{font-size:0.9rem;color:#ccc}
+.platform-item .price{font-weight:700;font-size:1.05rem}
+.platform-item .price.low{color:#4caf50}
+.platform-item .price.mid{color:#ff6b35}
+.platform-item .price.high{color:#f44336}
+.defect-list{list-style:none}
+.defect-list li{padding:8px 0;border-bottom:1px solid #222;display:flex;align-items:flex-start;gap:8px}
+.defect-list li:last-child{border-bottom:none}
+.defect-list .severity{font-size:0.75rem;padding:2px 8px;border-radius:10px;background:#f4433620;color:#f44336;white-space:nowrap}
+.defect-list .severity.warn{background:#ff6b3520;color:#ff6b35}
+.tip-box{background:#ff6b3510;border:1px solid #ff6b3530;border-radius:10px;padding:16px;margin-top:12px}
+.tip-box p{color:#ff6b35;line-height:1.6;font-size:0.95rem}
+.footer{text-align:center;color:#555;font-size:0.8rem;margin-top:32px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🔍 二手价探子</h1>
+    <p>别凭感觉砍价——让数据告诉你该出多少钱</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="输入商品型号，如：iPhone 15 128G">
+    <button onclick="search()">查价</button>
+  </div>
+
+  <div class="preset-tags">
+    <button class="preset-tag active" onclick="loadPreset('iphone15')">📱 iPhone 15</button>
+    <button class="preset-tag" onclick="loadPreset('canon-r6')">📷 佳能 R6</button>
+    <button class="preset-tag" onclick="loadPreset('tesla-model3')">🚗 Model 3</button>
+    <button class="preset-tag" onclick="loadPreset('macbook-m2')">💻 MacBook Air M2</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <div class="card">
+      <h3>💰 价格区间分析</h3>
+      <div id="priceAnalysis"></div>
+    </div>
+
+    <div class="card">
+      <h3>🏪 多平台比价</h3>
+      <div class="platform-list" id="platforms"></div>
+    </div>
+
+    <div class="card">
+      <h3>⚠️ 必查暗病清单</h3>
+      <ul class="defect-list" id="defects"></ul>
+    </div>
+
+    <div class="card">
+      <h3>💡 砍价策略</h3>
+      <div id="bargainTip"></div>
+    </div>
+  </div>
+
+  <div class="footer">数据模拟演示 · 实际产品将接入真实二手交易平台数据</div>
+</div>
+
+<script>
+const mockData = {
+  'iphone15': {
+    name:'iPhone 15 128G 国行',
+    prices:{low:2800,median:3300,high:4200,target:3500},
+    platforms:[
+      {name:'闲鱼',range:'2,800 - 3,200',avg:3000,trend:'low'},
+      {name:'转转',range:'3,000 - 3,500',avg:3250,trend:'mid'},
+      {name:'拍拍严选',range:'3,400 - 3,800',avg:3600,trend:'mid'},
+      {name:'京东二手',range:'3,600 - 4,200',avg:3850,trend:'high'}
+    ],
+    defects:[
+      {text:'屏幕是否原装 — 非原装屏色彩偏黄、无原彩显示','severity':'high'},
+      {text:'Face ID 是否正常 — 换屏/换前置排线后大概率失效','severity':'high'},
+      {text:'电池健康度 — 低于85%建议更换，更换后不再防水','severity':'warn'},
+      {text:'后盖是否更换 — 华强北换玻璃工艺参差不齐','severity':'warn'},
+      {text:'检查是否有隐藏 ID 锁 — 设置→通用→关于本机','severity':'high'}
+    ],
+    bargain:'建议先问"电池健康度多少、有无拆修"两个问题，观察卖家反应。如果卖家含糊其辞，直接pass。目标价3,100-3,300，可以从2,800开始谈，强调"面交验机"作为砍价筹码。周末下午是闲鱼活跃高峰，这时候私聊回复最快。'
+  },
+  'canon-r6': {
+    name:'佳能 EOS R6 单机身',
+    prices:{low:7500,median:8800,high:10500,target:9000},
+    platforms:[
+      {name:'闲鱼',range:'7,500 - 8,800',avg:8150,trend:'low'},
+      {name:'转转',range:'8,000 - 9,200',avg:8600,trend:'mid'},
+      {name:'蜂鸟二手',range:'8,500 - 9,800',avg:9150,trend:'mid'},
+      {name:'京东二手',range:'9,200 - 10,500',avg:9800,trend:'high'}
+    ],
+    defects:[
+      {text:'快门数 — 超过15万次需警惕，快门组件更换约800元','severity':'warn'},
+      {text:'CMOS坏点 — 最大光圈+ISO最低拍白墙，仔细观察','severity':'high'},
+      {text:'防抖模块异响 — 关机状态下晃动有轻微声响属正常，明显撞击声需警惕','severity':'warn'},
+      {text:'卡槽针脚弯曲 — 频繁换卡可能导致接触不良','severity':'high'},
+      {text:'翻新机风险 — R6 翻新手艺成熟，需核对机身序列号','severity':'high'}
+    ],
+    bargain:'咸鱼上 R6 个人卖家通常比商家便宜 500-800，优先筛选"自用""升级换机"关键词。带上自己的镜头当面测试，可以借此压低 300-500。快门数低+带原包装箱的机器保值率高，溢价 300 以内都算合理。'
+  },
+  'tesla-model3': {
+    name:'特斯拉 Model 3 标准续航',
+    prices:{low:140000,median:165000,high:195000,target:170000},
+    platforms:[
+      {name:'闲鱼',range:'140,000 - 165,000',avg:152000,trend:'low'},
+      {name:'瓜子二手车',range:'155,000 - 180,000',avg:168000,trend:'mid'},
+      {name:'人人车',range:'160,000 - 185,000',avg:173000,trend:'mid'},
+      {name:'特斯拉官方二手车',range:'175,000 - 195,000',avg:185000,trend:'high'}
+    ],
+    defects:[
+      {text:'电池衰减 — 8万公里以上通常衰减5-8%，可用第三方OBD检测','severity':'high'},
+      {text:'事故记录 — 特斯拉售后可查维修记录，部分事故车换件后不易察觉','severity':'high'},
+      {text:'充电口损耗 — 频繁快充后充电速度可能下降','severity':'warn'},
+      {text:'悬挂异响 — 老款 Model 3 常见问题，更换约2000元','severity':'warn'},
+      {text:'是否带 FSD / EAP — 这些软件权益跟车不跟人，价值1-3万','severity':'high'}
+    ],
+    bargain:'二手 Model 3 砍价核心是"电池衰减"。带检测报告去谈，每衰减1%可砍 2000-3000。2021年前的老款不带热泵，冬季续航缩水明显，也是砍价理由。优先选带 FSD/EAP 的二手车，这些软件权益二手市场通常折价80%，买到就是赚到。'
+  },
+  'macbook-m2': {
+    name:'MacBook Air M2 8+256G',
+    prices:{low:4200,median:5100,high:6200,target:5300},
+    platforms:[
+      {name:'闲鱼',range:'4,200 - 5,000',avg:4600,trend:'low'},
+      {name:'转转',range:'4,600 - 5,400',avg:5000,trend:'mid'},
+      {name:'拍拍严选',range:'5,000 - 5,800',avg:5400,trend:'mid'},
+      {name:'京东二手',range:'5,500 - 6,200',avg:5850,trend:'high'}
+    ],
+    defects:[
+      {text:'电池循环次数 — 系统报告可查，超200次需考虑换电池成本','severity':'warn'},
+      {text:'屏幕涂层脱落 — M2 Air 常见问题，侧光下可见','severity':'high'},
+      {text:'键盘进灰 — 蝶式键盘之后的机型仍有进灰导致按键卡顿风险','severity':'warn'},
+      {text:'是否企业定制机 — MDM 锁的机器无法自行刷机','severity':'high'},
+      {text:'Apple ID 是否退出 — 未退出的机器可能是失窃品','severity':'high'}
+    ],
+    bargain:'MacBook 二手市场水最深的是 MDM 机（企业监管机），一定要让卖家截图"系统报告→软件→描述文件"页。8G 内存版比 16G 版贬值快30%，如果你的需求能用 8G，不必追高。周末上午是捡漏好时机——很多人周五晚上挂，睡一觉就忘了。'
+  }
+};
+
+function loadPreset(key){
+  document.querySelectorAll('.preset-tag').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('searchInput').value = mockData[key].name;
+  renderResult(key);
+}
+
+function search(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.preset-tag').forEach(t=>t.classList.remove('active'));
+  for(const [k,v] of Object.entries(mockData)){
+    if(v.name.toLowerCase().includes(q)){
+      renderResult(k);
+      return;
+    }
+  }
+  alert('演示数据中暂无该型号，请试试预设商品');
+}
+
+function renderResult(key){
+  const d = mockData[key];
+  const range = d.prices.high - d.prices.low;
+  const targetPct = ((d.prices.target - d.prices.low) / range * 100);
+
+  document.getElementById('priceAnalysis').innerHTML = `
+    <div class="price-bar"><span class="label">市场最低价</span><span class="value" style="color:#4caf50">¥${d.prices.low.toLocaleString()}</span></div>
+    <div class="price-range"><div class="fill" style="left:0;width:100%"></div></div>
+    <div class="price-bar"><span class="label">合理区间</span><span class="value" style="color:#ff6b35">¥${d.prices.median.toLocaleString()}</span></div>
+    <div class="price-bar"><span class="label">市场最高价</span><span class="value" style="color:#f44336">¥${d.prices.high.toLocaleString()}</span></div>
+    <div style="margin-top:12px;padding:12px;background:#111;border-radius:10px;text-align:center">
+      <span style="color:#888">目标价格 </span><span style="font-size:1.5rem;font-weight:800;color:#4caf50">¥${d.prices.target.toLocaleString()}</span>
+      <span style="color:#4caf50;font-size:0.85rem;margin-left:8px">▼ ${Math.round(targetPct)}%分位</span>
+    </div>
+  `;
+
+  document.getElementById('platforms').innerHTML = d.platforms.map(p=>`
+    <div class="platform-item">
+      <span class="name">${p.name}</span>
+      <span class="price ${p.trend}">¥${p.avg.toLocaleString()}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('defects').innerHTML = d.defects.map(df=>`
+    <li><span class="severity ${df.severity==='warn'?'warn':''}">${df.severity==='high'?'严重':'注意'}</span>${df.text}</li>
+  `).join('');
+
+  document.getElementById('bargainTip').innerHTML = `<div class="tip-box"><p>${d.bargain}</p></div>`;
+
+  document.getElementById('result').classList.remove('hidden');
+}
+
+loadPreset('iphone15');
+</script>
+</body>
+</html>

@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "secondhand-spy",
+      "icon": "🔍",
+      "title": "二手价探子",
+      "tagline": "别凭感觉砍价——让数据告诉你该出多少钱",
+      "status": "live",
+      "category": "二手交易"
+    },
+    {
       "id": "nanny-check",
       "icon": "👶",
       "title": "育儿嫂背调",
