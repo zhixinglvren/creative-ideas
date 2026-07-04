@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晚安日报 — 专属哄睡童话</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh; color: #e8e8e8; padding: 20px;
+  }
+  .stars { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+  .star { position:absolute; background:white; border-radius:50%; animation: twinkle 3s infinite; }
+  @keyframes twinkle { 0%,100%{opacity:0.3} 50%{opacity:1} }
+  .container { max-width:600px; margin:0 auto; position:relative; z-index:1; }
+  .moon { text-align:center; font-size:48px; margin:30px 0 10px; }
+  h1 { text-align:center; font-size:22px; color:#ffd166; margin-bottom:4px; }
+  .subtitle { text-align:center; font-size:13px; color:#999; margin-bottom:30px; }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius:16px; padding:24px; margin-bottom:16px;
+    backdrop-filter: blur(10px);
+  }
+  .card h3 { font-size:15px; color:#ffd166; margin-bottom:16px; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:13px; color:#aaa; margin-bottom:6px; }
+  .field span.emoji { font-size:18px; margin-right:6px; }
+  .field input, .field textarea {
+    width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05); color:#fff; font-size:14px; outline:none;
+    transition: border-color 0.3s;
+  }
+  .field input:focus, .field textarea:focus { border-color:#ffd166; }
+  .field textarea { height:80px; resize:vertical; }
+  .examples { font-size:11px; color:#666; margin-top:4px; }
+  .btn {
+    width:100%; padding:14px; border:none; border-radius:12px;
+    font-size:16px; font-weight:600; cursor:pointer;
+    background: linear-gradient(135deg, #ffd166, #f4a259);
+    color:#1a1a2e; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(255,209,102,0.3); }
+  .btn:active { transform:translateY(0); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .story-card { display:none; }
+  .story-card.show { display:block; animation: fadeUp 0.6s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .story-title { font-size:18px; color:#ffd166; text-align:center; margin-bottom:20px; }
+  .story-text { font-size:15px; line-height:2; color:#ddd; }
+  .story-text em { color:#f4a259; font-style:normal; }
+  .story-text .highlight { color:#ffd166; font-weight:600; }
+  .moon-phase {
+    text-align:center; margin:16px 0 8px; font-size:12px; color:#666;
+  }
+  .footer { text-align:center; font-size:11px; color:#555; margin-top:40px; padding-bottom:30px; }
+  .sleep-tip {
+    background: rgba(118,75,162,0.15); border:1px solid rgba(118,75,162,0.3);
+    border-radius:12px; padding:12px 16px; margin-top:16px; font-size:13px; color:#c4b5fd;
+  }
+  @media (max-width:480px) {
+    .container { padding:0 10px; }
+    h1 { font-size:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <div class="moon">🌙</div>
+  <h1>晚安日报</h1>
+  <div class="subtitle">30 秒输入今天的故事，生成专属哄睡童话</div>
+
+  <div class="card" id="input-card">
+    <h3>✨ 今天宝宝经历了什么？</h3>
+    <div class="field">
+      <label><span class="emoji">😊</span>开心的事</label>
+      <input id="happy" placeholder="比如：在公园追了蝴蝶" maxlength="40">
+      <div class="examples">写一件让孩子笑出来的事</div>
+    </div>
+    <div class="field">
+      <label><span class="emoji">😢</span>不开心的事</label>
+      <input id="sad" placeholder="比如：冰淇淋掉地上了" maxlength="40">
+      <div class="examples">可以跳过，但说出来能帮孩子消化情绪</div>
+    </div>
+    <div class="field">
+      <label><span class="emoji">🔍</span>好奇的事</label>
+      <input id="curious" placeholder="比如：为什么月亮跟着我们走？" maxlength="40">
+      <div class="examples">孩子今天问过为什么的事</div>
+    </div>
+    <button class="btn" onclick="generate()">🌟 生成晚安故事</button>
+  </div>
+
+  <div class="card story-card" id="story-card">
+    <div class="moon-phase" id="moon-phase"></div>
+    <div class="story-title" id="story-title"></div>
+    <div class="story-text" id="story-text"></div>
+    <div class="sleep-tip" id="sleep-tip"></div>
+    <button class="btn" style="margin-top:16px;background:rgba(255,255,255,0.1);color:#ffd166;" onclick="reset()">🔄 再编一个</button>
+  </div>
+
+  <div class="footer">
+    💤 晚安日报 · 让每个夜晚都有一个专属童话
+  </div>
+</div>
+
+<script>
+// --- Starfield ---
+(function(){
+  const stars = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.width=s.style.height=(Math.random()*3+1)+'px';
+    s.style.animationDelay=Math.random()*3+'s';
+    s.style.animationDuration=(Math.random()*3+2)+'s';
+    stars.appendChild(s);
+  }
+})();
+
+// --- Story Engine ---
+const OPENINGS = [
+  "从前，在一个开满星星花的小镇上，住着一个叫{name}的宝宝。",
+  "月亮婆婆打开她的故事书，翻到了一页写着"{name}"的篇章。",
+  "在小熊森林的最深处，有一扇发光的门，{name}是唯一知道怎么打开它的孩子。",
+  "云朵邮递员送来了一封信，信封上写着：{name}亲启。",
+  "那天晚上，{name}的枕头突然变得软软的、暖暖的，像一朵会说话的棉花糖。",
+  "深海里的灯笼鱼点亮了它的灯，因为它听说{name}要来讲故事了。",
+];
+
+const HAPPY_TEMPLATES = {
+ "蝴蝶":["它正站在一朵彩虹色的花上，翅膀上的花纹和{name}今天追的那只一模一样。"],
+ "公园":["公园里的秋千还在轻轻摇晃，那是{name}留下的笑声。秋千说：明天再来哦。"],
+ "滑梯":["滑梯先生的背滑溜溜的，{name}嗖的一下滑下来的时候，他偷偷笑了——这是他最喜欢的声音。"],
+ "朋友":["她的好朋友小星送了她一颗晶莹的露珠，露珠里藏着一个明天才能打开的秘密。"],
+ "画画":["{name}画的那幅画活了。画里的小太阳跳出来，钻进了{name}的被窝。"],
+ "积木":["积木城堡的最高塔上亮起了一盏灯，那是{name}搭的守望者灯塔。"],
+ "冰淇淋":["冰淇淋虽然已经吃完了，但它的甜味变成了一个小精灵，正坐在{name}的肩膀上打盹。"],
+ "唱歌":["{name}唱的歌飘到了云朵上，云朵把它包起来，做成了一颗音符糖。"],
+ "水":["水花变成了透明的小精灵，排着队向{name}挥手告别。"],
+ "车":["小汽车轮子转出来的风，变成了一个风口袋，里面装着{name}今天的笑声。"],
+ "default":["今天最开心的事情，变成了一颗金色的小糖果，藏在{name}的枕头下面。明天早上它就会变成新的一天。","{name}的微笑被月亮看见了，月亮把它收进了星星收藏夹里，标签是「珍贵的宝物」。"]
+};
+
+const SAD_TEMPLATES = {
+ "摔":["摔疼的地方，已经在梦里长出了一朵勇敢的小花。"],
+ "哭":["眼泪并没有消失——它们变成了小星星，挂在{name}的床头上空，亮晶晶地守护着。","眼泪被月亮婆婆接住了，她把它种进月亮田里，明天会长出一棵「勇敢树」。"],
+ "吵架":["声音飞走了也没关系，它们会在梦里变成一首歌，明天一早就回来。","生气的小云朵飘走了，留下了一道温柔的彩虹。那就是和解。","说的话不等于做的事，生气的时候说的话像蒲公英一样会飞走，但爱像大树一样永远站在原地。"],
+ "丢了":["丢的东西没有消失，它只是变成了一个隐身小伙伴，在你看不到的地方陪着你。"],
+ "害怕":["害怕是一只毛茸茸的小怪兽，{name}勇敢地看了它一眼，它就变成了一个小布偶。"],
+ "default":["不开心的事情，被夜风装进了一个气球里。气球飘得越来越高、越来越远，再也看不见了。","{name}难过的时候，所有的小动物都停下了脚步。它们围成一个圈，把难过的事挤了出去。"]
+};
+
+const CURIOUS_TEMPLATES = {
+ "月亮":["而关于那个问题——为什么月亮跟着我们走？月亮婆婆笑着说：因为你是我的VIP宝宝啊，我不跟着你跟着谁？"],
+ "星星":["至于星星为什么会眨眼——它们在玩「看谁先笑」的游戏。每眨一次，就是有人在笑。","星星其实不是单独的一颗，它们是宇宙里最古老的大家庭。每一颗星星都认识另一颗星星，它们组成了一个看不见的网，叫「光」。"],
+ "太阳":["太阳公公下班后去了哪里？他回到了山的另一边，那里有一个温暖的家。他在那里喝茶、休息，准备明天再来见{name}。"],
+ "鸟":["鸟儿的翅膀为什么能飞？因为它们每扇一次翅膀，就把一点点的「不可能」变成了「可能」。"],
+ "雨":["雨滴从天上来的时候，其实在玩跳格子游戏。它们跳到屋顶上、树叶上、{name}的雨伞上，每跳一下都会笑一声。"],
+ "睡觉":["为什么要睡觉——因为身体的每一个细胞都要充电。就像妈妈的手机一样。现在，就是{name}的充电时间。"],
+ "梦":["梦是怎么来的？梦精灵会在你闭眼的时候，悄悄把你的小心思编成故事，一帧一帧地放给你看。"],
+ "default":["而那个让{name}好奇的问题——答案就藏在今晚的梦里。闭上眼睛，梦里就会有人悄悄告诉你。"]
+};
+
+const CLOSINGS = [
+  "{name}的眼皮越来越重，像窗帘一样慢慢拉上了。晚安，我的小探险家。",
+  "{name}的呼吸变得越来越慢、越来越长，像海浪轻轻拍打着沙滩。晚安。",
+  "于是，{name}翻了个身，把那些美好的故事裹进被子里，沉沉地睡着了。月亮婆婆轻轻关上了故事书。",
+  "小熊打了个哈欠、星星眨了下眼、枕头说：「{name}，该睡啦。」于是整个世界都安静了下来。",
+  "故事讲完了。但{name}的梦里，这个故事还会继续。晚安，好梦。"
+];
+
+const SLEEP_TIPS = [
+  "💡 哄睡小贴士：读故事时声音逐渐放低，语速逐渐放慢，配合轻柔的抚摸，效果加倍。",
+  "💡 哄睡小贴士：故事结束后安静陪伴2-3分钟，不要立刻离开，给孩子安全感。",
+  "💡 哄睡小贴士：卧室温度控制在 20-22°C，稍微偏凉的环境更容易入睡。",
+  "💡 哄睡小贴士：睡前1小时避免屏幕蓝光，晚安日报的故事本身就是最好的「褪黑素」。"
+];
+
+function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function matchTemplate(input, templates){
+  if(!input) return null;
+  const lower = input.toLowerCase();
+  for(const [key,vals] of Object.entries(templates)){
+    if(key==='default') continue;
+    if(lower.includes(key)) return pickRandom(vals);
+  }
+  return pickRandom(templates['default']);
+}
+
+function generate(){
+  const name = "小宝贝";
+  const happy = document.getElementById('happy').value.trim();
+  const sad = document.getElementById('sad').value.trim();
+  const curious = document.getElementById('curious').value.trim();
+
+  if(!happy && !sad && !curious){
+    alert('至少填一项，让故事有料可讲～');
+    return;
+  }
+
+  const opening = pickRandom(OPENINGS).replace('{name}', name);
+  const hp = matchTemplate(happy, HAPPY_TEMPLATES);
+  const sp = matchTemplate(sad, SAD_TEMPLATES);
+  const cp = matchTemplate(curious, CURIOUS_TEMPLATES);
+  const closing = pickRandom(CLOSINGS).replace(/\{name\}/g, name);
+  const tip = pickRandom(SLEEP_TIPS);
+
+  let story = `<p>${opening}</p>`;
+  if(hp) story += `<p>${hp.replace('{name}', name)}</p>`;
+  if(sp) story += `<p>${sp.replace(/\{name\}/g, name)}</p>`;
+  if(cp) story += `<p>${cp.replace(/\{name\}/g, name)}</p>`;
+  story += `<p>${closing}</p>`;
+
+  const titles = ['星星花的约定','月亮婆婆的故事书','小熊森林的秘密','云朵邮递员的信','枕头棉花糖历险记','深海里的灯笼鱼'];
+  document.getElementById('story-title').textContent = '📖 ' + pickRandom(titles);
+  document.getElementById('story-text').innerHTML = story;
+  document.getElementById('sleep-tip').textContent = tip;
+
+  const now = new Date();
+  const moonPhases = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+  const phaseIdx = now.getDate() % 8;
+  document.getElementById('moon-phase').innerHTML =
+    `今晚月色 ${moonPhases[phaseIdx]} · ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+
+  document.getElementById('input-card').style.display = 'none';
+  document.getElementById('story-card').classList.add('show');
+  document.getElementById('story-card').style.display = 'block';
+}
+
+function reset(){
+  document.getElementById('input-card').style.display = 'block';
+  document.getElementById('story-card').style.display = 'none';
+  document.getElementById('story-card').classList.remove('show');
+  document.getElementById('happy').value = '';
+  document.getElementById('sad').value = '';
+  document.getElementById('curious').value = '';
+}
+</script>
+</body>
+</html>

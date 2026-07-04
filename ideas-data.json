@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "goodnight-daily",
+      "icon": "🌙",
+      "title": "晚安日报",
+      "tagline": "30秒输入今天的故事，AI 生成专属哄睡童话",
+      "status": "live",
+      "category": "亲子育儿"
+    },
+    {
       "id": "secondhand-spy",
       "icon": "🔍",
       "title": "二手价探子",

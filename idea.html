@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "goodnight-daily": {
+        description: "3 个词的输入，换 5 分钟的安静。AI 把宝宝的今天编成童话——讲故事这件事，不用再靠爸妈硬编。",
+        sections: [
+          { title: "🎯 场景", text: "晚上九点，2 岁的宝宝精力充沛，拒绝睡觉。你讲了三个故事——小兔子乖乖、三只小猪、龟兔赛跑——都是你妈给你讲过的。孩子腻了，你也累了。更糟的是，如果白天发生了什么不开心的事（冰淇淋掉了、跟小伙伴抢玩具），你没有现成的故事来帮他消化。0-6 岁是睡眠习惯养成的关键期，也是亲子情感连接的高峰期——而「讲不出新故事」成了每个年轻父母的实际痛点。" },
+          { title: "💡 方案", text: "晚安日报：30 秒输入孩子今天经历的 2-3 件事（开心/不开心/好奇）→ AI 生成独一无二的睡前童话 → 故事节奏渐进舒缓，帮助孩子从兴奋过渡到睡眠状态。叙事结构专业设计：先呼应孩子白天的真实经历建立共情 → 再用比喻处理负面情绪（「眼泪变成星星」）→ 最后满足好奇心（「月亮为什么跟着你走？因为你是它的 VIP」）→ 渐进降低刺激度，自然过渡到睡意。" },
+          { title: "🔧 技术", text: "Demo 使用规则引擎（关键词匹配 + 模板组合），真实产品可接入 LLM 做更丰富的个性化生成。核心模块：① 情绪识别（从输入提取情感标签）② 叙事拼图引擎（开篇/展开/升华/收尾 四个模块自由组合）③ 渐进降噪器（段落间逐步降低文字密度和刺激度）④ 睡眠小贴士（随机推送科学哄睡建议）。" },
+          { title: "📈 为什么值得做", html: "中国 0-6 岁儿童约 1 亿，年轻父母日均哄睡时间 30-60 分钟。这是一个<b>高频 × 刚需 × 情感驱动</b>的场景：① 高频：孩子每天都要睡觉 ② 刚需：父母迫切需要哄睡工具 ③ 情感驱动：为孩子的故事付费不需要理性说服。类比 Calm 儿童睡前故事板块（年收入数十亿美元），但 Calm 做的是通用内容，我们做的是<b>个性化</b>——「今天讲的，就是宝宝今天经历的事」。从微信小程序切入成本极低，母婴群天然传播渠道。" }
+        ],
+        demoUrl: "demo-goodnight-daily/"
+      },
       "nanny-check": {
         description: "月薪八千还是两万？中介说五年经验是真的五年吗？育儿嫂行业没有信用体系——我们来做。",
         sections: [
@@ -321,11 +331,11 @@
     }
 
     function getIcon(id) {
-      const m = {'nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'goodnight-daily':'晚安日报','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
