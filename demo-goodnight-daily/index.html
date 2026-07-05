@@ -60,10 +60,6 @@
     background: rgba(118,75,162,0.15); border:1px solid rgba(118,75,162,0.3);
     border-radius:12px; padding:12px 16px; margin-top:16px; font-size:13px; color:#c4b5fd;
   }
-  @media (max-width:480px) {
-    .container { padding:0 10px; }
-    h1 { font-size:20px; }
-  }
 </style>
 </head>
 <body>
@@ -91,7 +87,7 @@
       <input id="curious" placeholder="比如：为什么月亮跟着我们走？" maxlength="40">
       <div class="examples">孩子今天问过为什么的事</div>
     </div>
-    <button class="btn" onclick="generate()">🌟 生成晚安故事</button>
+    <button class="btn" id="generate-btn" onclick="generate()">🌟 生成晚安故事</button>
   </div>
 
   <div class="card story-card" id="story-card">
@@ -110,9 +106,9 @@
 <script>
 // --- Starfield ---
 (function(){
-  const stars = document.getElementById('stars');
-  for(let i=0;i<80;i++){
-    const s = document.createElement('div');
+  var stars = document.getElementById('stars');
+  for(var i=0;i<80;i++){
+    var s = document.createElement('div');
     s.className='star';
     s.style.left=Math.random()*100+'%';
     s.style.top=Math.random()*100+'%';
@@ -124,16 +120,16 @@
 })();
 
 // --- Story Engine ---
-const OPENINGS = [
+var OPENINGS = [
   "从前，在一个开满星星花的小镇上，住着一个叫{name}的宝宝。",
-  "月亮婆婆打开她的故事书，翻到了一页写着"{name}"的篇章。",
+  "月亮婆婆打开她的故事书，翻到了一页写着「{name}」的篇章。",
   "在小熊森林的最深处，有一扇发光的门，{name}是唯一知道怎么打开它的孩子。",
   "云朵邮递员送来了一封信，信封上写着：{name}亲启。",
   "那天晚上，{name}的枕头突然变得软软的、暖暖的，像一朵会说话的棉花糖。",
-  "深海里的灯笼鱼点亮了它的灯，因为它听说{name}要来讲故事了。",
+  "深海里的灯笼鱼点亮了它的灯，因为它听说{name}要来讲故事了。"
 ];
 
-const HAPPY_TEMPLATES = {
+var HAPPY_TEMPLATES = {
  "蝴蝶":["它正站在一朵彩虹色的花上，翅膀上的花纹和{name}今天追的那只一模一样。"],
  "公园":["公园里的秋千还在轻轻摇晃，那是{name}留下的笑声。秋千说：明天再来哦。"],
  "滑梯":["滑梯先生的背滑溜溜的，{name}嗖的一下滑下来的时候，他偷偷笑了——这是他最喜欢的声音。"],
@@ -147,7 +143,7 @@ const HAPPY_TEMPLATES = {
  "default":["今天最开心的事情，变成了一颗金色的小糖果，藏在{name}的枕头下面。明天早上它就会变成新的一天。","{name}的微笑被月亮看见了，月亮把它收进了星星收藏夹里，标签是「珍贵的宝物」。"]
 };
 
-const SAD_TEMPLATES = {
+var SAD_TEMPLATES = {
  "摔":["摔疼的地方，已经在梦里长出了一朵勇敢的小花。"],
  "哭":["眼泪并没有消失——它们变成了小星星，挂在{name}的床头上空，亮晶晶地守护着。","眼泪被月亮婆婆接住了，她把它种进月亮田里，明天会长出一棵「勇敢树」。"],
  "吵架":["声音飞走了也没关系，它们会在梦里变成一首歌，明天一早就回来。","生气的小云朵飘走了，留下了一道温柔的彩虹。那就是和解。","说的话不等于做的事，生气的时候说的话像蒲公英一样会飞走，但爱像大树一样永远站在原地。"],
@@ -156,7 +152,7 @@ const SAD_TEMPLATES = {
  "default":["不开心的事情，被夜风装进了一个气球里。气球飘得越来越高、越来越远，再也看不见了。","{name}难过的时候，所有的小动物都停下了脚步。它们围成一个圈，把难过的事挤了出去。"]
 };
 
-const CURIOUS_TEMPLATES = {
+var CURIOUS_TEMPLATES = {
  "月亮":["而关于那个问题——为什么月亮跟着我们走？月亮婆婆笑着说：因为你是我的VIP宝宝啊，我不跟着你跟着谁？"],
  "星星":["至于星星为什么会眨眼——它们在玩「看谁先笑」的游戏。每眨一次，就是有人在笑。","星星其实不是单独的一颗，它们是宇宙里最古老的大家庭。每一颗星星都认识另一颗星星，它们组成了一个看不见的网，叫「光」。"],
  "太阳":["太阳公公下班后去了哪里？他回到了山的另一边，那里有一个温暖的家。他在那里喝茶、休息，准备明天再来见{name}。"],
@@ -167,7 +163,7 @@ const CURIOUS_TEMPLATES = {
  "default":["而那个让{name}好奇的问题——答案就藏在今晚的梦里。闭上眼睛，梦里就会有人悄悄告诉你。"]
 };
 
-const CLOSINGS = [
+var CLOSINGS = [
   "{name}的眼皮越来越重，像窗帘一样慢慢拉上了。晚安，我的小探险家。",
   "{name}的呼吸变得越来越慢、越来越长，像海浪轻轻拍打着沙滩。晚安。",
   "于是，{name}翻了个身，把那些美好的故事裹进被子里，沉沉地睡着了。月亮婆婆轻轻关上了故事书。",
@@ -175,7 +171,7 @@ const CLOSINGS = [
   "故事讲完了。但{name}的梦里，这个故事还会继续。晚安，好梦。"
 ];
 
-const SLEEP_TIPS = [
+var SLEEP_TIPS = [
   "💡 哄睡小贴士：读故事时声音逐渐放低，语速逐渐放慢，配合轻柔的抚摸，效果加倍。",
   "💡 哄睡小贴士：故事结束后安静陪伴2-3分钟，不要立刻离开，给孩子安全感。",
   "💡 哄睡小贴士：卧室温度控制在 20-22°C，稍微偏凉的环境更容易入睡。",
@@ -186,58 +182,79 @@ function pickRandom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
 function matchTemplate(input, templates){
   if(!input) return null;
-  const lower = input.toLowerCase();
-  for(const [key,vals] of Object.entries(templates)){
+  var lower = input;
+  var keys = Object.keys(templates);
+  for(var i=0;i<keys.length;i++){
+    var key = keys[i];
     if(key==='default') continue;
-    if(lower.includes(key)) return pickRandom(vals);
+    if(lower.indexOf(key) !== -1) return pickRandom(templates[key]);
   }
   return pickRandom(templates['default']);
 }
 
 function generate(){
-  const name = "小宝贝";
-  const happy = document.getElementById('happy').value.trim();
-  const sad = document.getElementById('sad').value.trim();
-  const curious = document.getElementById('curious').value.trim();
+  var btn = document.getElementById('generate-btn');
+  if(!btn) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ 编织故事中...';
+
+  setTimeout(function(){
+    _doGenerate();
+    btn.disabled = false;
+    btn.textContent = '🌟 生成晚安故事';
+  }, 800);
+}
+
+function _doGenerate(){
+  var name = '小宝贝';
+  var happy = document.getElementById('happy');
+  var sad = document.getElementById('sad');
+  var curious = document.getElementById('curious');
+  if(!happy || !sad || !curious) return;
+
+  happy = happy.value.trim();
+  sad = sad.value.trim();
+  curious = curious.value.trim();
 
   if(!happy && !sad && !curious){
     alert('至少填一项，让故事有料可讲～');
     return;
   }
 
-  const opening = pickRandom(OPENINGS).replace('{name}', name);
-  const hp = matchTemplate(happy, HAPPY_TEMPLATES);
-  const sp = matchTemplate(sad, SAD_TEMPLATES);
-  const cp = matchTemplate(curious, CURIOUS_TEMPLATES);
-  const closing = pickRandom(CLOSINGS).replace(/\{name\}/g, name);
-  const tip = pickRandom(SLEEP_TIPS);
+  var opening = pickRandom(OPENINGS).replace(/\{name\}/g, name);
+  var hp = matchTemplate(happy, HAPPY_TEMPLATES);
+  var sp = matchTemplate(sad, SAD_TEMPLATES);
+  var cp = matchTemplate(curious, CURIOUS_TEMPLATES);
+  var closing = pickRandom(CLOSINGS).replace(/\{name\}/g, name);
+  var tip = pickRandom(SLEEP_TIPS);
 
-  let story = `<p>${opening}</p>`;
-  if(hp) story += `<p>${hp.replace('{name}', name)}</p>`;
-  if(sp) story += `<p>${sp.replace(/\{name\}/g, name)}</p>`;
-  if(cp) story += `<p>${cp.replace(/\{name\}/g, name)}</p>`;
-  story += `<p>${closing}</p>`;
+  var story = '<p>' + opening + '</p>';
+  if(hp) story += '<p>' + hp.replace(/\{name\}/g, name) + '</p>';
+  if(sp) story += '<p>' + sp.replace(/\{name\}/g, name) + '</p>';
+  if(cp) story += '<p>' + cp.replace(/\{name\}/g, name) + '</p>';
+  story += '<p>' + closing + '</p>';
 
-  const titles = ['星星花的约定','月亮婆婆的故事书','小熊森林的秘密','云朵邮递员的信','枕头棉花糖历险记','深海里的灯笼鱼'];
+  var titles = ['星星花的约定','月亮婆婆的故事书','小熊森林的秘密','云朵邮递员的信','枕头棉花糖历险记','深海里的灯笼鱼'];
   document.getElementById('story-title').textContent = '📖 ' + pickRandom(titles);
   document.getElementById('story-text').innerHTML = story;
   document.getElementById('sleep-tip').textContent = tip;
 
-  const now = new Date();
-  const moonPhases = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
-  const phaseIdx = now.getDate() % 8;
+  var now = new Date();
+  var moonPhases = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
   document.getElementById('moon-phase').innerHTML =
-    `今晚月色 ${moonPhases[phaseIdx]} · ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+    '今晚月色 ' + moonPhases[now.getDate() % 8] + ' · ' + now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
 
   document.getElementById('input-card').style.display = 'none';
-  document.getElementById('story-card').classList.add('show');
-  document.getElementById('story-card').style.display = 'block';
+  var sc = document.getElementById('story-card');
+  sc.classList.add('show');
+  sc.style.display = 'block';
 }
 
 function reset(){
   document.getElementById('input-card').style.display = 'block';
-  document.getElementById('story-card').style.display = 'none';
-  document.getElementById('story-card').classList.remove('show');
+  var sc = document.getElementById('story-card');
+  sc.style.display = 'none';
+  sc.classList.remove('show');
   document.getElementById('happy').value = '';
   document.getElementById('sad').value = '';
   document.getElementById('curious').value = '';
