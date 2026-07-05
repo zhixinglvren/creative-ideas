@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "argument-coach",
+      "icon": "🥊",
+      "title": "AI 吵架教练",
+      "tagline": "先模拟再上场——关键对话练习器，不再事后懊悔",
+      "status": "live",
+      "category": "效率工具"
+    },
+    {
       "id": "goodnight-daily",
       "icon": "🌙",
       "title": "晚安宝贝",

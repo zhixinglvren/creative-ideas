@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 吵架教练 — 关键对话模拟器</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117; color: #c9d1d9; min-height: 100vh; padding: 20px;
+  }
+  .container { max-width:640px; margin:0 auto; }
+  .header { text-align:center; margin:30px 0; }
+  .header .icon { font-size:48px; }
+  h1 { font-size:22px; color:#58a6ff; margin:8px 0 4px; }
+  .subtitle { font-size:13px; color:#8b949e; }
+
+  .card {
+    background: #161b22; border:1px solid #30363d; border-radius:12px;
+    padding:24px; margin-bottom:16px;
+  }
+  .card h3 { font-size:15px; color:#58a6ff; margin-bottom:16px; }
+
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:13px; color:#8b949e; margin-bottom:6px; }
+  .field select, .field textarea {
+    width:100%; padding:10px 12px; border-radius:8px;
+    border:1px solid #30363d; background:#0d1117; color:#c9d1d9;
+    font-size:14px; outline:none; transition:border-color 0.2s;
+  }
+  .field select:focus, .field textarea:focus { border-color:#58a6ff; }
+  .field textarea { height:80px; resize:vertical; }
+  .field .hint { font-size:11px; color:#484f58; margin-top:4px; }
+
+  .scenarios {
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+  }
+  .scenario-tag {
+    padding:6px 12px; border-radius:20px; border:1px solid #30363d;
+    background:transparent; color:#8b949e; font-size:12px; cursor:pointer;
+    transition:all 0.2s;
+  }
+  .scenario-tag:hover { border-color:#58a6ff; color:#58a6ff; }
+  .scenario-tag.active { background:#1f6feb22; border-color:#58a6ff; color:#58a6ff; }
+
+  .btn {
+    width:100%; padding:14px; border:none; border-radius:10px;
+    font-size:15px; font-weight:600; cursor:pointer;
+    background:linear-gradient(135deg, #238636, #2ea043); color:#fff;
+    transition:transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(35,134,54,0.3); }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+  .result-card { display:none; animation: fadeUp 0.5s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .result-card.show { display:block; }
+
+  .strategy-section { margin-bottom:20px; }
+  .strategy-section h4 {
+    font-size:14px; color:#f0883e; margin-bottom:10px;
+    padding-bottom:8px; border-bottom:1px solid #21262d;
+  }
+  .strategy-section p, .strategy-section li {
+    font-size:14px; line-height:1.8; color:#c9d1d9;
+  }
+  .strategy-section ul { padding-left:20px; }
+  .strategy-section li { margin-bottom:6px; }
+
+  .dialogue-block {
+    background:#0d1117; border-radius:8px; padding:16px;
+    margin-bottom:12px;
+  }
+  .dialogue-block .you { color:#79c0ff; margin-bottom:6px; }
+  .dialogue-block .them { color:#f85149; margin-bottom:6px; }
+  .dialogue-block .coach { color:#8b949e; font-size:12px; font-style:italic; margin-top:6px; padding-top:6px; border-top:1px solid #21262d; }
+
+  .tip-box {
+    background:rgba(240,136,62,0.1); border:1px solid rgba(240,136,62,0.3);
+    border-radius:8px; padding:12px; margin-top:16px; font-size:13px; color:#f0883e;
+  }
+
+  .btn-secondary {
+    margin-top:16px; background:rgba(255,255,255,0.08); color:#8b949e;
+  }
+  .btn-secondary:hover { box-shadow:none; color:#c9d1d9; }
+
+  @media (max-width:480px) {
+    .container { padding:0; }
+    h1 { font-size:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="icon">🥊</div>
+    <h1>AI 吵架教练</h1>
+    <div class="subtitle">关键对话练习器 · 先模拟，再上场</div>
+  </div>
+
+  <div class="card" id="input-card">
+    <h3>🎯 你要跟谁「过招」？</h3>
+    <div class="scenarios" id="scenario-tags">
+      <span class="scenario-tag active" data-opponent="老板">老板（提加薪/离职）</span>
+      <span class="scenario-tag" data-opponent="房东">房东（退押金）</span>
+      <span class="scenario-tag" data-opponent="客服">客服（投诉维权）</span>
+      <span class="scenario-tag" data-opponent="同事">同事（推活/抢功）</span>
+      <span class="scenario-tag" data-opponent="家人">家人（敏感话题）</span>
+      <span class="scenario-tag" data-opponent="自定义">自定义</span>
+    </div>
+    <div class="field" id="custom-opponent-field" style="display:none">
+      <label>对手身份</label>
+      <input id="custom-opponent" placeholder="比如：驾校教练、健身房销售" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #30363d;background:#0d1117;color:#c9d1d9;font-size:14px;outline:none;">
+    </div>
+    <div class="field">
+      <label>你想要的结果</label>
+      <textarea id="goal" placeholder="比如：涨薪 20%、全额退押金、换货不付运费..."></textarea>
+    </div>
+    <div class="field">
+      <label>背景补充（选填）</label>
+      <textarea id="context" placeholder="比如：已经入职两年但上次涨薪是一年前、房东当初口头承诺过..."></textarea>
+      <div class="hint">补充越多，策略越精准</div>
+    </div>
+    <button class="btn" id="coach-btn" onclick="startCoach()">🥊 开始模拟训练</button>
+  </div>
+
+  <div class="card result-card" id="result-card">
+    <div id="result-content"></div>
+    <button class="btn btn-secondary" onclick="reset()">🔄 换个场景再练</button>
+  </div>
+</div>
+
+<script>
+var opponent = '老板';
+
+document.getElementById('scenario-tags').addEventListener('click', function(e){
+  if(!e.target.classList.contains('scenario-tag')) return;
+  var tags = document.querySelectorAll('.scenario-tag');
+  for(var i=0;i<tags.length;i++) tags[i].classList.remove('active');
+  e.target.classList.add('active');
+  opponent = e.target.getAttribute('data-opponent');
+  if(opponent === '自定义'){
+    document.getElementById('custom-opponent-field').style.display = 'block';
+  } else {
+    document.getElementById('custom-opponent-field').style.display = 'none';
+  }
+});
+
+var STRATEGIES = {
+  "老板": {
+    opening: "感谢您的时间。我想聊聊我在团队中的贡献和未来的发展方向。",
+    points: [
+      "用数据说话：过去一年完成了 X 个项目，带来了 Y 的业绩提升",
+      "对标市场：同岗位市场薪资范围是 X-Y，我的当前薪资低于中位线",
+      "表达忠诚：我喜欢这里，希望长期发展，所以想把薪资对齐到合理水平",
+      "给台阶：如果预算有限，我们可以讨论分步调整或其他补偿方式"
+    ],
+    counters: [
+      {them:"今年预算紧张，不是针对你一个人", coach:"不要争论预算真假。回应：'我理解公司有预算节奏，我们可以讨论 Q3 还是 Q4 调整更适合？' —— 把对抗变成协作排期。"},
+      {them:"你的表现还需要再观察", coach:"不要防御。回应：'具体哪些方面您觉得还需要提升？我想有明确的改进方向。' —— 把模糊评价变成可执行的 KPI。"},
+      {them:"你走了对团队影响不大", coach:"这是试探。回应：'我相信团队很优秀，但我也相信自己过去两年的贡献是独特的。' —— 不卑不亢，守住底线。"}
+    ]
+  },
+  "房东": {
+    opening: "王哥/李姐，合同到期了，我想跟您确认一下退租的流程和押金的事。",
+    points: [
+      "先确认合同：我们的合同里押金条款是 X，我已提前 Y 天通知",
+      "拍照留证：房屋现状照片已准备好，如有异议可以当场核对",
+      "把责任前置：合同期内所有维修都是正常使用损耗，有维修记录可以查",
+      "底线明确：法律规定除合理损耗外不得扣押金，这是法律依据"
+    ],
+    counters: [
+      {them:"墙面有污渍，要扣 500 清洁费", coach:"不要认。回应：'正常居住痕迹不属于损坏，合同和民法典都有规定。如果有争议，我们可以找第三方评估。' —— 引用法律，不纠缠细节。"},
+      {them:"你提前搬走违约了", coach:"确认合同。回应：'合同约定提前 30 天通知即可，我是 X 月 X 日通知的，到今天已经 Y 天。' —— 精确到天。"},
+      {them:"押金等我找到下个租客再退", coach:"这是对方在拖。回应：'押金退还和您找租客是两件事，法律上押金应在退房当日结算。' —— 拆分问题，不让对方捆绑。"}
+    ]
+  },
+  "客服": {
+    opening: "你好，我在 X 月 X 日购买了 Y 产品，订单号 Z，出现了以下问题。",
+    points: [
+      "先说事实：时间、订单号、产品、问题 —— 一个都不要少",
+      "明确诉求：我要的是退款/换货/维修，不要模棱两可",
+      "升级路径：如果客服解决不了，请帮我升级到主管",
+      "保留证据：全程截屏或录音，口头承诺要对方发文字确认"
+    ],
+    counters: [
+      {them:"这个需要上级审批，您先等等", coach:"不要被动等。回应：'好的，请问审批大概需要多久？如果今天下班前没回复，我应该联系谁？' —— 设时间框 + 要联系人。"},
+      {them:"这是您的使用问题，不在保修范围", coach:"不要争对错。回应：'我保留产品检测的权利。请把贵司的保修条款和不覆盖的具体条款发给我，书面确认。' —— 让对方写下来，文字确认是责任。"},
+      {them:"可以给您 20 元优惠券作为补偿", coach:"不接受的回应：'这不是补偿的问题，是产品本身的问题。我要求的是（退款/换货），不是优惠券。' —— 不被带偏，回到核心诉求。"}
+    ]
+  },
+  "同事": {
+    opening: "关于 XX 项目，我想跟你对齐一下我们各自负责的部分。",
+    points: [
+      "先对齐再行动：书面确认职责边界，避免模糊地带被推活",
+      "用「我们」而不是「你」：'这个项目的 deadline 是我们一起面对的'",
+      "记录共识：会后发邮件确认分工，CC 相关人",
+      "推活反制：'这部分确实重要，不过我的 bandwidth 已经满了，你要不要跟老大说一声调整优先级？'"
+    ],
+    counters: [
+      {them:"这个你顺手就做了，很快的", coach:"不要接。回应：'我理解你觉得简单，但我的任务是 A/B/C，再加这个会影响到 X 的交付。要不我们一起跟老大确认优先级？' —— 把「拒绝」包装成「对齐」。"},
+      {them:"上次我也帮过你啊（翻旧账）", coach:"不纠缠。回应：'上次的事我记得，谢谢。这次我们聚焦当前项目，各司其职效率最高。' —— 感谢但拉回当下。"},
+      {them:"老大说让你做的（假传圣旨）", coach:"验证。回应：'好的，我找老大确认一下细节，免得做偏了。' —— 永远不会错的一句话。"}
+    ]
+  },
+  "家人": {
+    opening: "妈/爸/老婆，有个事我一直想跟你聊，今天正好有时间。",
+    points: [
+      "选时机：不要在对方疲惫/饥饿/赶时间的时候谈",
+      "先说感受再提要求：'我知道你是为我好，但这样做我压力很大'",
+      "给选择而不是下命令：'你觉得 A 方案和 B 方案哪个更可行？'",
+      "设定边界但留余地：'这次我们先试试一个月，不行再调整'"
+    ],
+    counters: [
+      {them:"我辛辛苦苦还不是为了你", coach:"不要辩解。回应：'我知道你是为我好，我也很感激。但方式如果不调整，效果会打折。我们一起想想怎么能既达到你的目标、我也不那么难受？' —— 先认可，再提调整。"},
+      {them:"你看看别人家孩子...", coach:"不比较。回应：'每个家庭情况不一样，我们聊的是我们家的事。别人好不好不影响我们的决定。' —— 切断比较链条。"},
+      {them:"你今年必须结婚/生孩子", coach:"不给承诺但给预期。回应：'这是我的人生大事，我想自己做决定。但我可以跟你聊聊我的想法和计划。' —— 守住自主权但保持沟通。"}
+    ]
+  }
+};
+
+function startCoach(){
+  var btn = document.getElementById('coach-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 分析场景中...';
+
+  var goalEl = document.getElementById('goal');
+  var goal = goalEl.value.trim();
+  if(!goal){
+    alert('至少填一下你想要的结果～');
+    btn.disabled = false;
+    btn.textContent = '🥊 开始模拟训练';
+    return;
+  }
+
+  var customEl = document.getElementById('custom-opponent');
+  var finalOpponent = opponent === '自定义' ? (customEl.value.trim() || '对方') : opponent;
+  var ctxEl = document.getElementById('context');
+  var context = ctxEl.value.trim();
+
+  setTimeout(function(){
+    renderStrategy(finalOpponent, goal, context);
+    btn.disabled = false;
+    btn.textContent = '🥊 开始模拟训练';
+  }, 1000);
+}
+
+function renderStrategy(opp, goal, context){
+  var strategy = STRATEGIES[opp];
+
+  var html = '';
+  html += '<div class="strategy-section">';
+  html += '<h4>🎯 核心目标</h4>';
+  html += '<p>' + esc(goal) + '</p>';
+  if(context){
+    html += '<p style="color:#8b949e;font-size:12px;margin-top:6px;">背景：' + esc(context) + '</p>';
+  }
+  html += '</div>';
+
+  if(strategy){
+    html += '<div class="strategy-section">';
+    html += '<h4>🗣️ 开场白</h4>';
+    html += '<p style="background:#0d1117;padding:12px;border-radius:8px;border-left:3px solid #58a6ff;">' + esc(strategy.opening) + '</p>';
+    html += '</div>';
+
+    html += '<div class="strategy-section">';
+    html += '<h4>📋 谈判要点</h4>';
+    html += '<ul>';
+    for(var i=0;i<strategy.points.length;i++){
+      html += '<li>' + esc(strategy.points[i]) + '</li>';
+    }
+    html += '</ul>';
+    html += '</div>';
+
+    html += '<div class="strategy-section">';
+    html += '<h4>🥊 对方可能的反击 & 教练指导</h4>';
+    for(var j=0;j<strategy.counters.length;j++){
+      var c = strategy.counters[j];
+      html += '<div class="dialogue-block">';
+      html += '<div class="them">🗣️ ' + esc(opp) + '：「' + esc(c.them) + '」</div>';
+      html += '<div class="coach">🧠 教练：「' + esc(c.coach) + '」</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="strategy-section">';
+    html += '<h4>📋 通用策略框架</h4>';
+    html += '<ul>';
+    html += '<li>开场：表明来意，直接但不具攻击性</li>';
+    html += '<li>陈述：用事实和数据说话，不诉诸情绪</li>';
+    html += '<li>倾听：让对方先说完，不要打断</li>';
+    html += '<li>回应：聚焦核心诉求，不被带偏话题</li>';
+    html += '<li>收尾：确认共识，最好有书面记录</li>';
+    html += '</ul>';
+    html += '</div>';
+
+    html += '<div class="strategy-section">';
+    html += '<h4>🥊 模拟对话</h4>';
+    html += '<div class="dialogue-block">';
+    html += '<div class="you">你：我想跟你聊聊 ' + esc(goal) + ' 这件事。</div>';
+    html += '<div class="them">' + esc(opp) + '：（可能反对）为什么？现在不是时候。</div>';
+    html += '<div class="coach">🧠 教练：不要说「现在不方便就改天」—— 这会给对方拖延的借口。说「这件事对我很重要，不会占用很长时间」。</div>';
+    html += '</div>';
+    html += '<div class="dialogue-block">';
+    html += '<div class="them">' + esc(opp) + '：（转移话题）但是之前你也有做得不好的地方...</div>';
+    html += '<div class="coach">🧠 教练：不要防御、不要道歉。说「我理解你的看法，但今天我们聚焦在这个具体问题上」—— 拉回来。</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  html += '<div class="tip-box">💡 <b>关键心法：</b>最好的吵架不是赢，是让对方觉得你不好对付但值得尊重。带数据、不带情绪、守住底线、给对方台阶。</div>';
+
+  document.getElementById('result-content').innerHTML = html;
+  document.getElementById('input-card').style.display = 'none';
+  var rc = document.getElementById('result-card');
+  rc.classList.add('show');
+  rc.style.display = 'block';
+}
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function reset(){
+  document.getElementById('input-card').style.display = 'block';
+  var rc = document.getElementById('result-card');
+  rc.style.display = 'none';
+  rc.classList.remove('show');
+  document.getElementById('goal').value = '';
+  document.getElementById('context').value = '';
+}
+</script>
+</body>
+</html>
