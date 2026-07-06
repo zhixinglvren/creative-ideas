@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>副业起步器 · 创意实验室</title>
+<style>
+  :root { --accent: #6366f1; --bg: #0f1117; --card: #1a1d28; --border: #2a2d3a; --text: #e1e4ed; --muted: #7b7f8c; --green: #10b981; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .wrapper { max-width: 640px; margin: 0 auto; padding: 48px 20px; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 32px; }
+  .back { display: inline-block; color: var(--muted); text-decoration: none; font-size: 0.8rem; margin-bottom: 16px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+  .card label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 0.95rem; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opts button {
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px;
+    background: transparent; color: var(--text); cursor: pointer; font-size: 0.85rem;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .opts button:hover { border-color: var(--accent); }
+  .opts button.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .cta {
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    background: var(--accent); color: #fff; font-size: 1rem; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+  }
+  .cta:hover { opacity: 0.9; }
+  .cta:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .result { display: none; }
+  .result.show { display: block; }
+
+  .match-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 24px; margin-bottom: 14px; position: relative;
+    transition: border-color 0.2s;
+  }
+  .match-card.top { border-color: var(--accent); }
+  .match-rank { font-size: 0.75rem; color: var(--accent); margin-bottom: 4px; }
+  .match-card h3 { font-size: 1.1rem; margin-bottom: 4px; }
+  .match-score {
+    display: inline-block; padding: 2px 10px; border-radius: 10px;
+    background: rgba(99,102,241,0.15); color: var(--accent); font-size: 0.78rem; font-weight: 700;
+  }
+  .match-detail { margin-top: 10px; font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+  .match-first { margin-top: 10px; padding: 12px 14px; background: rgba(16,185,129,0.08); border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #a3e5c0; line-height: 1.7; }
+
+  @media (max-width: 480px) {
+    .wrapper { padding: 32px 14px; }
+    .card { padding: 18px; }
+    .opts button { padding: 7px 13px; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="https://zhixinglvren.github.io/creative-ideas/" class="back">← 创意实验室</a>
+  <h1>🧭 副业起步器</h1>
+  <p class="sub">不知道做什么副业？AI 根据你的时间、技能和性格精准匹配</p>
+
+  <div class="card">
+    <label>⏰ 你每周能投入多少时间？</label>
+    <div class="opts" id="time-opts">
+      <button data-v="<5">&lt; 5 小时</button>
+      <button data-v="5-10">5–10 小时</button>
+      <button data-v="10-20">10–20 小时</button>
+      <button data-v=">20">&gt; 20 小时</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>🛠️ 你的技能标签（多选）</label>
+    <div class="opts" id="skill-opts">
+      <button data-v="writing">写作 / 文案</button>
+      <button data-v="coding">编程 / 技术</button>
+      <button data-v="design">设计 / 创意</button>
+      <button data-v="teach">教学 / 培训</button>
+      <button data-v="social">社交 / 沟通</button>
+      <button data-v="data">数据分析 / Excel</button>
+      <button data-v="video">视频 / 剪辑</button>
+      <button data-v="lang">外语能力</button>
+      <button data-v="finance">理财 / 投资</button>
+      <button data-v="cook">厨艺 / 美食</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>🧠 你的性格倾向</label>
+    <div class="opts" id="persona-opts">
+      <button data-v="introvert">内向 — 喜欢独立作业</button>
+      <button data-v="ambivert">中间 — 两者皆可</button>
+      <button data-v="extrovert">外向 — 喜欢跟人打交道</button>
+    </div>
+  </div>
+
+  <button class="cta" id="match-btn" onclick="match()">🔍 开始匹配</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+var timeSel = null, skillsSel = [], personaSel = null;
+
+function bind(containerId) {
+  var btns = document.getElementById(containerId).querySelectorAll('button');
+  btns.forEach(function(b) {
+    b.addEventListener('click', function() {
+      if (containerId === 'skill-opts') {
+        b.classList.toggle('sel');
+        var v = b.getAttribute('data-v');
+        var idx = skillsSel.indexOf(v);
+        if (idx > -1) skillsSel.splice(idx, 1);
+        else skillsSel.push(v);
+      } else {
+        btns.forEach(function(x) { x.classList.remove('sel'); });
+        b.classList.add('sel');
+        if (containerId === 'time-opts') timeSel = b.getAttribute('data-v');
+        if (containerId === 'persona-opts') personaSel = b.getAttribute('data-v');
+      }
+    });
+  });
+}
+bind('time-opts'); bind('skill-opts'); bind('persona-opts');
+
+var db = [
+  { n:'自媒体写作', s:['writing','social'], t:['5-10','10-20','>20'], p:['ambivert','extrovert'], score:95, d:'你有文字功底，自媒体是门槛最低的副业。从公众号/小红书开始，变现路径清晰：流量主→接广告→知识付费。', first:'今天开一个小红书号，写一篇 300 字的专业领域分享，发出去。不需要完美，只需要开始。' },
+  { n:'技术外包 / 接单', s:['coding'], t:['10-20','>20'], p:['introvert','ambivert'], score:93, d:'程序员接外包是最直接的变现路径。从猪八戒/Upwork 开始，小单积累口碑，逐步提价。注意：先做小项目，不要一上来接大单。', first:'去 Upwork 注册账号，完善个人简介（英文），标一个比市场价低 20% 的初始价格。' },
+  { n:'在线教学 / 知识付费', s:['teach','writing','coding','design','finance','lang'], t:['5-10','10-20'], p:['ambivert','extrovert'], score:90, d:'你能教的，一定有人想学。从知乎 Live / 知识星球 / 在行开始。不需要是专家——你只需要比初学者多走几步。', first:'列 3 个你最擅长的细分话题，选最小的那个，写一个 5 分钟的课程大纲。' },
+  { n:'AI 工具咨询 / 提示词工程', s:['coding','writing','data'], t:['5-10','10-20'], p:['ambivert','introvert'], score:88, d:'2025-2026 年 AI 工具咨询是最新蓝海。帮小企业/个人用 AI 提效：提示词优化、自动化流程搭建、数据清理。', first:'把你日常用的 AI 工作流整理成 3 条可复用的「提示词模板」，发到即刻/X 上看看反馈。' },
+  { n:'视频剪辑 / 短视频运营', s:['video','design','social'], t:['10-20','>20'], p:['ambivert','extrovert'], score:87, d:'短视频时代，剪辑是刚需。从剪映开始，帮小商家/个人博主剪视频。学会用 AI 工具（Runway、HeyGen）是加分项。', first:'用手机拍一段 15 秒的视频，用剪映剪出片头+字幕+配乐，发到朋友圈看反馈。' },
+  { n:'翻译 / 双语内容', s:['lang','writing'], t:['5-10','10-20'], p:['introvert','ambivert'], score:86, d:'外语能力是硬通货。从文档翻译→视频字幕翻译→行业专业翻译，逐步升级。AI 翻译可以用但需要人工润色。', first:'找一段 500 字的英文行业文章，翻译成中文并发到知乎/公众号，看阅读量。' },
+  { n:'数据分析 / Excel 代做', s:['data','coding'], t:['5-10','10-20'], p:['introvert','ambivert'], score:85, d:'企业对数据分析的需求爆发，但很多人不会用 Excel/Python。帮小企业做报表、数据可视化、甚至简单的爬虫。', first:'做一个「某某行业数据分析案例」发到小红书，末尾标注「接数据分析」，看咨询量。' },
+  { n:'私房菜 / 美食社群', s:['cook','social'], t:['10-20','>20'], p:['extrovert','ambivert'], score:84, d:'有厨艺就可以变现。从朋友圈私房菜开始→建微信群预订→周末限时接单。不需要开店，成本极低。', first:'这个周末做一道拿手菜，拍照发朋友圈，配文「想吃的扣 1」，看看多少人响应。' },
+  { n:'社交媒体代运营', s:['writing','design','social','video'], t:['10-20','>20'], p:['ambivert','extrovert'], score:83, d:'每个小商家都需要社交媒体但都不会做。帮他们写文案、做图、排期发帖。从 1-2 个客户开始，月费 2000-5000。', first:'找 3 个你关注的小商家，看看他们的社交媒体哪里可以改进，写一份 1 页的优化建议。' },
+  { n:'设计接单 / UI 外包', s:['design','coding'], t:['10-20','>20'], p:['introvert','ambivert'], score:82, d:'Logo、海报、PPT、UI 界面——设计需求无处不在。从稿定设计/Canva 模板开始，逐步升级到定制设计。', first:'做 3 套不同风格的 PPT 模板，挂到稿定设计/Canva 上，看看下载量。' },
+  { n:'个人理财顾问（非持牌）', s:['finance','writing','social'], t:['5-10','10-20'], p:['ambivert','extrovert'], score:80, d:'注意：非持牌不能推荐具体产品。但可以做财商教育、记账辅导、消费降级方案——这些合法且有需求。', first:'写一篇「我的理财避坑指南」发到公众号/知乎，看点赞和收藏数。' },
+  { n:'二手交易 / 闲鱼代运营', s:['social','data'], t:['5-10','10-20'], p:['ambivert','extrovert'], score:78, d:'帮不会用闲鱼的人卖闲置。拍照、写标题、定价、沟通——一套流程打包。按成交额抽佣。', first:'帮一个朋友把他的闲置挂到闲鱼上，从头到尾帮他操作一遍，看看能卖多少钱。' }
+];
+
+function match() {
+  if (!timeSel || skillsSel.length === 0 || !personaSel) {
+    alert('请完成所有选择：时间、技能（至少选一个）、性格');
+    return;
+  }
+
+  // Score: skill match (primary) + persona bonus + time penalty
+  var scored = [];
+  db.forEach(function(item) {
+    var sc = 0;
+    var skMatch = false, psMatch = false, tmMatch = false;
+
+    // Skill intersection
+    item.s.forEach(function(s) {
+      if (skillsSel.indexOf(s) !== -1) { sc += 30; skMatch = true; }
+    });
+    if (!skMatch) sc -= 50;
+
+    // Persona match
+    item.p.forEach(function(p) {
+      if (p === personaSel) { sc += 15; psMatch = true; }
+    });
+
+    // Time match
+    item.t.forEach(function(t) {
+      if (t === timeSel) { sc += 10; tmMatch = true; }
+    });
+    if (!tmMatch) sc -= 10;
+
+    sc += item.score; // base relevance
+    if (sc > 0) scored.push({ item: item, score: sc });
+  });
+
+  scored.sort(function(a,b){ return b.score - a.score; });
+  scored = scored.slice(0, 5);
+
+  var html = '<h2 style="margin:28px 0 14px;">🔍 你的副业匹配</h2>';
+  scored.forEach(function(m, i) {
+    html += '<div class="match-card'+(i===0?' top':'')+'">';
+    html += '<div class="match-rank">TOP '+(i+1)+'</div>';
+    html += '<h3>'+m.item.n+' <span class="match-score">匹配度 '+(Math.min(Math.round(m.score/2.2), 99))+'%</span></h3>';
+    html += '<div class="match-detail">'+m.item.d+'</div>';
+    html += '<div class="match-first">🚀 <strong>第一步：</strong>'+m.item.first+'</div>';
+    html += '</div>';
+  });
+
+  document.getElementById('result').innerHTML = html;
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

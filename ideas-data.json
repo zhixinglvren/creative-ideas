@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "side-hustle-finder",
+      "icon": "\ud83e\udded",
+      "title": "副业起步器",
+      "tagline": "不知道做什么副业？AI 根据你的时间、技能和性格精准匹配",
+      "status": "live",
+      "category": "职业发展"
+    },
+    {
       "id": "argument-coach",
       "icon": "🥊",
       "title": "AI 吵架教练",
