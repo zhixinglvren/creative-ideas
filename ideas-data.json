@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "course-cleaner",
+      "icon": "🧹",
+      "title": "囤课清道夫",
+      "tagline": "你买过的课，AI 帮你盘一盘——哪些值得学，按什么顺序学",
+      "status": "live",
+      "category": "个人效率"
+    },
+    {
       "id": "side-hustle-finder",
       "icon": "\ud83e\udded",
       "title": "副业起步器",

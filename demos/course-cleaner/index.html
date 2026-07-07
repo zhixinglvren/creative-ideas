@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>囤课清道夫 · 创意实验室</title>
+<style>
+  :root { --accent: #f59e0b; --bg: #0f1117; --card: #1a1d28; --border: #2a2d3a; --text: #e1e4ed; --muted: #7b7f8c; --red: #ef4444; --green: #10b981; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .wrapper { max-width: 600px; margin: 0 auto; padding: 48px 20px; }
+  .back { display: inline-block; color: var(--muted); text-decoration: none; font-size: 0.8rem; margin-bottom: 16px; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 14px; }
+  .card-row { display: flex; justify-content: space-between; align-items: center; }
+  .card h3 { font-size: 0.95rem; }
+  .card .meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .card .price { font-weight: 700; font-size: 0.9rem; }
+  .card .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; margin-right: 6px; }
+  .badge.worth { background: rgba(16,185,129,0.12); color: var(--green); }
+  .badge.skip { background: rgba(239,68,68,0.12); color: var(--red); }
+  .badge.maybe { background: rgba(245,158,11,0.12); color: var(--accent); }
+
+  .summary { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(239,68,68,0.06)); border: 1px solid rgba(245,158,11,0.25); border-radius: 14px; padding: 20px 22px; margin-bottom: 20px; }
+  .summary h2 { font-size: 1.05rem; margin-bottom: 12px; }
+  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.88rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .stat-row:last-child { border: none; }
+  .stat-val { font-weight: 700; }
+
+  .tip { background: rgba(16,185,129,0.06); border-left: 3px solid var(--green); border-radius: 0 10px 10px 0; padding: 12px 16px; margin-top: 18px; font-size: 0.85rem; line-height: 1.7; color: #a3e5c0; }
+
+  .cta { display: inline-block; margin-top: 10px; padding: 8px 18px; background: var(--accent); color: #000; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-decoration: none; border: none; font-family: inherit; transition: opacity 0.15s; }
+  .cta:hover { opacity: 0.85; }
+
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .input-row input { flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.85rem; font-family: inherit; }
+  .input-row input::placeholder { color: var(--muted); }
+  .input-row button { padding: 10px 18px; background: var(--accent); color: #000; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 0.85rem; }
+
+  @media (max-width: 480px) {
+    .wrapper { padding: 32px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <a href="https://zhixinglvren.github.io/creative-ideas/" class="back">← 创意实验室</a>
+  <h1>🧹 囤课清道夫</h1>
+  <p class="sub">你买过的课，AI 帮你盘一盘——哪些值得学，按什么顺序学</p>
+
+  <div class="card">
+    <div class="input-row">
+      <input id="course-inp" placeholder="添加一门课，如：Python 爬虫实战 · ¥199 · B站" onkeydown="if(event.key==='Enter')addCourse()">
+      <button onclick="addCourse()">+ 添加</button>
+    </div>
+    <div style="font-size:0.75rem;color:var(--muted)">格式：课程名 · ¥价格 · 平台（价格和平台可选）</div>
+  </div>
+
+  <div id="my-courses"></div>
+
+  <div id="analysis" style="display:none;">
+    <div class="summary" id="summary"></div>
+    <div id="verdicts"></div>
+    <div class="tip" id="tip"></div>
+  </div>
+</div>
+
+<script>
+var courses = [];
+
+var demos = [
+  { n:'Python 爬虫实战', price:199, plat:'极客时间', pct:15, dur:'32h', verdict:'maybe', reason:'基础内容偏多，你已有编程基础，可2倍速跳过前30%' },
+  { n:'产品经理从入门到精通', price:299, plat:'得到', pct:8, dur:'48h', verdict:'skip', reason:'你是开发者不是产品经理，这门课与你当前路径不相关' },
+  { n:'React 全栈开发', price:399, plat:'慕课网', pct:22, dur:'56h', verdict:'worth', reason:'前端技能是开发者必备，React 市场需求大，建议优先学' },
+  { n:'投资理财基础', price:99, plat:'知乎', pct:60, dur:'12h', verdict:'worth', reason:'理财是刚需，你已学60%，再投入5小时就能完成' },
+  { n:'摄影入门', price:49, plat:'B站', pct:5, dur:'8h', verdict:'skip', reason:'纯粹兴趣课，性价比低，不如周末出门拍50张来得快' },
+  { n:'AI 绘画 Midjourney', price:199, plat:'知识星球', pct:30, dur:'16h', verdict:'worth', reason:'AI 绘画是2025-2026热门技能，与你的技术背景高度互补' }
+];
+
+var tips = [
+  '💡 <b>策略：</b>先学 "值得学" 中进度最高的课（沉没成本最低），每天只推 5 分钟。',
+  '💡 <b>节省：</b>如果 3 门 "不推荐" 课程最初就不买，可省 ¥447。下次购买前先用清道夫评估。',
+  '💡 <b>1-3-5 法则：</b>每天 1 门主课 · 最多 3 门并行 · 单门不超过 5 天中断。'
+];
+
+function addCourse() {
+  var inp = document.getElementById('course-inp');
+  var raw = inp.value.trim();
+  if (!raw) return;
+
+  // Parse: name · ¥price · platform
+  var parts = raw.split('·').map(function(p){ return p.trim(); });
+  var name = parts[0] || raw;
+  var price = parseInt((parts[1]||'').replace(/[¥￥\s]/g,'')) || 0;
+  var plat = parts[2] || '';
+
+  var c = { n:name, price:price, plat:plat, pct:Math.floor(Math.random()*50+5), dur: (Math.floor(Math.random()*60)+5)+'h' };
+  courses.push(c);
+  inp.value = '';
+  inp.focus();
+  render();
+}
+
+function remove(i) {
+  courses.splice(i, 1);
+  render();
+}
+
+function render() {
+  var html = '';
+  if (courses.length > 0) {
+    html += '<button class="cta" onclick="analyze()" style="width:100%;margin-bottom:12px;">🔍 分析我的囤课</button>';
+  }
+  courses.forEach(function(c, i) {
+    html += '<div class="card card-row">';
+    html += '<div><h3>'+c.n+'</h3><div class="meta">'+(c.plat||'未知平台')+' · '+(c.price>0?'¥'+c.price:'免费')+' · 进度 '+c.pct+'%</div></div>';
+    html += '<div style="color:var(--muted);cursor:pointer;padding:4px 8px;font-size:1.1rem;" onclick="remove('+i+')">✕</div>';
+    html += '</div>';
+  });
+  if (courses.length === 0) {
+    html += '<div class="card" style="text-align:center;color:var(--muted);padding:40px;">👆 添加你的囤课，开始盘点吧</div>';
+  }
+  document.getElementById('my-courses').innerHTML = html;
+
+  var analysisEl = document.getElementById('analysis');
+  if (courses.length === 0) analysisEl.style.display = 'none';
+}
+
+function analyze() {
+  // Merge demo data with user courses
+  var all = courses.concat(demos.slice(0, Math.max(2, 6-courses.length)));
+
+  var totalSpent = 0, totalPct = 0;
+  all.forEach(function(c) { totalSpent += c.price; totalPct += c.pct; });
+
+  all.sort(function(a,b){ return b.price - a.price; });
+  var wasted = all.filter(function(c){ return c.verdict === 'skip'; }).reduce(function(s,c){ return s+c.price; }, 0);
+
+  var summaryHtml = '<h2>📊 囤课盘点</h2>';
+  summaryHtml += '<div class="stat-row"><span>📚 课程总数</span><span class="stat-val">'+all.length+' 门</span></div>';
+  summaryHtml += '<div class="stat-row"><span>💰 总花费</span><span class="stat-val" style="color:var(--accent)">¥'+totalSpent.toLocaleString()+'</span></div>';
+  summaryHtml += '<div class="stat-row"><span>📈 平均学习进度</span><span class="stat-val">'+Math.round(totalPct/all.length)+'%</span></div>';
+  summaryHtml += '<div class="stat-row"><span>🗑️ 不推荐课程花费</span><span class="stat-val" style="color:var(--red)">¥'+wasted.toLocaleString()+'</span></div>';
+  document.getElementById('summary').innerHTML = summaryHtml;
+
+  var verdictHtml = '';
+  all.forEach(function(c) {
+    var badge = c.verdict === 'worth' ? '<span class="badge worth">✅ 值得学</span>'
+              : c.verdict === 'maybe' ? '<span class="badge maybe">⚠️ 可选</span>'
+              : '<span class="badge skip">❌ 不推荐</span>';
+    verdictHtml += '<div class="card">';
+    verdictHtml += '<div class="card-row" style="margin-bottom:6px;"><h3>'+c.n+'</h3></div>';
+    verdictHtml += '<div class="meta">'+c.plat+' · ¥'+c.price+' · 已学 '+c.pct+'% · 总时长 '+c.dur+'</div>';
+    verdictHtml += '<div style="margin-top:6px;">'+badge+'</div>';
+    verdictHtml += '<div style="font-size:0.82rem;color:var(--muted);margin-top:6px;line-height:1.6;">📋 '+c.reason+'</div>';
+    verdictHtml += '</div>';
+  });
+  document.getElementById('verdicts').innerHTML = verdictHtml;
+
+  document.getElementById('tip').innerHTML = tips[Math.floor(Math.random()*tips.length)];
+
+  document.getElementById('analysis').style.display = 'block';
+  document.getElementById('analysis').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Preload demo data
+courses = demos.slice(0,3);
+render();
+document.getElementById('analysis').style.display = 'block';
+</script>
+</body>
+</html>
