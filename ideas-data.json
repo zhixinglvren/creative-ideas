@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "scam-radar",
+      "icon": "🛡️",
+      "title": "防骗雷达",
+      "tagline": "爸妈收到可疑消息？截图发过来，AI 秒识骗局",
+      "status": "live",
+      "category": "银发经济"
+    },
+    {
       "id": "course-cleaner",
       "icon": "🧹",
       "title": "囤课清道夫",
