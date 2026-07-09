@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "health-decoder",
+      "icon": "🩺",
+      "title": "体检报告解码器",
+      "tagline": "不再对着一堆箭头瞎猜——AI 逐项解读 + 组合分析 + 就诊建议",
+      "status": "live",
+      "category": "医疗健康"
+    },
+    {
       "id": "scam-radar",
       "icon": "🛡️",
       "title": "防骗雷达",

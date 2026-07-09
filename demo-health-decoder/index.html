@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>体检报告解码器 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f3; color: #333; min-height: 100vh; }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+  .header { text-align: center; padding: 40px 0 20px; }
+  .header h1 { font-size: 28px; color: #1a73e8; margin-bottom: 8px; }
+  .header p { color: #666; font-size: 15px; }
+  .upload-zone { border: 2px dashed #ccc; border-radius: 16px; padding: 40px; text-align: center; background: #fff; cursor: pointer; transition: all .3s; margin: 20px 0; }
+  .upload-zone:hover { border-color: #1a73e8; background: #f8faff; }
+  .upload-zone .icon { font-size: 48px; margin-bottom: 12px; }
+  .upload-zone .text { color: #666; font-size: 14px; }
+  .btn { display: inline-block; padding: 12px 32px; border-radius: 8px; font-size: 16px; cursor: pointer; border: none; transition: all .2s; margin: 8px; }
+  .btn-primary { background: #1a73e8; color: #fff; }
+  .btn-primary:hover { background: #1558b0; }
+  .btn-outline { background: #fff; color: #1a73e8; border: 1px solid #1a73e8; }
+  .result { margin-top: 24px; display: none; }
+  .result.show { display: block; }
+  .summary-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 24px; border-radius: 16px; margin-bottom: 20px; }
+  .summary-card .score { font-size: 48px; font-weight: 700; }
+  .summary-card .label { font-size: 14px; opacity: .85; margin-top: 4px; }
+  .section { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .section h3 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+  .item:last-child { border-bottom: none; }
+  .item .name { flex: 1; }
+  .item .value { font-weight: 600; margin: 0 16px; text-align: center; min-width: 80px; }
+  .item .status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .status-normal { background: #e6f7e6; color: #1e8e3e; }
+  .status-high { background: #fce8e6; color: #d93025; }
+  .status-low { background: #fff3e0; color: #e65100; }
+  .status-warn { background: #fef7e0; color: #f9ab00; }
+  .insight { background: #f8faff; border-left: 4px solid #1a73e8; padding: 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .insight .title { font-weight: 600; color: #1a73e8; margin-bottom: 6px; }
+  .insight .desc { color: #555; font-size: 14px; line-height: 1.6; }
+  .tag { display: inline-block; padding: 4px 10px; background: #e8f0fe; color: #1a73e8; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .progress-bar { height: 8px; border-radius: 4px; background: #e0e0e0; margin-top: 8px; overflow: hidden; }
+  .progress-bar .fill { height: 100%; border-radius: 4px; transition: width .5s; }
+  .fill-green { background: #1e8e3e; }
+  .fill-yellow { background: #f9ab00; }
+  .fill-red { background: #d93025; }
+  .footer { text-align: center; padding: 40px 0; color: #999; font-size: 13px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .4s ease; }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <div class="header">
+    <h1>🩺 体检报告解码器</h1>
+    <p>不再对着一堆箭头瞎猜——AI 逐项解读 + 组合分析 + 就诊建议</p>
+  </div>
+
+  <div class="upload-zone" id="uploadZone" onclick="analyzeDemo()">
+    <div class="icon">📋</div>
+    <div class="text">点击上传体检报告 PDF / 图片<br><small>（本 Demo 使用模拟数据演示）</small></div>
+  </div>
+  <div style="text-align:center;margin: 10px 0;">
+    <button class="btn btn-outline" onclick="analyzeDemo()" style="font-size:14px;padding:8px 20px;">🎯 不想上传？查看演示报告→</button>
+  </div>
+
+  <div class="result" id="result">
+    <!-- 综合评分 -->
+    <div class="summary-card animate">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div class="score">76<span style="font-size:24px;">分</span></div>
+          <div class="label">综合健康评分 · 良好</div>
+        </div>
+        <div style="text-align:right;font-size:14px;opacity:.9;">
+          <div>⚠️ 3 项需关注</div>
+          <div>✅ 18 项正常</div>
+          <div>📋 共检测 21 项指标</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重点问题 -->
+    <div class="section animate">
+      <h3>🔴 需重点关注（2项偏高）</h3>
+      <div class="item">
+        <span class="name">尿酸 UA</span>
+        <span class="value">521 µmol/L</span>
+        <span class="status status-high">↑ 偏高</span>
+      </div>
+      <div style="font-size:13px;color:#666;padding:8px 0;">参考范围：208-428 μmol/L</div>
+      <div class="insight">
+        <div class="title">🧠 AI 解读（非医学诊断）</div>
+        <div class="desc">你的尿酸处于高尿酸血症水平（>420）。虽然现在可能不痛，但长期偏高会增加痛风、肾结石和心血管风险。部分人从未发作痛风但尿酸持续高位，会形成尿酸盐结晶损伤关节。</div>
+      </div>
+      <div style="margin-top:8px;">
+        <span class="tag">建议：风湿免疫科就诊</span>
+        <span class="tag">减少海鲜/内脏/啤酒</span>
+        <span class="tag">多喝水（>2L/天）</span>
+        <span class="tag">1个月后复查</span>
+      </div>
+
+      <div class="item" style="margin-top:16px;">
+        <span class="name">低密度脂蛋白 LDL-C</span>
+        <span class="value">3.8 mmol/L</span>
+        <span class="status status-warn">⚠ 边缘升高</span>
+      </div>
+      <div style="font-size:13px;color:#666;padding:8px 0;">参考范围：&lt;3.37 mmol/L（理想）</div>
+      <div class="insight">
+        <div class="title">🧠 AI 解读（非医学诊断）</div>
+        <div class="desc">边缘升高，尚未到用药标准但需要生活方式干预。LDL-C 升高 + 尿酸偏高的组合（代谢综合征特征），提示需注意饮食结构和运动。</div>
+      </div>
+      <div style="margin-top:8px;">
+        <span class="tag">控制饱和脂肪</span>
+        <span class="tag">每周≥150min有氧运动</span>
+        <span class="tag">3个月后复查血脂</span>
+      </div>
+    </div>
+
+    <!-- 轻度异常 -->
+    <div class="section animate">
+      <h3>🟡 轻度异常（1项偏低）</h3>
+      <div class="item">
+        <span class="name">25-羟维生素D</span>
+        <span class="value">18 ng/mL</span>
+        <span class="status status-low">↓ 偏低</span>
+      </div>
+      <div style="font-size:13px;color:#666;padding:8px 0;">参考范围：30-100 ng/mL（充足）</div>
+      <div class="insight">
+        <div class="title">🧠 AI 解读（非医学诊断）</div>
+        <div class="desc">低于 20 属于缺乏。维生素D缺乏影响钙吸收（间接影响骨密度），也与免疫力下降、情绪低落有关。办公室人群常见——晒太阳太少。</div>
+      </div>
+      <div style="margin-top:8px;">
+        <span class="tag">每天晒太阳 15-30min</span>
+        <span class="tag">补充维生素D3</span>
+        <span class="tag">3个月后复查</span>
+      </div>
+    </div>
+
+    <!-- 正常指标 -->
+    <div class="section animate">
+      <h3>✅ 正常指标速览（18项）</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="item"><span class="name">空腹血糖 GLU</span><span class="value">5.1</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">总胆固醇 TC</span><span class="value">4.9</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">甘油三酯 TG</span><span class="value">1.3</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">高密度脂蛋白 HDL</span><span class="value">1.4</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">谷丙转氨酶 ALT</span><span class="value">28</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">谷草转氨酶 AST</span><span class="value">22</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">肌酐 CREA</span><span class="value">78</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">尿素氮 BUN</span><span class="value">5.2</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">总胆红素 TBIL</span><span class="value">14</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">白蛋白 ALB</span><span class="value">45</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">血红蛋白 HGB</span><span class="value">148</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">白细胞 WBC</span><span class="value">6.2</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">血小板 PLT</span><span class="value">210</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">TSH</span><span class="value">2.1</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">总蛋白 TP</span><span class="value">72</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">甲胎蛋白 AFP</span><span class="value">&lt;7</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">癌胚抗原 CEA</span><span class="value">&lt;5</span><span class="status status-normal">正常</span></div>
+        <div class="item"><span class="name">PSA</span><span class="value">1.8</span><span class="status status-normal">正常</span></div>
+      </div>
+    </div>
+
+    <!-- 组合风险分析 -->
+    <div class="section animate">
+      <h3>🔗 组合风险分析</h3>
+      <div class="insight" style="border-left-color:#e65100;">
+        <div class="title">⚠️ 代谢综合征倾向</div>
+        <div class="desc">尿酸 ↑ + LDL-C 边缘升高：这两项同时异常提示代谢综合征风险。你的空腹血糖 5.1 虽然正常但处于偏高水平（正常上限 6.1），三指标形成联动趋势。建议做 OGTT 糖耐量检测排除糖调节受损。</div>
+      </div>
+      <div class="insight" style="margin-top:12px;">
+        <div class="title">💡 好消息</div>
+        <div class="desc">肝功能全套正常（ALT/AST/TBIL/ALB/TP 均正常），肾功能正常（CREA/BUN 正常），肿瘤标志物阴性（AFP/CEA/PSA）。核心风险是可逆的代谢问题，而非器质性病变。</div>
+      </div>
+    </div>
+
+    <!-- 就诊建议 -->
+    <div class="section animate" style="background:linear-gradient(135deg,#f0f8ff,#f8f0ff);">
+      <h3>🏥 敏捷行动计划</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+        <div style="background:#fff;padding:16px;border-radius:8px;">
+          <div style="font-weight:600;color:#d93025;margin-bottom:6px;">1周内</div>
+          <div>风湿免疫科：查尿酸 + 关节超声</div>
+        </div>
+        <div style="background:#fff;padding:16px;border-radius:8px;">
+          <div style="font-weight:600;color:#f9ab00;margin-bottom:6px;">1个月内</div>
+          <div>复查尿酸 + 开始维生素D3补充</div>
+        </div>
+        <div style="background:#fff;padding:16px;border-radius:8px;">
+          <div style="font-weight:600;color:#1a73e8;margin-bottom:6px;">3个月内</div>
+          <div>复查血脂四项 + OGTT糖耐量</div>
+        </div>
+        <div style="background:#fff;padding:16px;border-radius:8px;">
+          <div style="font-weight:600;color:#1e8e3e;margin-bottom:6px;">持续</div>
+          <div>有氧运动≥150min/周 + 饮食调整</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:20px;font-size:13px;color:#888;">
+      ⚠️ 本工具为 AI 辅助健康建议，不构成医学诊断。B-004 假名化处理。如感不适，请及时就医。
+    </div>
+  </div>
+
+  <div class="footer">
+    体检报告解码器 · Demo · 模拟数据仅供演示<br>
+    代码开源 · 真实产品将支持 OCR + LLM 后端
+  </div>
+</div>
+
+<script>
+function analyzeDemo() {
+  document.getElementById('uploadZone').style.display='none';
+  var r = document.getElementById('result');
+  r.classList.add('show');
+  // scroll to result
+  setTimeout(function(){ r.scrollIntoView({behavior:'smooth',block:'start'}); }, 100);
+}
+</script>
+</body>
+</html>
