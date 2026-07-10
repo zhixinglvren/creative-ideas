@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "neighbor-bank",
+      "icon": "🏘️",
+      "title": "邻里互助存折",
+      "tagline": "帮邻居遛狗 = 赚 30 分钟时间币，再用时间币换别人帮你修电脑",
+      "status": "live",
+      "category": "共享经济"
+    },
+    {
       "id": "health-decoder",
       "icon": "🩺",
       "title": "体检报告解码器",

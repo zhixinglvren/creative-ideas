@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>邻里互助存折 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f5f0; color: #333; min-height: 100vh; }
+  .app { max-width: 420px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 20px 0; }
+  .header h1 { font-size: 22px; color: #5c4a3d; margin-bottom: 4px; }
+  .header .sub { font-size: 12px; color: #999; }
+  .community-badge { background: #f0ebe3; border-radius: 20px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #7a6652; margin: 8px 0; }
+  .time-wallet { background: linear-gradient(135deg, #5c4a3d 0%, #8b7355 100%); color: #fff; border-radius: 16px; padding: 20px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+  .time-wallet .balance { font-size: 36px; font-weight: 700; }
+  .time-wallet .label { font-size: 12px; opacity: .75; }
+  .tabs { display: flex; gap: 8px; margin: 16px 0; }
+  .tab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; background: #fff; color: #999; border: 1px solid #eee; transition: all .2s; }
+  .tab.active { background: #5c4a3d; color: #fff; border-color: #5c4a3d; }
+  .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .card .top { display: flex; align-items: flex-start; gap: 12px; }
+  .card .avatar { width: 40px; height: 40px; border-radius: 50%; background: #f0ebe3; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .card .info { flex: 1; }
+  .card .name { font-size: 14px; font-weight: 600; color: #5c4a3d; }
+  .card .distance { font-size: 11px; color: #aaa; }
+  .card .title { font-size: 15px; font-weight: 600; margin: 4px 0; }
+  .card .desc { font-size: 13px; color: #666; line-height: 1.4; }
+  .card .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-skill { background: #e8f0fe; color: #1a73e8; }
+  .tag-time { background: #fef7e0; color: #b8860b; }
+  .tag-urgent { background: #fce8e6; color: #d93025; }
+  .card .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+  .card .btn-help { padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: #5c4a3d; color: #fff; transition: all .2s; }
+  .card .btn-help:hover { background: #4a3a2e; }
+  .card .reward { font-size: 13px; color: #b8860b; font-weight: 600; }
+  .tx-list { margin-top: 12px; }
+  .tx-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-item .tx-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .tx-in { background: #e6f7e6; }
+  .tx-out { background: #fff3e0; }
+  .tx-item .tx-info { flex: 1; }
+  .tx-item .tx-name { font-size: 13px; font-weight: 600; }
+  .tx-item .tx-detail { font-size: 11px; color: #999; }
+  .tx-item .tx-amount { font-weight: 700; font-size: 14px; }
+  .tx-plus { color: #1e8e3e; }
+  .tx-minus { color: #d93025; }
+  .publish-btn { position: fixed; bottom: 20px; right: 20px; width: 52px; height: 52px; border-radius: 50%; background: #5c4a3d; color: #fff; font-size: 28px; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(92,74,61,.3); display: flex; align-items: center; justify-content: center; }
+  .my-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .skill-card { background: #faf8f5; border-radius: 10px; padding: 12px; text-align: center; }
+  .skill-card .icon { font-size: 28px; }
+  .skill-card .sname { font-size: 13px; font-weight: 600; margin: 4px 0; }
+  .skill-card .auth { font-size: 10px; color: #1e8e3e; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .35s ease; }
+  .footer-note { text-align: center; padding: 24px 0; font-size: 12px; color: #ccc; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>🏘️ 邻里互助存折</h1>
+    <div class="sub">你的时间，就是货币</div>
+    <div class="community-badge">🏠 翠苑三区 · 12 号楼</div>
+  </div>
+
+  <div class="time-wallet animate">
+    <div>
+      <div class="balance">14.5<span style="font-size:16px;">h</span></div>
+      <div class="label">可用时间币</div>
+    </div>
+    <div style="text-align:right;font-size:12px;opacity:.8;">
+      <div>📥 累计赚取 22h</div>
+      <div>📤 累计花费 7.5h</div>
+      <div>⭐ 信用分 4.8</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('requests')">🔍 求助广场</div>
+    <div class="tab" onclick="switchTab('skills')">🎯 我的技能</div>
+    <div class="tab" onclick="switchTab('history')">📜 流水</div>
+  </div>
+
+  <div id="tab-content"></div>
+
+  <div class="footer-note">邻里互助存折 · Demo · 翠苑三区模拟社区</div>
+</div>
+
+<!-- Floating publish button -->
+<button class="publish-btn" onclick="alert('发布求助功能（Demo 演示）')">+</button>
+
+<script>
+var currentTab = 'requests';
+
+var requests = [
+  {
+    avatar: '👩',
+    name: '刘阿姨 · 13-202',
+    distance: '同层',
+    title: '帮忙看看我的手机为什么连不上WiFi',
+    desc: '昨天还好好的，今天突然搜不到家里的网络了，路由器灯是亮的。儿子不在身边，搞不懂这些……',
+    tags: [{c:'tag-skill',t:'数码帮帮忙'},{c:'tag-time',t:'预计 15 分钟'},{c:'tag-urgent',t:'紧急'}],
+    reward: '+30 分钟'
+  },
+  {
+    avatar: '👨‍🦱',
+    name: '小王 · 15-301',
+    distance: '隔壁单元',
+    title: '周末搬家需要搭把手',
+    desc: '周六上午搬家，大件就一个冰箱一个洗衣机，电梯房。一个人搞不定，求 1 个壮汉帮忙抬一下。管午饭！',
+    tags: [{c:'tag-skill',t:'体力活'},{c:'tag-time',t:'预计 1 小时'}],
+    reward: '+90 分钟'
+  },
+  {
+    avatar: '👩‍💼',
+    name: '小陈 · 12-502',
+    distance: '楼下',
+    title: '帮我遛柯基 30 分钟',
+    desc: '今天加班到 10 点回不去，团团（柯基，超乖不咬人）需要遛一下。钥匙在门卫老张那里，狗绳在门口鞋柜。',
+    tags: [{c:'tag-skill',t:'宠物'},{c:'tag-time',t:'30 分钟'}],
+    reward: '+30 分钟'
+  },
+  {
+    avatar: '👨‍🦳',
+    name: '老张（门卫）',
+    distance: '小区门口',
+    title: '门禁系统说明书翻译（英文→中文）',
+    desc: '新装的智能门禁系统说明书全是英文，我看不懂。有没有懂英文的年轻人帮忙翻译一下关键部分？',
+    tags: [{c:'tag-skill',t:'英文翻译'},{c:'tag-time',t:'预计 20 分钟'}],
+    reward: '+40 分钟'
+  }
+];
+
+var mySkills = [
+  { icon: '🔧', name: '水电维修', auth: '已验证' },
+  { icon: '💻', name: '电脑/手机', auth: '已验证' },
+  { icon: '📝', name: '英文翻译', auth: '待验证' },
+  { icon: '📦', name: '搬家帮手', auth: '已验证' }
+];
+
+var transactions = [
+  { inout: 'in', name: '帮陈阿姨修电脑', detail: '2026-07-09 · 清理C盘 + 装打印机', amount: '+45m' },
+  { inout: 'in', name: '帮老张翻译门禁说明', detail: '2026-07-08 · 英译中 3 页', amount: '+40m' },
+  { inout: 'out', name: '请小王帮忙搬沙发', detail: '2026-07-06 · 客厅沙发挪位', amount: '-30m' },
+  { inout: 'in', name: '帮刘阿姨设置手机', detail: '2026-07-04 · 教微信视频通话', amount: '+30m' },
+  { inout: 'out', name: '请小陈代取快递', detail: '2026-07-02 · 3 个快递柜', amount: '-15m' }
+];
+
+function switchTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.tab').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(el){
+    if (el.textContent.indexOf(t === 'requests' ? '广场' : t === 'skills' ? '技能' : '流水') > -1) el.classList.add('active');
+  });
+  renderTab();
+}
+
+function renderTab() {
+  var el = document.getElementById('tab-content');
+  if (currentTab === 'requests') {
+    var html = '';
+    for (var i = 0; i < requests.length; i++) {
+      var r = requests[i];
+      html += '<div class="card animate" style="animation-delay:' + (i*80) + 'ms">';
+      html += '<div class="top"><div class="avatar">' + r.avatar + '</div><div class="info">';
+      html += '<div class="name">' + r.name + ' <span class="distance">' + r.distance + '</span></div>';
+      html += '<div class="title">' + r.title + '</div>';
+      html += '<div class="desc">' + r.desc + '</div>';
+      html += '<div class="tags">';
+      for (var j = 0; j < r.tags.length; j++) {
+        html += '<span class="tag ' + r.tags[j].c + '">' + r.tags[j].t + '</span>';
+      }
+      html += '</div></div></div>';
+      html += '<div class="footer"><span class="reward">' + r.reward + '</span><button class="btn-help" onclick="alert(\'接单成功！联系对方中...\')">我要帮忙</button></div>';
+      html += '</div>';
+    }
+    el.innerHTML = html;
+  } else if (currentTab === 'skills') {
+    var html = '<div class="card animate"><h3 style="font-size:14px;margin-bottom:12px;">🎯 我的技能标签</h3><div class="my-skills">';
+    for (var i = 0; i < mySkills.length; i++) {
+      var s = mySkills[i];
+      html += '<div class="skill-card"><div class="icon">' + s.icon + '</div><div class="sname">' + s.name + '</div><div class="auth">' + s.auth + '</div></div>';
+    }
+    html += '</div></div>';
+    html += '<div class="card animate" style="animation-delay:100ms">';
+    html += '<h3 style="font-size:14px;margin-bottom:8px;">💡 添加技能获得多重福利</h3>';
+    html += '<div style="font-size:13px;color:#666;line-height:1.6;">✅ 发布技能后，邻居求助自动匹配<br>✅ 验证技能获得 <b>+10 时间币</b> 奖励<br>✅ 每完成一单，信用分 +0.1<br>✅ 信用分 ≥ 4.5 解锁优先接单权</div>';
+    html += '</div>';
+    el.innerHTML = html;
+  } else {
+    var html = '';
+    for (var i = 0; i < transactions.length; i++) {
+      var t = transactions[i];
+      var iconClass = t.inout === 'in' ? 'tx-in' : 'tx-out';
+      var amountClass = t.inout === 'in' ? 'tx-plus' : 'tx-minus';
+      var prefix = t.inout === 'in' ? '+' : '-';
+      html += '<div class="card animate" style="animation-delay:' + (i*80) + 'ms"><div class="tx-item">';
+      html += '<div class="tx-icon ' + iconClass + '">' + (t.inout==='in'?'📥':'📤') + '</div>';
+      html += '<div class="tx-info"><div class="tx-name">' + t.name + '</div><div class="tx-detail">' + t.detail + '</div></div>';
+      html += '<div class="tx-amount ' + amountClass + '">' + t.amount + '</div>';
+      html += '</div></div>';
+    }
+    el.innerHTML = html;
+  }
+}
+
+renderTab();
+</script>
+</body>
+</html>
