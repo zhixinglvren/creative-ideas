@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>合租室友匹配器 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 24px 0 16px; }
+  .header h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 6px; }
+  .header .sub { font-size: 13px; color: #999; }
+  .steps { display: flex; justify-content: center; gap: 4px; margin: 16px 0; }
+  .step { width: 28px; height: 4px; border-radius: 2px; background: #ddd; transition: all .3s; }
+  .step.done { background: #4a90d9; }
+  .step.active { background: #4a90d9; width: 32px; }
+  .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+  .card h2 { font-size: 17px; margin-bottom: 4px; color: #1a1a2e; }
+  .card .desc { font-size: 12px; color: #999; margin-bottom: 16px; }
+  .q-item { margin-bottom: 18px; }
+  .q-item .label { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #333; }
+  .options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .option { padding: 8px 16px; border-radius: 20px; border: 1.5px solid #e0e0e0; font-size: 13px; cursor: pointer; transition: all .2s; background: #fff; color: #666; user-select: none; }
+  .option:hover { border-color: #4a90d9; color: #4a90d9; }
+  .option.sel { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+  .btn { display: block; width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; margin: 12px 0; transition: all .2s; }
+  .btn-primary { background: #4a90d9; color: #fff; }
+  .btn-primary:hover { background: #3a7bc8; }
+  .btn-outline { background: #fff; color: #4a90d9; border: 1.5px solid #4a90d9; }
+  .match-card { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
+  .match-card:last-child { border-bottom: none; }
+  .match-card .rank { font-size: 22px; font-weight: 700; color: #4a90d9; width: 32px; text-align: center; }
+  .match-card .avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+  .match-card .info { flex: 1; }
+  .match-card .mname { font-size: 15px; font-weight: 600; }
+  .match-card .summary { font-size: 12px; color: #888; margin: 2px 0; }
+  .match-card .score-wrap { text-align: center; }
+  .match-card .score { font-size: 28px; font-weight: 700; color: #1e8e3e; }
+  .match-card .s-label { font-size: 10px; color: #999; }
+  .detail-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .detail-row { font-size: 12px; color: #666; padding: 6px 10px; border-radius: 6px; background: #f8f9fb; }
+  .detail-row .d-label { color: #999; }
+  .detail-row .d-val { font-weight: 600; }
+  .match-green { color: #1e8e3e; }
+  .match-yellow { color: #e65100; }
+  .match-red { color: #d93025; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .badge-green { background: #e6f7e6; color: #1e8e3e; }
+  .badge-yellow { background: #fff3e0; color: #e65100; }
+  .badge-red { background: #fce8e6; color: #d93025; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .4s ease; }
+  .footer { text-align: center; padding: 24px 0; font-size: 12px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>🏠 合租室友匹配器</h1>
+    <div class="sub">不只找房源，更要找对人</div>
+  </div>
+  <div class="steps">
+    <div class="step done" id="s1"></div>
+    <div class="step active" id="s2"></div>
+  </div>
+  <div id="content"></div>
+  <div class="footer">合租室友匹配器 · Demo · 虚拟匹配数据</div>
+</div>
+
+<script>
+var answers = {};
+var currentQ = 0;
+
+var questions = [
+  { q: '你的作息时间是？', key: 'schedule', opts: ['🦉 夜猫子（凌晨 1 点后睡）', '🌙 偏晚（23:00-1:00 睡）', '⏰ 规律（22:00-23:00 睡）', '🌞 早起（22:00 前睡）'], weight: 20 },
+  { q: '你对公共区域卫生的要求？', key: 'clean', opts: ['✨ 每天打扫，眼里容不下灰', '👍 每周一次大扫除就行', '🤷 差不多就行，不太脏即可', '😅 我比较随性，别太乱就好'], weight: 18 },
+  { q: '你带朋友/异性回家的频率？', key: 'guests', opts: ['🚫 几乎不带，私人空间', '👤 偶尔（每月 1-2 次）', '👥 经常（每周都会）', '🎉 我社牛，朋友来往频繁'], weight: 15 },
+  { q: '你对宠物怎么看？', key: 'pets', opts: ['🐱 我有宠物，室友必须爱动物', '😊 我没宠物但不介意室友养', '🤔 可以接受安静的小宠物', '🚫 不接受任何宠物'], weight: 12 },
+  { q: '你做饭的频率？', key: 'cooking', opts: ['🍳 每天做饭，厨房使用率高', '🥡 偶尔（周末做一顿）', '🍜 几乎不做，厨房闲置', '🔥 我喜欢做大餐但频率低'], weight: 10 },
+  { q: '合租预算范围？', key: 'budget', opts: ['💰 1500-2000', '💰 2000-3000', '💰 3000-4000', '💰 4000+'], weight: 8 }
+];
+
+function renderQuestion() {
+  if (currentQ >= questions.length) { showResults(); return; }
+  var q = questions[currentQ];
+  var html = '<div class="card animate">';
+  html += '<h2>' + (currentQ+1) + '. ' + q.q + '</h2>';
+  html += '<div class="desc">选择最符合你的选项（此信息将用于匹配室友）</div>';
+  html += '<div class="options">';
+  for (var i = 0; i < q.opts.length; i++) {
+    var sel = answers[q.key] === i ? ' sel' : '';
+    html += '<div class="option' + sel + '" onclick="select(\'' + q.key + '\',' + i + ')">' + q.opts[i] + '</div>';
+  }
+  html += '</div>';
+  html += '<button class="btn btn-primary" id="nextBtn" disabled onclick="next()">';
+  html += currentQ < questions.length - 1 ? '下一题 →' : '查看匹配结果 🔍';
+  html += '</button>';
+  if (currentQ > 0) html += '<button class="btn btn-outline" onclick="prev()">← 上一题</button>';
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function select(key, val) {
+  answers[key] = val;
+  document.getElementById('nextBtn').disabled = false;
+  renderQuestion();
+}
+
+function next() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    // update step indicators
+    document.getElementById('s1').className = 'step done';
+    document.getElementById('s2').className = 'step done';
+  }
+  renderQuestion();
+}
+
+function prev() { if (currentQ > 0) { currentQ--; renderQuestion(); } }
+
+// Simulated matches
+var matches = [
+  {
+    name: '小李 · 软件开发', avatar: '👨‍💻', score: 94,
+    summary: '作息相近 · 卫生习惯高度一致 · 预算匹配',
+    details: [
+      { label: '作息', val: '23:00-00:00', cls: 'match-green' },
+      { label: '卫生', val: '每周大扫除', cls: 'match-green' },
+      { label: '访客', val: '偶尔（月1-2次）', cls: 'match-green' },
+      { label: '宠物', val: '无, 不介意', cls: 'match-green' },
+      { label: '做饭', val: '偶尔', cls: 'match-green' },
+      { label: '预算', val: '2000-3000', cls: 'match-green' }
+    ]
+  },
+  {
+    name: '小陈 · 设计师', avatar: '👩‍🎨', score: 87,
+    summary: '多数习惯匹配 · 宠物需协商 · 预算完美',
+    details: [
+      { label: '作息', val: '23:00-01:00', cls: 'match-green' },
+      { label: '卫生', val: '还行就行', cls: 'match-yellow' },
+      { label: '访客', val: '偶尔（月1-2次）', cls: 'match-green' },
+      { label: '宠物', val: '有只猫', cls: 'match-yellow' },
+      { label: '做饭', val: '偶尔', cls: 'match-green' },
+      { label: '预算', val: '2000-3000', cls: 'match-green' }
+    ]
+  },
+  {
+    name: '老王 · 自由职业', avatar: '🧑‍💼', score: 72,
+    summary: '预算匹配但作息冲突 · 访客频率偏高',
+    details: [
+      { label: '作息', val: '凌晨1点后', cls: 'match-red' },
+      { label: '卫生', val: '每周大扫除', cls: 'match-green' },
+      { label: '访客', val: '经常', cls: 'match-red' },
+      { label: '宠物', val: '不接受', cls: 'match-yellow' },
+      { label: '做饭', val: '每天做饭', cls: 'match-yellow' },
+      { label: '预算', val: '2500-3000', cls: 'match-green' }
+    ]
+  }
+];
+
+function showResults() {
+  var html = '<div class="card animate"><h2>🎯 你的匹配结果</h2><div class="desc">基于 6 个维度的生活习惯兼容度排序</div>';
+  for (var i = 0; i < matches.length; i++) {
+    var m = matches[i];
+    var sc = m.score;
+    var scCls = sc >= 85 ? 'match-green' : sc >= 70 ? 'match-yellow' : 'match-red';
+    html += '<div class="match-card">';
+    html += '<div class="rank">#' + (i+1) + '</div>';
+    html += '<div class="avatar">' + m.avatar + '</div>';
+    html += '<div class="info"><div class="mname">' + m.name + '</div><div class="summary">' + m.summary + '</div>';
+    html += '<div class="detail-rows">';
+    for (var j = 0; j < m.details.length; j++) {
+      var d = m.details[j];
+      html += '<div class="detail-row"><span class="d-label">' + d.label + '</span>：<span class="d-val ' + d.cls + '">' + d.val + '</span></div>';
+    }
+    html += '</div></div>';
+    html += '<div class="score-wrap"><div class="score ' + scCls + '" style="font-size:28px;">' + sc + '</div><div class="s-label">匹配度</div></div>';
+    html += '</div>';
+  }
+  html += '<button class="btn btn-outline" onclick="location.reload()" style="margin-top:8px;">🔄 重新测评</button></div>';
+
+  // Plus insight card
+  html += '<div class="card animate" style="animation-delay:300ms;background:linear-gradient(135deg,#f0f5ff,#f8f0ff);">';
+  html += '<h2>💡 为什么「人」比「房」更重要？</h2>';
+  html += '<div style="font-size:13px;color:#666;line-height:1.6;">';
+  html += '<p>📊 《中国青年租房蓝皮书》：<b>42% 的租房纠纷源于室友不合</b>，远超房屋质量（23%）和房东纠纷（18%）。</p>';
+  html += '<p style="margin-top:8px;">🔄 搬一次家的平均成本：<b>押金损失 ¥3000+ 中介费 ¥2500+ 搬家费 ¥600+ 时间 3 个周末</b>。</p>';
+  html += '<p style="margin-top:8px;">🏠 对比国外：Roomi / SpareRoom 已分别融资 $50M+，国内市场完全空白。</p>';
+  html += '</div></div>';
+
+  document.getElementById('content').innerHTML = html;
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
