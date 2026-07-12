@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "vendor-map",
+      "icon": "🗺️",
+      "title": "摊贩地图",
+      "tagline": "城市里最好吃的小吃从来不在美团上——众包地图找到每一辆三轮车",
+      "status": "live",
+      "category": "本地生活"
+    },
+    {
       "id": "roommate-match",
       "icon": "🏠",
       "title": "合租室友匹配器",

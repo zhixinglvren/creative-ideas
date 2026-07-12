@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>摊贩地图 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #333; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; }
+  .map-area { position: relative; height: 340px; background: linear-gradient(135deg, #e8e4d9 0%, #d5cebf 30%, #c8e6c9 60%, #b3d4b0 100%); overflow: hidden; }
+  .road { position: absolute; background: #f5f5f0; }
+  .road-h { height: 8px; left: 0; right: 0; }
+  .road-v { width: 8px; top: 0; bottom: 0; }
+  .road.r1 { top: 30%; }
+  .road.r2 { top: 65%; }
+  .road.r3 { left: 35%; }
+  .road.r4 { left: 70%; }
+  .pin { position: absolute; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; transition: transform .2s; z-index: 2; }
+  .pin:hover { transform: scale(1.2); }
+  .pin.active { background: #e65100; color: #fff; box-shadow: 0 0 0 4px rgba(230,81,0,.25); }
+  .pin.open { background: #1e8e3e; color: #fff; box-shadow: 0 0 0 4px rgba(30,142,62,.25); }
+  .pin-label { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; white-space: nowrap; color: #333; background: rgba(255,255,255,.85); padding: 1px 6px; border-radius: 6px; }
+  .live-pulse { animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(30,142,62,.4); } 50% { box-shadow: 0 0 0 10px rgba(30,142,62,0); } }
+  .time-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 10px; z-index: 3; }
+  .vendor-list { padding: 12px 16px; }
+  .v-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .v-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .v-icon.green { background: #e8f5e9; }
+  .v-icon.orange { background: #fff3e0; }
+  .v-icon.blue { background: #e3f2fd; }
+  .v-info { flex: 1; }
+  .v-name { font-size: 15px; font-weight: 700; }
+  .v-meta { font-size: 12px; color: #888; margin: 2px 0; }
+  .v-tags { display: flex; gap: 6px; margin-top: 4px; }
+  .v-tag { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .tag-open { background: #e8f5e9; color: #1e8e3e; }
+  .tag-closed { background: #fce4ec; color: #d32f2f; }
+  .tag-hot { background: #fff3e0; color: #e65100; }
+  .v-checkin { text-align: center; flex-shrink: 0; }
+  .v-checkins { font-size: 13px; font-weight: 700; color: #666; }
+  .v-checkins .num { font-size: 18px; color: #e65100; }
+  .v-checkins .label { font-size: 10px; color: #999; }
+  .header-bar { padding: 16px; background: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+  .header-bar h1 { font-size: 20px; }
+  .filter-row { display: flex; gap: 8px; padding: 10px 16px; background: #fff; border-bottom: 1px solid #f0f0f0; }
+  .filter-chip { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #e0e0e0; background: #fff; color: #888; }
+  .filter-chip.sel { background: #5c4033; color: #fff; border-color: #5c4033; }
+  .btn-add { width: 48px; height: 48px; border-radius: 50%; background: #e65100; color: #fff; font-size: 24px; border: none; cursor: pointer; position: fixed; bottom: 20px; right: 20px; box-shadow: 0 4px 16px rgba(230,81,0,.3); display: flex; align-items: center; justify-content: center; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .35s ease; }
+  .footer-note { text-align: center; padding: 24px 0; font-size: 12px; color: #ccc; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header-bar">
+    <h1>🗺️ 摊贩地图</h1>
+    <div style="font-size:12px;color:#888;">城西区·今日 18:05</div>
+  </div>
+
+  <!-- Simulated Map -->
+  <div class="map-area">
+    <div class="road road-h r1"></div>
+    <div class="road road-h r2"></div>
+    <div class="road road-v r3"></div>
+    <div class="road road-v r4"></div>
+
+    <!-- Vendor pins -->
+    <div class="pin open live-pulse" style="top:22%;left:52%;background:#1e8e3e;color:#fff;">
+      🥟<span class="pin-label">老李煎饺</span>
+    </div>
+    <div class="pin open" style="top:48%;left:20%;background:#1e8e3e;color:#fff;">
+      🍢<span class="pin-label">阿强烧烤</span>
+    </div>
+    <div class="pin open" style="top:55%;left:58%;background:#1e8e3e;color:#fff;">
+      🧇<span class="pin-label">王姐鸡蛋饼</span>
+    </div>
+    <div class="pin" style="top:18%;left:82%;opacity:.6;">
+      🍜<span class="pin-label" style="color:#999;">小四川凉皮</span>
+    </div>
+    <div class="pin open" style="top:72%;left:42%;background:#1e8e3e;color:#fff;">
+      🌯<span class="pin-label">东北烤冷面</span>
+    </div>
+    <div class="pin" style="top:40%;left:10%;opacity:.5;">
+      🥘<span class="pin-label" style="color:#999;">麻辣烫张叔</span>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <div class="filter-chip sel">全部</div>
+    <div class="filter-chip">🟢 营业中</div>
+    <div class="filter-chip">🔥 热门</div>
+    <div class="filter-chip">⭐ 收藏</div>
+  </div>
+
+  <!-- Vendor List -->
+  <div class="vendor-list" id="list">
+  </div>
+
+  <div class="footer-note">摊贩地图 · Demo · 位置数据为模拟</div>
+</div>
+
+<button class="btn-add" onclick="alert('打卡新摊位 (Demo)')">+</button>
+
+<script>
+var vendors = [
+  {
+    icon: '🥟', name: '老李煎饺', status: 'open',
+    addr: '文三路 178 号巷口', dist: '420m',
+    checkins: 47, hot: true,
+    tags: ['煎饺/锅贴', '¥8-15'], since: '18:30-23:00',
+    tip: '猪肉白菜馅必点！'
+  },
+  {
+    icon: '🍢', name: '阿强烧烤', status: 'open',
+    addr: '莲花街 58 号旁', dist: '650m',
+    checkins: 32, hot: true,
+    tags: ['烧烤', '¥30-60'], since: '17:00-02:00',
+    tip: '烤鸡翅和茄子是招牌'
+  },
+  {
+    icon: '🧇', name: '王姐鸡蛋饼', status: 'open',
+    addr: '紫荆花路 202 号小区门口', dist: '280m',
+    checkins: 89, hot: true,
+    tags: ['鸡蛋饼', '¥6-10'], since: '06:30-10:00 / 16:00-20:00',
+    tip: '双蛋+里脊，早餐配方'
+  },
+  {
+    icon: '🍜', name: '小四川凉皮', status: 'closed',
+    addr: '学院路 88 号', dist: '510m',
+    checkins: 21, hot: false,
+    tags: ['凉皮/凉面', '¥10-15'], since: '今日休息',
+    tip: ''
+  },
+  {
+    icon: '🌯', name: '东北烤冷面', status: 'open',
+    addr: '益乐路 15 号公交站旁', dist: '380m',
+    checkins: 56, hot: true,
+    tags: ['烤冷面', '¥8-12'], since: '15:00-22:00',
+    tip: '加火腿+鸡蛋 ¥10 管饱'
+  }
+];
+
+var html = '';
+for (var i = 0; i < vendors.length; i++) {
+  var v = vendors[i];
+  var stCls = v.status === 'open' ? 'tag-open' : 'tag-closed';
+  var stText = v.status === 'open' ? '🟢 营业中' : '⚫ 今日歇业';
+  var hotTag = v.hot ? '<span class="v-tag tag-hot">🔥 ' + v.checkins + '人打卡</span>' : '';
+  html += '<div class="v-card animate" style="animation-delay:' + (i*80) + 'ms">';
+  html += '<div class="v-icon ' + (v.hot ? 'orange' : 'blue') + '">' + v.icon + '</div>';
+  html += '<div class="v-info">';
+  html += '<div class="v-name">' + v.name + '</div>';
+  html += '<div class="v-meta">' + v.addr + ' · ' + v.dist + ' · ' + v.since + '</div>';
+  html += '<div class="v-tags"><span class="v-tag ' + stCls + '">' + stText + '</span>';
+  for (var j = 0; j < v.tags.length; j++) {
+    html += '<span class="v-tag" style="background:#f0f0f0;color:#666;">' + v.tags[j] + '</span>';
+  }
+  html += hotTag + '</div>';
+  if (v.tip) html += '<div style="font-size:11px;color:#e65100;margin-top:4px;">💬 "' + v.tip + '"</div>';
+  html += '</div>';
+  html += '<div class="v-checkin"><div class="v-checkins"><span class="num">' + v.checkins + '</span></div><div class="label">今日打卡</div></div>';
+  html += '</div>';
+}
+document.getElementById('list').innerHTML = html;
+</script>
+</body>
+</html>
