@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "deposit-defender",
+      "icon": "🛡️",
+      "title": "退租押金守卫",
+      "tagline": "房东找理由扣押金？AI 匹配《民法典》条款生成专业回复话术，附投诉路径",
+      "status": "live",
+      "category": "租房生活"
+    },
+    {
       "id": "vendor-map",
       "icon": "🗺️",
       "title": "摊贩地图",

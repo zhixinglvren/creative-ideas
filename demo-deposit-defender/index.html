@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>退租押金守卫 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f8fa; color: #222; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 24px 0 16px; }
+  .header h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 4px; }
+  .header .sub { font-size: 13px; color: #999; }
+  .stat-bar { display: flex; gap: 8px; margin: 12px 0; }
+  .stat-item { flex: 1; background: #fff; border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.03); }
+  .stat-item .num { font-size: 24px; font-weight: 700; color: #e65100; }
+  .stat-item .label { font-size: 11px; color: #999; margin-top: 2px; }
+  .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.03); }
+  .card h3 { font-size: 15px; margin-bottom: 12px; }
+  .scenario-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
+  .scenario-row:last-child { border-bottom: none; }
+  .scenario-row .emoji { font-size: 28px; width: 40px; text-align: center; flex-shrink: 0; }
+  .scenario-row .sc-text { flex: 1; }
+  .scenario-row .sc-title { font-size: 14px; font-weight: 600; }
+  .scenario-row .sc-deduct { font-size: 12px; color: #d93025; }
+  .scenario-row .arrow { color: #bbb; }
+  .detail-page { display: none; }
+  .detail-page.show { display: block; }
+  .back-link { font-size: 13px; color: #4a90d9; cursor: pointer; margin-bottom: 12px; display: inline-block; }
+  .law-ref { background: #fef7e0; border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 13px; line-height: 1.5; }
+  .law-ref .law-tag { font-size: 11px; font-weight: 700; color: #b8860b; }
+  .reply-box { background: #f0f7f0; border-radius: 10px; padding: 14px; margin: 10px 0; font-size: 14px; line-height: 1.6; border-left: 3px solid #1e8e3e; }
+  .reply-box .name { font-size: 11px; color: #1e8e3e; font-weight: 600; margin-bottom: 4px; }
+  .action-btn { display: block; width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin: 8px 0; text-align: center; }
+  .btn-copy { background: #1e8e3e; color: #fff; }
+  .btn-complain { background: #fff; color: #d93025; border: 1.5px solid #d93025; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .35s ease; }
+  .footer { text-align: center; padding: 24px 0; font-size: 12px; color: #bbb; }
+  .input-row { display: flex; gap: 8px; margin: 12px 0; }
+  .input-row input { flex: 1; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #e0e0e0; font-size: 14px; outline: none; }
+  .input-row input:focus { border-color: #1e8e3e; }
+  .input-row button { padding: 10px 20px; border-radius: 10px; background: #1e8e3e; color: #fff; border: none; font-weight: 600; font-size: 14px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>🛡️ 退租押金守卫</h1>
+    <div class="sub">房东扣钱？让法律帮你说话</div>
+  </div>
+
+  <div class="stat-bar">
+    <div class="stat-item"><div class="num">65%</div><div class="label">押金纠纷率</div></div>
+    <div class="stat-item"><div class="num">¥1,860</div><div class="label">平均被扣金额</div></div>
+    <div class="stat-item"><div class="num">87%</div><div class="label">租客选择认栽</div></div>
+  </div>
+
+  <!-- Custom input -->
+  <div class="card animate">
+    <h3>✍️ 房东扣了什么？</h3>
+    <div class="input-row">
+      <input type="text" id="customReason" placeholder="例如：墙上有个钉子印扣500">
+      <button onclick="customReply()">生成话术</button>
+    </div>
+  </div>
+
+  <!-- Common scenarios -->
+  <div class="card animate" style="animation-delay:50ms">
+    <h3>📋 高频扣款场景</h3>
+    <div id="scenarioList"></div>
+  </div>
+
+  <div id="detailPage" class="detail-page"></div>
+  <div class="footer">退租押金守卫 · Demo · 法律依据仅供参考</div>
+</div>
+
+<script>
+var scenarios = [
+  {
+    e: '🔩', title: '墙面钉孔/粘钩痕迹',
+    deduct: '典型扣款：¥300-800',
+    law: '《民法典》第710条：承租人按照约定的方法或者根据租赁物的性质使用租赁物，致使租赁物受到损耗的，不承担赔偿责任。',
+    explain: '悬挂挂画、钟表等属于合理使用，留下的钉孔属于「正常损耗」。除非合同明确禁止打孔且你签字确认，否则房东无权扣款。',
+    reply: '根据《民法典》第710条，悬挂物品产生的钉孔属于正常使用损耗，非因不当使用造成的损坏，我不应承担赔偿责任。请您提供入住前后对比照片，证明该钉孔超出了正常使用范围。如无法证明，请于7日内全额退还押金。'
+  },
+  {
+    e: '🪵', title: '地板划痕/家具磨损',
+    deduct: '典型扣款：¥500-1,500',
+    law: '《民法典》第711条：承租人未按照约定的方法或者未根据租赁物的性质使用租赁物，致使租赁物受到损失的，出租人可以解除合同并请求赔偿损失。\n\n住建部《商品房屋租赁管理办法》第10条：租赁期内，因承租人使用不当造成房屋损坏的，由承租人负责修复或赔偿。',
+    explain: '关键区分：正常使用痕迹 vs 使用不当损坏。地板经1年使用产生的自然划痕属于正常损耗；拖拽家具产生的大面积刮痕属于不当使用。房东需举证后者。',
+    reply: '根据《民法典》第711条，赔偿责任仅适用于「未按租赁物性质使用」造成的损坏。地板表面轻微划痕属于日常生活自然产生的正常损耗。如您认为属于不当损坏，请提供入住前同一位置的地板状态照片作为对比证据，并出具第三方维修报价单。否则请您全额退还押金。'
+  },
+  {
+    e: '🧹', title: '卫生清洁费',
+    deduct: '典型扣款：¥200-500',
+    law: '《商品房屋租赁管理办法》第9条：出租人应当按照合同约定履行房屋维修义务并确保房屋安全。\n\n合同默示原则：如合同未约定退租保洁费，租客只需保证「合理清洁状态」，无需承担专业保洁费用。',
+    explain: '房东不得以「保洁费」名义随意扣款，除非合同明确约定且你签字同意。常规扫除后的房屋状态即为合理状态。拍照留底是关键。',
+    reply: '合同中未约定退租需支付保洁费，我已将房屋恢复至入住时合理清洁状态（附退租时拍摄的清洁照片，共12张）。如您坚持需要专业保洁，请提供合同条款截图和双方签字确认的保洁费用约定。否则请全额退还押金，含此项不当扣款。'
+  },
+  {
+    e: '❄️', title: '家电自然故障',
+    deduct: '典型扣款：¥800-2,000',
+    law: '《民法典》第712条：出租人应当履行租赁物的维修义务，但是当事人另有约定的除外。\n\n《商品房屋租赁管理办法》第9条：出租人应及时维修房屋及设施设备，确保承租人正常使用。',
+    explain: '空调老化、热水器出问题、水管漏水——这些属于房东的维修义务，与租客无关。除非你能证明是你故意损坏，否则一分钱不用出。',
+    reply: '根据《民法典》第712条，家电/设施设备的维修义务由出租人承担。该空调使用年限已超过5年，故障属于自然老化和正常损耗，非我使用不当造成。请您自行安排维修，并在7日内向我全额退还押金。'
+  }
+];
+
+function renderList() {
+  var html = '';
+  for (var i = 0; i < scenarios.length; i++) {
+    var s = scenarios[i];
+    html += '<div class="scenario-row" onclick="showDetail(' + i + ')">';
+    html += '<div class="emoji">' + s.e + '</div>';
+    html += '<div class="sc-text"><div class="sc-title">' + s.title + '</div><div class="sc-deduct">' + s.deduct + '</div></div>';
+    html += '<div class="arrow">›</div>';
+    html += '</div>';
+  }
+  document.getElementById('scenarioList').innerHTML = html;
+}
+
+function showDetail(idx) {
+  var s = scenarios[idx];
+  var html = '<a class="back-link" onclick="hideDetail()">← 返回</a>';
+  html += '<div class="card animate"><h3>' + s.e + ' ' + s.title + '</h3>';
+  html += '<div class="law-ref"><span class="law-tag">📜 法律依据</span><br>' + s.law.replace(/\n/g, '<br>') + '</div>';
+  html += '<div style="font-size:13px;color:#555;line-height:1.6;margin:10px 0;">' + s.explain + '</div>';
+  html += '<h4 style="font-size:14px;margin-top:16px;">💬 建议回复话术</h4>';
+  html += '<div class="reply-box"><div class="name">📋 可复制发送给房东</div>' + s.reply + '</div>';
+  html += '<button class="action-btn btn-copy" onclick="copyReply(\'' + s.reply.replace(/'/g, "\\'") + '\')">📋 复制话术</button>';
+  html += '<button class="action-btn btn-complain" onclick="alert(\'投诉路径：\n1. 12345 微信小程序 → 住建/租房纠纷\n2. 当地住建委信访/投诉热线\n3. 法院小额诉讼（标的额 ≤5万，无需律师，诉讼费 ¥25-50）\')">📞 查看投诉路径</button>';
+  html += '</div>';
+  document.getElementById('scenarioList').parentElement.style.display = 'none';
+  document.getElementById('detailPage').innerHTML = html;
+  document.getElementById('detailPage').className = 'detail-page show';
+}
+
+function hideDetail() {
+  document.getElementById('detailPage').className = 'detail-page';
+  document.getElementById('scenarioList').parentElement.style.display = '';
+}
+
+function copyReply(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    alert('话术已复制到剪贴板！');
+  }).catch(function() {
+    prompt('手动复制：', text);
+  });
+}
+
+function customReply() {
+  var reason = document.getElementById('customReason').value.trim();
+  if (!reason) { alert('请输入房东的扣款理由'); return; }
+  var reply = '关于"' + reason + '"，根据《民法典》第710条，承租人按约定方法使用租赁物造成的正常损耗不承担赔偿责任。请您提供：\n1. 入住前该位置的原始状态照片\n2. 退租时该位置的状态照片\n3. 证明该损耗超出正常使用范围的证据\n\n如无法举证，请在7日内全额退还押金。';
+  alert('生成话术：\n\n' + reply);
+}
+
+renderList();
+</script>
+</body>
+</html>
