@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>菜场翻译官 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fdfaf3; color: #333; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 20px 0 12px; }
+  .header h1 { font-size: 22px; color: #3e5c3a; }
+  .header .sub { font-size: 12px; color: #8a9a7f; margin-top: 4px; }
+  .season-banner { background: linear-gradient(135deg, #e8f5e9, #fff8e1); border-radius: 14px; padding: 14px; margin: 12px 0; display: flex; align-items: center; gap: 12px; }
+  .season-banner .icon { font-size: 36px; }
+  .season-banner .text { flex: 1; }
+  .season-banner .title { font-size: 14px; font-weight: 700; color: #3e5c3a; }
+  .season-banner .list { font-size: 12px; color: #666; margin-top: 4px; }
+  .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .card h3 { font-size: 15px; margin-bottom: 10px; }
+  .veggie-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f7f7f2; cursor: pointer; }
+  .veggie-row:last-child { border-bottom: none; }
+  .veggie-row .v-icon { font-size: 32px; width: 44px; text-align: center; flex-shrink: 0; }
+  .veggie-row .v-info { flex: 1; }
+  .veggie-row .v-name { font-size: 14px; font-weight: 600; }
+  .veggie-row .v-price { font-size: 11px; color: #888; }
+  .veggie-row .v-score { font-size: 12px; color: #e65100; font-weight: 600; }
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .tag { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .tag-season { background: #e8f5e9; color: #2e7d32; }
+  .tag-tip { background: #fff3e0; color: #e65100; }
+  .detail-page { display: none; }
+  .detail-page.show { display: block; }
+  .back-link { font-size: 13px; color: #4a7c59; cursor: pointer; margin-bottom: 12px; display: inline-block; }
+  .how-to-pick { background: #f9fdf7; border-radius: 10px; padding: 12px; margin: 10px 0; font-size: 13px; line-height: 1.7; }
+  .recipe-card { display: flex; gap: 10px; padding: 10px; background: #fafafa; border-radius: 10px; margin: 6px 0; }
+  .recipe-card .r-emoji { font-size: 28px; }
+  .recipe-card .r-info { flex: 1; font-size: 12px; }
+  .recipe-card .r-name { font-weight: 700; font-size: 13px; }
+  .recipe-card .r-meta { color: #888; }
+  .camera-btn { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #4a7c59; color: #fff; font-size: 24px; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(74,124,89,.3); display: flex; align-items: center; justify-content: center; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .35s ease; }
+  .footer { text-align: center; padding: 24px 0; font-size: 11px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>🥬 菜场翻译官</h1>
+    <div class="sub">拍照识菜 · 教你怎么挑 · 告诉你怎么做</div>
+  </div>
+
+  <!-- Season banner -->
+  <div class="season-banner animate">
+    <div class="icon">🌞</div>
+    <div class="text">
+      <div class="title">七月时令 · 正当季 🍃</div>
+      <div class="list">空心菜 · 丝瓜 · 毛豆 · 茄子 · 苦瓜 · 豇豆 · 苋菜</div>
+    </div>
+  </div>
+
+  <!-- Veggie list -->
+  <div class="card animate" style="animation-delay:50ms">
+    <h3>📸 今日推荐 · 时令蔬菜</h3>
+    <div id="veggieList"></div>
+  </div>
+
+  <div id="detailPage" class="detail-page"></div>
+  <div class="footer">菜场翻译官 · Demo · 时令数据参考</div>
+</div>
+<button class="camera-btn" onclick="alert('拍照识别蔬菜 (Demo)')">📷</button>
+
+<script>
+var veggies = [
+  {
+    icon: '🥬', name: '空心菜', price: '¥3.5/斤', season: true,
+    seasonTag: '七月正当季', score: '4.8',
+    pick: '选茎秆细嫩、叶片翠绿无黄斑的。掐一下茎——能轻易掐断就是嫩的，掐不动就老了。根部如果发白变粗说明过了采摘期。',
+    avoid: '叶子发黄、茎秆粗硬、根部木质化的不要买。有黑色斑点是冻伤。',
+    recipes: [
+      {name: '蒜蓉空心菜', time: '5分钟', tip: '大火快炒，断生即出锅'},
+      {name: '腐乳空心菜', time: '8分钟', tip: '白腐乳碾碎炒香，别放盐'},
+      {name: '凉拌空心菜', time: '10分钟', tip: '焯水30秒过凉水，生抽蒜末'}
+    ]
+  },
+  {
+    icon: '🥒', name: '丝瓜', price: '¥4.0/斤', season: true,
+    seasonTag: '七月正当季', score: '4.7',
+    pick: '挑表皮光滑、颜色均匀深绿、两头粗细差不多的。用手掂一掂，沉的说明水分足。轻轻按一下——有弹性不发软就是好瓜。',
+    avoid: '表皮有凹陷、发软、颜色不均匀（黄绿相间）的过熟。太粗的可能有籽且老。',
+    recipes: [
+      {name: '丝瓜炒蛋', time: '6分钟', tip: '丝瓜切滚刀块，蛋先炒好再下瓜'},
+      {name: '丝瓜蛤蜊汤', time: '15分钟', tip: '蛤蜊吐沙后放入，开口即关火'},
+      {name: '蒜蓉蒸丝瓜', time: '10分钟', tip: '切段蒸8分钟，淋热油+生抽'}
+    ]
+  },
+  {
+    icon: '🫘', name: '毛豆', price: '¥5.0/斤', season: true,
+    seasonTag: '七月正当季', score: '4.6',
+    pick: '选豆荚饱满、颜色翠绿、表面有绒毛的。捏一下豆荚——能感觉到豆粒饱满鼓胀。新鲜毛豆荚上有一层细白毛。',
+    avoid: '豆荚干瘪、颜色发黄、绒毛脱落的不新鲜。豆荚太鼓到几乎裂开的可能太老。',
+    recipes: [
+      {name: '盐水毛豆', time: '15分钟', tip: '剪掉豆荚两端更入味，煮8分钟焖5分钟'},
+      {name: '毛豆炒肉末', time: '10分钟', tip: '毛豆先焯水2分钟去生味'},
+      {name: '毛豆丝瓜汤', time: '12分钟', tip: '两种时令菜搭配，清淡解暑'}
+    ]
+  },
+  {
+    icon: '🍆', name: '茄子', price: '¥3.0/斤', season: true,
+    seasonTag: '七月正当季', score: '4.5',
+    pick: '选表皮紫黑发亮、蒂部绿色新鲜的。捏一下——有弹性但不过软。细长型紫茄比圆茄口感更好。蒂下的白圈越宽越嫩。',
+    avoid: '表皮有褶皱、颜色暗淡、蒂部干枯的不新鲜。太软的可能内部已经空心。',
+    recipes: [
+      {name: '鱼香茄子', time: '15分钟', tip: '茄子切条盐腌10分钟挤水，少油不吸油'},
+      {name: '蒜泥蒸茄子', time: '12分钟', tip: '整根蒸软后撕条，淋蒜泥酱油'},
+      {name: '地三鲜', time: '15分钟', tip: '茄子+土豆+青椒，先炸后炒'}
+    ]
+  },
+  {
+    icon: '🥗', name: '苦瓜', price: '¥4.5/斤', season: true,
+    seasonTag: '七月正当季', score: '4.3',
+    pick: '选表皮颗粒大而饱满、颜色翠绿的。越丑越好吃——颗粒越大越突起说明肉厚苦味轻。细长型的比短粗型的苦味更淡。',
+    avoid: '颜色发黄、颗粒变平变软的是过熟的。表皮有褐斑的是碰伤。',
+    recipes: [
+      {name: '苦瓜炒蛋', time: '8分钟', tip: '苦瓜切薄片盐水泡10分钟去苦'},
+      {name: '凉拌苦瓜', time: '12分钟', tip: '焯水1分钟冰水过凉，加蜂蜜+柠檬'},
+      {name: '苦瓜排骨汤', time: '40分钟', tip: '排骨先焯水，苦瓜后放炖10分钟'}
+    ]
+  }
+];
+
+function renderList() {
+  var html = '';
+  for (var i = 0; i < veggies.length; i++) {
+    var v = veggies[i];
+    html += '<div class="veggie-row" onclick="showDetail(' + i + ')">';
+    html += '<div class="v-icon">' + v.icon + '</div>';
+    html += '<div class="v-info"><div class="v-name">' + v.name + '</div>';
+    html += '<div class="v-price">' + v.price + '</div>';
+    html += '<div class="tag-row"><span class="tag tag-season">' + v.seasonTag + '</span><span class="tag tag-tip">⭐ ' + v.score + '</span></div>';
+    html += '</div><div style="font-size:18px;color:#bbb;">›</div></div>';
+  }
+  document.getElementById('veggieList').innerHTML = html;
+}
+
+function showDetail(idx) {
+  var v = veggies[idx];
+  var html = '<a class="back-link" onclick="hideDetail()">← 菜场</a>';
+  html += '<div class="card animate"><h3>' + v.icon + ' ' + v.name + ' <span style="font-size:12px;color:#888;">' + v.price + '</span></h3>';
+
+  html += '<h4 style="font-size:13px;margin-top:14px;">✅ 怎么挑</h4>';
+  html += '<div class="how-to-pick">' + v.pick + '</div>';
+
+  html += '<h4 style="font-size:13px;margin-top:12px;color:#d32f2f;">❌ 避坑指南</h4>';
+  html += '<div class="how-to-pick" style="border-left:3px solid #ffcdd2;">' + v.avoid + '</div>';
+
+  html += '<h4 style="font-size:13px;margin-top:14px;">🍳 推荐做法</h4>';
+  for (var j = 0; j < v.recipes.length; j++) {
+    var r = v.recipes[j];
+    html += '<div class="recipe-card">';
+    html += '<div class="r-emoji">' + (j === 0 ? '🥇' : j === 1 ? '🥈' : '🥉') + '</div>';
+    html += '<div class="r-info"><div class="r-name">' + r.name + '</div>';
+    html += '<div class="r-meta">⏱ ' + r.time + ' · ' + r.tip + '</div></div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  document.getElementById('veggieList').parentElement.style.display = 'none';
+  document.querySelector('.season-banner').style.display = 'none';
+  document.getElementById('detailPage').innerHTML = html;
+  document.getElementById('detailPage').className = 'detail-page show';
+}
+
+function hideDetail() {
+  document.getElementById('detailPage').className = 'detail-page';
+  document.getElementById('veggieList').parentElement.style.display = '';
+  document.querySelector('.season-banner').style.display = '';
+}
+
+renderList();
+</script>
+</body>
+</html>

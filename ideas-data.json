@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "market-guide",
+      "icon": "🥬",
+      "title": "菜场翻译官",
+      "tagline": "拍照识菜 + 教你怎么挑 + 告诉你怎么做 —— 菜场的 AI 导购，年轻人逛菜场不再怂",
+      "status": "live",
+      "category": "本地生活"
+    },
+    {
       "id": "deposit-defender",
       "icon": "🛡️",
       "title": "退租押金守卫",
