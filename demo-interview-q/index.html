@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>面试反问官 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6fa; color: #222; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 20px 0 8px; }
+  .header h1 { font-size: 22px; color: #1a237e; }
+  .header .sub { font-size: 12px; color: #7b84b8; margin-top: 4px; }
+  .stat-row { display: flex; gap: 8px; margin: 14px 0; }
+  .stat-box { flex: 1; background: #fff; border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .stat-box .num { font-size: 22px; font-weight: 800; color: #1a237e; }
+  .stat-box .label { font-size: 10px; color: #999; margin-top: 2px; }
+  .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.03); }
+  .card h3 { font-size: 14px; margin-bottom: 10px; }
+  .role-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .role-tab { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; background: #f0f0f5; color: #555; border: 1.5px solid transparent; transition: all .2s; }
+  .role-tab.active { background: #e8eaf6; color: #1a237e; border-color: #5c6bc0; }
+  .q-card { background: #fafbff; border-radius: 10px; padding: 12px 14px; margin: 8px 0; border-left: 3px solid #5c6bc0; cursor: pointer; }
+  .q-card .q-text { font-size: 14px; font-weight: 600; line-height: 1.5; }
+  .q-card .q-why { font-size: 11px; color: #5c6bc0; margin-top: 6px; display: none; }
+  .q-card.expanded .q-why { display: block; }
+  .q-card .q-hint { font-size: 10px; color: #aaa; margin-top: 4px; }
+  .copy-btn { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 10px; background: #e8eaf6; color: #5c6bc0; border: none; cursor: pointer; margin-top: 8px; display: none; }
+  .q-card.expanded .copy-btn { display: inline-block; }
+  .input-row { display: flex; gap: 8px; }
+  .input-row input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #e0e0e0; font-size: 13px; outline: none; }
+  .input-row input:focus { border-color: #5c6bc0; }
+  .input-row button { padding: 10px 18px; border-radius: 10px; background: #1a237e; color: #fff; border: none; font-weight: 600; font-size: 13px; cursor: pointer; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .3s ease; }
+  .footer { text-align: center; padding: 24px 0; font-size: 11px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>💼 面试反问官</h1>
+    <div class="sub">面试官说"你有什么想问的？"——别慌</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">80%</div><div class="label">反问环节失分率</div></div>
+    <div class="stat-box"><div class="num">3.2x</div><div class="label">好问题面试通过倍数</div></div>
+    <div class="stat-box"><div class="num">24s</div><div class="label">平均冷场时间</div></div>
+  </div>
+
+  <div class="card animate">
+    <h3>🎯 选场景 → 看反问</h3>
+    <div class="role-tabs" id="roleTabs"></div>
+    <div id="questions"></div>
+  </div>
+
+  <div class="card animate" style="animation-delay:50ms">
+    <h3>✍️ 自定义</h3>
+    <div class="input-row">
+      <input type="text" id="customInput" placeholder="公司名 · 岗位">
+      <button onclick="customGen()">生成</button>
+    </div>
+  </div>
+
+  <div class="footer">面试反问官 · Demo · 仅供参考</div>
+</div>
+
+<script>
+var allQ = {
+  '技术面': {
+    label: '🖥 技术面',
+    qs: [
+      {
+        q: '团队目前的技术栈是怎样的？用什么语言/框架，代码仓库怎么管理？',
+        why: '展示你对工程实况的关心，不是只会刷题。如果提前做了功课，可以追问具体技术选型的理由。'
+      },
+      {
+        q: '日常开发流程是怎样的？代码审查机制、测试覆盖率、CI/CD 成熟度？',
+        why: '说明你关心代码质量和工程规范，不是只在意自己的产出。'
+      },
+      {
+        q: '团队目前面临的最大的技术挑战是什么？',
+        why: '这个问题有深度——表明你不只是在找工作，而是在找一个能解决真问题的位置。也帮你判断这个岗位有没有成长空间。'
+      },
+      {
+        q: '这个岗位的 30/60/90 天目标分别是什么？',
+        why: '展示你对工作节奏和期望的理性管理。面试官会看到你是一个有规划和执行力的候选人。'
+      }
+    ]
+  },
+  'HR面': {
+    label: '👥 HR面',
+    qs: [
+      {
+        q: '公司的晋升机制是怎样的？晋升周期和评估标准是什么？',
+        why: '比直接问"多久能涨薪"高级得多——说明你关注长期成长而不是短期利益。'
+      },
+      {
+        q: '团队规模和人员结构是怎样的？这个岗位过去一年的流动率如何？',
+        why: '通过团队稳定性判断这个位置的真实情况。高流动率可能意味着管理或业务有问题，值得警惕。'
+      },
+      {
+        q: '公司对新人的培训和支持机制有哪些？有没有 mentor 制度？',
+        why: '展示你愿意学习成长的态度。同时帮自己判断入职后有没有人带你。'
+      },
+      {
+        q: '这个岗位目前的招聘紧迫度如何？是因为业务扩张还是人员补缺？',
+        why: '了解真实招聘原因。补缺可能意味着前任离职（需追问原因），扩张意味着公司增长中。'
+      }
+    ]
+  },
+  '总监/老板面': {
+    label: '🎯 总监/老板面',
+    qs: [
+      {
+        q: '公司/部门的三年愿景是什么？这个团队在其中扮演什么角色？',
+        why: '展示你有大局观，不是只关心自己的一亩三分地。老板级别的面试官很看重这个。'
+      },
+      {
+        q: '您认为目前团队最大的短板是什么？这个岗位的人需要在哪些方面补齐？',
+        why: '直接问痛点——对方会觉得你有解决问题的意愿和能力。同时也能判断自己的技能匹配度。'
+      },
+      {
+        q: '公司最近一次失败的决策是什么？怎么走出来的？',
+        why: '大胆但有深度。比问"公司文化"更能试探出真实情况。如果面试官回避或生气——说明这里可能不适合你。'
+      },
+      {
+        q: '您个人最看重团队成员的哪三个品质？',
+        why: '了解老板价值观。如果他说的是"忠诚""加班""服从"，和你想要的"专业""创新""协作"不匹配，这就是危险信号。'
+      }
+    ]
+  }
+};
+
+var roles = Object.keys(allQ);
+var activeRole = '技术面';
+
+function render() {
+  // Tabs
+  var tabHtml = '';
+  for (var i = 0; i < roles.length; i++) {
+    var cls = roles[i] === activeRole ? 'role-tab active' : 'role-tab';
+    tabHtml += '<span class="' + cls + '" onclick="switchRole(\'' + roles[i] + '\')">' + allQ[roles[i]].label + '</span>';
+  }
+  document.getElementById('roleTabs').innerHTML = tabHtml;
+
+  // Questions
+  var qs = allQ[activeRole].qs;
+  var qHtml = '';
+  for (var j = 0; j < qs.length; j++) {
+    var q = qs[j];
+    qHtml += '<div class="q-card" id="qcard' + j + '" onclick="toggleQ(' + j + ')">';
+    qHtml += '<div class="q-text">' + (j+1) + '. ' + q.q + '</div>';
+    qHtml += '<div class="q-why">💡 ' + q.why + '</div>';
+    qHtml += '<div class="q-hint">点击展开看到底好在哪</div>';
+    qHtml += '<button class="copy-btn" onclick="event.stopPropagation();copySingle(' + j + ')">📋 复制</button>';
+    qHtml += '</div>';
+  }
+  document.getElementById('questions').innerHTML = qHtml;
+}
+
+function switchRole(role) {
+  activeRole = role;
+  render();
+}
+
+function toggleQ(idx) {
+  var card = document.getElementById('qcard' + idx);
+  if (card.className.indexOf('expanded') >= 0) {
+    card.className = 'q-card';
+  } else {
+    card.className = 'q-card expanded';
+  }
+}
+
+function copySingle(idx) {
+  var text = allQ[activeRole].qs[idx].q;
+  navigator.clipboard.writeText(text).then(function() {
+    alert('已复制！');
+  }).catch(function() {
+    prompt('手动复制：', text);
+  });
+}
+
+function customGen() {
+  var input = document.getElementById('customInput').value.trim();
+  if (!input) { alert('请输入公司和岗位'); return; }
+  alert('针对"' + input + '"的建议反问方向：\n\n1. 团队规模和分工结构？\n2. 入职后前三个月的具体目标？\n3. 最看重候选人的哪项能力？\n4. 项目目前所处的阶段（从0到1还是稳定迭代）？');
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "interview-q",
+      "icon": "💼",
+      "title": "面试反问官",
+      "tagline": "面试官说"你有什么想问的？"——3 类面试官 × 12 个高价值反问，每个附解析告诉你好在哪",
+      "status": "live",
+      "category": "职业发展"
+    },
+    {
       "id": "market-guide",
       "icon": "🥬",
       "title": "菜场翻译官",
