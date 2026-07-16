@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>相亲破冰卡 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fdf2f4; color: #333; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 20px 0 8px; }
+  .header h1 { font-size: 22px; color: #c62828; }
+  .header .sub { font-size: 12px; color: #ba8b8b; margin-top: 4px; }
+  .stat-row { display: flex; gap: 8px; margin: 14px 0; }
+  .stat-box { flex: 1; background: #fff; border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.03); }
+  .stat-box .num { font-size: 20px; font-weight: 800; color: #c62828; }
+  .stat-box .label { font-size: 10px; color: #999; margin-top: 2px; }
+  .scene-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .scene-tab { padding: 7px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; background: #fff; color: #555; border: 1.5px solid transparent; transition: all .2s; }
+  .scene-tab.active { background: #fff0f0; color: #c62828; border-color: #e57373; }
+  .round-label { font-size: 12px; font-weight: 700; color: #888; margin: 10px 0 6px; padding: 4px 10px; background: #fff8f8; border-radius: 6px; display: inline-block; }
+  .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.04); cursor: pointer; border: 1px solid #ffe0e0; transition: transform .15s; position: relative; }
+  .card:active { transform: scale(0.98); }
+  .card .c-icon { font-size: 28px; }
+  .card .c-topic { font-size: 15px; font-weight: 700; margin: 6px 0; }
+  .card .c-sample { font-size: 12px; color: #666; line-height: 1.6; max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+  .card.flipped .c-sample { max-height: 120px; }
+  .card .c-danger { font-size: 11px; color: #c62828; margin-top: 6px; max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+  .card.flipped .c-danger { max-height: 60px; }
+  .card .flip-hint { font-size: 10px; color: #ccc; margin-top: 6px; }
+  .card.flipped .flip-hint { display: none; }
+  .btn-row { display: flex; gap: 8px; margin: 14px 0; }
+  .btn-row button { flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; border: 1px solid #ddd; cursor: pointer; background: #fff; }
+  .btn-row button.primary { background: #c62828; color: #fff; border-color: #c62828; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .3s ease; }
+  .footer { text-align: center; padding: 24px 0; font-size: 11px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>💕 相亲破冰卡</h1>
+    <div class="sub">告别尴尬第一面 · 从"你好"到"有机会"</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">2.4亿</div><div class="label">单身人口</div></div>
+    <div class="stat-box"><div class="num">47s</div><div class="label">平均冷场时长</div></div>
+    <div class="stat-box"><div class="num">3轮</div><div class="label">破冰→了解→深度</div></div>
+  </div>
+
+  <div class="card animate" style="background:linear-gradient(135deg,#fff5f5,#fff);">
+    <h3 style="font-size:13px;margin-bottom:8px;">🎯 选择相亲场景</h3>
+    <div class="scene-tabs" id="sceneTabs"></div>
+    <div id="rounds"></div>
+  </div>
+
+  <div class="btn-row" style="margin-top:6px;">
+    <button onclick="shuffle()">🔀 换一批</button>
+    <button class="primary" onclick="copyAll()">📋 复制全部话题</button>
+  </div>
+
+  <div class="footer">相亲破冰卡 · Demo · 仅供参考</div>
+</div>
+
+<script>
+var data = {
+  '父母介绍': {
+    label: '👨‍👩‍👧 父母介绍',
+    rounds: [
+      { name: '🟢 破冰 · 自然开场', cards: [
+        { icon: '🍽️', topic: '家乡美食', sample: '"听说你们老家那边的XX很好吃，我同事也是那边人，每次回家都带。你最喜欢家乡的什么菜？"', danger: '⚠️ 别问"你们家谁做饭"——可能引出家庭经济矛盾。' },
+        { icon: '📸', topic: '最近的生活', sample: '"我上周去了XX公园，还挺好看的。你最近周末喜欢去哪儿逛逛吗？"', danger: '⚠️ 别追问公司加班情况——对方可能刚离职。' }
+      ]},
+      { name: '🟡 了解 · 拉近距离', cards: [
+        { icon: '🎬', topic: '最近在看什么', sample: '"最近有什么好看的剧/综艺吗？我同事都在聊一部剧但我一直没空看。"', danger: '⚠️ 别提相亲节目或婚恋综艺——父母介绍的场合，显得刻意。' },
+        { icon: '🐱', topic: '宠物或小时候', sample: '"你小时候养过什么小动物吗？我小时候养了一只猫特别粘人。"', danger: '⚠️ 别问"你喜欢小孩吗"——第一次见面太敏感。' }
+      ]},
+      { name: '🔴 价值观 · 试探三观', cards: [
+        { icon: '🏠', topic: '理想的生活节奏', sample: '"你觉得工作日和周末的理想节奏是什么样的？我是周末必须有一天完全自由的类型。"', danger: '⚠️ 别直接问"婚后谁管钱"——父母会追问结果，太早。' },
+        { icon: '📚', topic: '消费观', sample: '"你会在什么事情上不眨眼地花钱？我是买书和旅行。"', danger: '⚠️ 别问收入和存款——父母在中间，信息会传回。' }
+      ]}
+    ]
+  },
+  '朋友撮合': {
+    label: '🤝 朋友撮合',
+    rounds: [
+      { name: '🟢 破冰 · 借共同朋友', cards: [
+        { icon: '😄', topic: '怎么认识介绍的', sample: '"XX跟我说起你的时候，说你特别靠谱。你们是怎么认识的？"', danger: '⚠️ 别说"XX说你单身很久"——朋友传话尴尬。' },
+        { icon: '🏢', topic: '同行或跨行', sample: '"你做XX行业的啊，我之前有朋友也在，听说挺有意思的。你入行多久了？"', danger: '⚠️ 别一上来就问薪资级别——朋友撮合不是面试。' }
+      ]},
+      { name: '🟡 了解 · 共同兴趣', cards: [
+        { icon: '⛰️', topic: '周末活动', sample: '"XX说你也很喜欢户外？我上周去爬了XX山，强度刚好半天。"', danger: '⚠️ 别推销自己的爱好——对方可能只是客气。先探兴趣。' },
+        { icon: '☕', topic: '朋友眼中的你', sample: '"你朋友一般会怎么形容你？我的朋友说我太宅了哈哈。"', danger: '⚠️ 别拿对方和介绍人的描述对比——显得你有预设立场。' }
+      ]},
+      { name: '🔴 价值观 · 深度连接', cards: [
+        { icon: '🌱', topic: '近期的改变', sample: '"最近半年有什么改变你习惯的事吗？我最近开始早起跑步，坚持了三个月了。"', danger: '⚠️ 别问"你为什么单身这么久"——可能是痛点。' },
+        { icon: '💭', topic: '对关系的期待', sample: '"你觉得长久的关系里，什么最重要？真诚、信任还是互相成就？"', danger: '⚠️ 开放式问题让对方发挥，别预设答案或评判。' }
+      ]}
+    ]
+  },
+  '平台匹配': {
+    label: '📱 平台匹配',
+    rounds: [
+      { name: '🟢 破冰 · 线上安全感', cards: [
+        { icon: '📋', topic: '资料里没写的', sample: '"看你资料写了喜欢旅行，最难忘的一趟是哪里？我的资料里没写我其实是个路痴。"', danger: '⚠️ 别用"你本人比照片好看"开场——太油腻且暗示照片P了。' },
+        { icon: '🎯', topic: '为什么选这个平台', sample: '"你用这个APP多久了？我朋友推荐来的，感觉还挺方便。"', danger: '⚠️ 别问"你见了多少人了"——老司机盘问的既视感。' }
+      ]},
+      { name: '🟡 了解 · 建立信任', cards: [
+        { icon: '🏙️', topic: '城市迁徙故事', sample: '"你来XX城市多久了？我最开始来是因为大学，毕业后就留下了。"', danger: '⚠️ 别追问"为什么要来/为什么不留老家"——可能是家庭原因。' },
+        { icon: '🎵', topic: '音乐或播客', sample: '"你平时听播客吗？我最近在听一个讲历史的，做家务时听刚好。"', danger: '⚠️ 别贬低对方兴趣——如果对方听你说不了解的领域，先尊重再好奇。' }
+      ]},
+      { name: '🔴 价值观 · 真诚试探', cards: [
+        { icon: '🕐', topic: '时间分配', sample: '"如果拿到一个月的带薪假，你会怎么安排？旅行、学习还是一半一半？"', danger: '⚠️ 别问"你为什么还单身"——同样是想问婚史，但可以等对方主动提。' },
+        { icon: '💰', topic: '花钱哲学', sample: '"你觉得钱花在什么上面最值得？有人觉得是体验，有人觉得是安全感。"', danger: '⚠️ 别问具体收入或存款数字——价值观比数字重要。' }
+      ]}
+    ]
+  },
+  '同事介绍': {
+    label: '🏢 同事介绍',
+    rounds: [
+      { name: '🟢 破冰 · 工作关联', cards: [
+        { icon: '☕', topic: '公司附近美食', sample: '"XX说你公司在XX那边，那边有一家很好吃的面馆你吃过吗？我每次去开会都绕路去吃。"', danger: '⚠️ 别打听对方公司内幕——同事介绍的，信息会回流。' },
+        { icon: '🔄', topic: '职业路径', sample: '"你一直做这个方向吗还是转行过来的？我们行业挺多人是从XX转过来的。"', danger: '⚠️ 别评价对方公司的好坏——中间人也在场。' }
+      ]},
+      { name: '🟡 了解 · 互补空间', cards: [
+        { icon: '✈️', topic: '假期计划', sample: '"今年有旅行计划吗？我想去XX但是一直没约到人。"', danger: '⚠️ 别立刻邀约——第一次见面就说"改天一起去"太急。' },
+        { icon: '🎨', topic: '隐藏技能', sample: '"除了工作，有什么隐藏技能吗？我同事都不知道我会弹一点点吉他。"', danger: '⚠️ 别说"我就是个工作狂没爱好"——同事介绍时对方会认为你无趣。' }
+      ]},
+      { name: '🔴 价值观 · 职业与人生', cards: [
+        { icon: '🎯', topic: '五年后的自己', sample: '"如果可以切换赛道，你会选什么方向？我偶尔会幻想开一家小书店。"', danger: '⚠️ 别问"你有买房吗"——同事介绍的背景下，这种问题太直接。' },
+        { icon: '⚖️', topic: '工作与生活', sample: '"你觉得工作和生活的边界感重要吗？我以前是个工作狂，现在在慢慢学会区分。"', danger: '⚠️ 别批评加班文化——对方如果还在高强度公司会觉得你在质疑他的选择。' }
+      ]}
+    ]
+  }
+};
+
+var scenes = Object.keys(data);
+var active = '朋友撮合';
+
+function render() {
+  var tabHtml = '';
+  for (var i = 0; i < scenes.length; i++) {
+    var cls = scenes[i] === active ? 'scene-tab active' : 'scene-tab';
+    tabHtml += '<span class="' + cls + '" onclick="switchScene(\'' + scenes[i] + '\')">' + data[scenes[i]].label + '</span>';
+  }
+  document.getElementById('sceneTabs').innerHTML = tabHtml;
+
+  var rounds = data[active].rounds;
+  var html = '';
+  for (var r = 0; r < rounds.length; r++) {
+    html += '<div class="round-label">' + rounds[r].name + '</div>';
+    for (var c = 0; c < rounds[r].cards.length; c++) {
+      var card = rounds[r].cards[c];
+      html += '<div class="card" onclick="flip(this)">';
+      html += '<div class="c-icon">' + card.icon + '</div>';
+      html += '<div class="c-topic">' + card.topic + '</div>';
+      html += '<div class="c-sample">💬 ' + card.sample + '</div>';
+      html += '<div class="c-danger">' + card.danger + '</div>';
+      html += '<div class="flip-hint">👆 点击查看话术和避雷</div>';
+      html += '</div>';
+    }
+  }
+  document.getElementById('rounds').innerHTML = html;
+}
+
+function switchScene(s) {
+  active = s;
+  render();
+}
+
+function flip(card) {
+  if (card.className.indexOf('flipped') >= 0) {
+    card.className = 'card';
+  } else {
+    card.className = 'card flipped';
+  }
+}
+
+function shuffle() {
+  // Simple visual refresh - close all cards
+  var cards = document.querySelectorAll('.card');
+  for (var i = 0; i < cards.length; i++) {
+    // Exclude scene selection card
+    if (cards[i].querySelector('.c-topic')) {
+      cards[i].className = 'card';
+    }
+  }
+  // Switch to a random scene
+  var others = [];
+  for (var j = 0; j < scenes.length; j++) {
+    if (scenes[j] !== active) others.push(scenes[j]);
+  }
+  active = others[Math.floor(Math.random() * others.length)];
+  render();
+}
+
+function copyAll() {
+  var rounds = data[active].rounds;
+  var text = '「' + data[active].label + '」相亲话题卡\n\n';
+  for (var r = 0; r < rounds.length; r++) {
+    text += rounds[r].name + '\n';
+    for (var c = 0; c < rounds[r].cards.length; c++) {
+      text += '  ' + rounds[r].cards[c].icon + ' ' + rounds[r].cards[c].topic + '\n';
+    }
+    text += '\n';
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    alert('已复制全部话题！');
+  }).catch(function() {
+    prompt('手动复制：', text);
+  });
+}
+
+render();
+</script>
+</body>
+</html>

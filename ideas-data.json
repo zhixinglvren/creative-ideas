@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "date-icebreaker",
+      "icon": "💕",
+      "title": "相亲破冰卡",
+      "tagline": "告别相亲第一面的 47 秒冷场 —— 4 种场景 × 3 轮渐进话题卡片，每张附话术 + 避雷指南",
+      "status": "live",
+      "category": "社交工具"
+    },
+    {
       "id": "interview-q",
       "icon": "💼",
       "title": "面试反问官",
