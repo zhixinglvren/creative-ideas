@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "clinic-companion",
+      "icon": "🏥",
+      "title": "陪诊助手",
+      "tagline": "帮爸妈看病不抓瞎 —— 就诊准备清单 + 帮父母列好该问医生的 5 个问题 + 诊后记录模板",
+      "status": "live",
+      "category": "家庭关怀"
+    },
+    {
       "id": "date-icebreaker",
       "icon": "💕",
       "title": "相亲破冰卡",

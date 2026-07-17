@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>陪诊助手 - Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f7f4; color: #222; min-height: 100vh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .header { text-align: center; padding: 20px 0 8px; }
+  .header h1 { font-size: 22px; color: #1b5e20; }
+  .header .sub { font-size: 12px; color: #6b9b6b; margin-top: 4px; }
+  .stat-row { display: flex; gap: 8px; margin: 14px 0; }
+  .stat-box { flex: 1; background: #fff; border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.03); }
+  .stat-box .num { font-size: 20px; font-weight: 800; color: #1b5e20; }
+  .stat-box .label { font-size: 10px; color: #999; margin-top: 2px; }
+  .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.03); }
+  .card h3 { font-size: 14px; margin-bottom: 10px; }
+  .preset-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .preset-tab { padding: 7px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; background: #fff; color: #555; border: 1.5px solid #ddd; transition: all .2s; }
+  .preset-tab.active { background: #e8f5e9; color: #1b5e20; border-color: #66bb6a; }
+  .phase { margin-bottom: 16px; }
+  .phase-title { font-size: 12px; font-weight: 700; color: #1b5e20; margin-bottom: 8px; padding-left: 4px; border-left: 3px solid #4caf50; }
+  .phase .item { background: #f9fdf9; border-radius: 8px; padding: 10px 12px; margin: 4px 0; font-size: 13px; display: flex; align-items: flex-start; gap: 8px; }
+  .phase .item .check { color: #4caf50; font-weight: 700; flex-shrink: 0; }
+  .phase .item .q-text { font-size: 14px; color: #333; }
+  .q-highlight { background: #fff9c4; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+  .copy-btn { display: block; width: 100%; padding: 12px; border-radius: 12px; background: #1b5e20; color: #fff; border: none; font-size: 13px; font-weight: 600; cursor: pointer; margin: 10px 0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .animate { animation: fadeIn .3s ease; }
+  .footer { text-align: center; padding: 24px 0; font-size: 11px; color: #bbb; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header">
+    <h1>🏥 陪诊助手</h1>
+    <div class="sub">帮爸妈看病不抓瞎 · 就算不在身边也能管到位</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="num">2.1亿</div><div class="label">异地子女</div></div>
+    <div class="stat-box"><div class="num">&lt;50%</div><div class="label">医嘱记忆准确率</div></div>
+    <div class="stat-box"><div class="num">3 份</div><div class="label">就诊三件套</div></div>
+  </div>
+
+  <div class="card animate">
+    <h3>🎯 选择就诊场景</h3>
+    <div class="preset-tabs" id="presets"></div>
+    <div id="phases"></div>
+    <button class="copy-btn" onclick="copyAll()">📋 复制全部清单</button>
+  </div>
+
+  <div class="footer">陪诊助手 · Demo · 仅供参考，不替代专业医疗建议</div>
+</div>
+
+<script>
+var data = {
+  '常规体检': {
+    label: '🩺 常规体检',
+    phases: [
+      { title: '📋 就诊前 · 准备清单', items: [
+        '前一晚 22:00 后禁食，可少量饮水',
+        '带上身份证 + 医保卡 + 既往体检报告',
+        '穿宽松衣服，不要穿连衣裙或连体衣',
+        '如有高血压药，早起用小口水送服（不影响血检）',
+        '早上第一次小便憋住，到医院留尿'
+      ]},
+      { title: '❓ 诊中 · 替爸妈问医生', items: [
+        '去年的<span class="q-highlight">异常指标</span>今年有没有变化？',
+        '肝/肾功能、血糖血脂这几项<span class="q-highlight">最重要的</span>结果什么时候出来？',
+        '有没有<span class="q-highlight">需要复查</span>或进一步检查的项目？',
+        '目前吃的药<span class="q-highlight">需要调整</span>吗？',
+        '下次体检建议隔多久？重点查什么？'
+      ]},
+      { title: '📝 诊后 · 记录模板', items: [
+        '📸 拍下体检报告每一页发给我',
+        '💊 医生调整/新增的药名和用量：___',
+        '🔄 建议复查项目及时间：___',
+        '📅 下次体检建议时间：___',
+        '⚠️ 医生特别交代的注意事项：___'
+      ]}
+    ]
+  },
+  '高血压复查': {
+    label: '💓 高血压复查',
+    phases: [
+      { title: '📋 就诊前 · 准备清单', items: [
+        '带上一周的<span class="q-highlight">家庭自测血压记录</span>（早晚各一次）',
+        '带上目前吃的<span class="q-highlight">降压药药盒</span>（所有药）',
+        '可以正常早餐和吃药，不需要空腹',
+        '穿宽松袖口的衣服，方便量血压',
+        '记录最近一个月有没有头晕、心悸、腿肿等症状'
+      ]},
+      { title: '❓ 诊中 · 替爸妈问医生', items: [
+        '血压控制在多少算<span class="q-highlight">达标</span>？家里测和医院测差多少正常？',
+        '目前的药量<span class="q-highlight">需要调整</span>吗？能不能减量？',
+        '有没有对<span class="q-highlight">肾脏</span>影响较小的降压药？',
+        '多长时间测一次<span class="q-highlight">肾功能</span>？',
+        '生活方式方面——盐、运动、情绪——最该注意什么？'
+      ]},
+      { title: '📝 诊后 · 记录模板', items: [
+        '💊 新/调整的药名、用法、用量：___',
+        '🎯 医生制定的血压控制目标：___/___ mmHg',
+        '📊 下次复查时间和需要带的材料：___',
+        '⚠️ 需要马上就医的危险症状：___',
+        '🥗 饮食和运动建议：___'
+      ]}
+    ]
+  },
+  '关节疼痛': {
+    label: '🦴 关节疼痛',
+    phases: [
+      { title: '📋 就诊前 · 准备清单', items: [
+        '想清楚<span class="q-highlight">哪里疼、疼多久了</span>——是膝盖、腰还是肩膀？',
+        '疼的性质：刺痛/钝痛/酸胀？什么情况下加重？',
+        '带上有症状部位的<span class="q-highlight">既往影像报告</span>（X光/CT/MRI）',
+        '记录目前在吃的<span class="q-highlight">止痛药</span>（名称和用量）',
+        '如果有红肿发热，拍下照片带去医院'
+      ]},
+      { title: '❓ 诊中 · 替爸妈问医生', items: [
+        '是什么原因引起的？<span class="q-highlight">退行性、炎症性、还是外伤</span>？',
+        '需要做哪些检查？<span class="q-highlight">X光够不够，还是要做MRI？</span>',
+        '止痛药能长期吃吗？有没有<span class="q-highlight">副作用更小</span>的选择？',
+        '什么运动可以做，什么运动<span class="q-highlight">绝对不能做</span>？',
+        '大概多久能好转？如果变严重了<span class="q-highlight">什么信号要马上来</span>？'
+      ]},
+      { title: '📝 诊后 · 记录模板', items: [
+        '📋 诊断结果：___',
+        '💊 新开的药/外用药及用法：___',
+        '🏃 康复运动和禁忌动作：___',
+        '📅 复查时间：___',
+        '⚠️ 危险信号（需紧急就医）：___'
+      ]}
+    ]
+  }
+};
+
+var presets = Object.keys(data);
+var active = '常规体检';
+
+function render() {
+  var tHtml = '';
+  for (var i = 0; i < presets.length; i++) {
+    var cls = presets[i] === active ? 'preset-tab active' : 'preset-tab';
+    tHtml += '<span class="' + cls + '" onclick="switchP(\'' + presets[i] + '\')">' + data[presets[i]].label + '</span>';
+  }
+  document.getElementById('presets').innerHTML = tHtml;
+
+  var phases = data[active].phases;
+  var pHtml = '';
+  for (var p = 0; p < phases.length; p++) {
+    pHtml += '<div class="phase"><div class="phase-title">' + phases[p].title + '</div>';
+    for (var it = 0; it < phases[p].items.length; it++) {
+      var icon = phases[p].title.indexOf('准备') >= 0 ? '☐' : phases[p].title.indexOf('问医生') >= 0 ? '❓' : '📎';
+      pHtml += '<div class="item"><span class="check">' + icon + '</span><span class="q-text">' + phases[p].items[it] + '</span></div>';
+    }
+    pHtml += '</div>';
+  }
+  document.getElementById('phases').innerHTML = pHtml;
+}
+
+function switchP(s) { active = s; render(); }
+
+function copyAll() {
+  var phases = data[active].phases;
+  var text = '「' + data[active].label + '」陪诊清单\n━━━━━━━━━━\n\n';
+  for (var p = 0; p < phases.length; p++) {
+    text += phases[p].title + '\n';
+    for (var it = 0; it < phases[p].items.length; it++) {
+      text += '  ' + (it+1) + '. ' + phases[p].items[it].replace(/<[^>]+>/g, '') + '\n';
+    }
+    text += '\n';
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    alert('已复制！发到爸妈微信');
+  }).catch(function() {
+    prompt('手动复制：', text);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
