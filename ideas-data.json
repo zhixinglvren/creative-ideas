@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "social-ledger",
+      "icon": "📒",
+      "title": "人情往来账本",
+      "tagline": "记下每一笔人情，知道谁该还、该还多少——不再靠脑子记",
+      "status": "live",
+      "category": "社交工具"
+    },
+    {
       "id": "clinic-companion",
       "icon": "🏥",
       "title": "陪诊助手",

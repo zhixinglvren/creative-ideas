@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人情往来账本 — Demo</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #e07a5f; --green: #2e8b57; --red: #c0392b;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    header {
+      text-align: center; margin-bottom: 28px;
+    }
+    header h1 { font-size: 1.4rem; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .back {
+      display: inline-block; color: var(--accent); text-decoration: none;
+      font-size: 0.85rem; margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--accent); }
+    .stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 20px;
+    }
+    .stat {
+      text-align: center; background: var(--bg);
+      border-radius: var(--radius); padding: 14px 8px;
+    }
+    .stat .num { font-size: 1.3rem; font-weight: 800; }
+    .stat .num.red { color: var(--red); }
+    .stat .num.green { color: var(--green); }
+    .stat .label { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+    .entry {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .entry:last-child { border-bottom: none; }
+    .entry .name { font-weight: 600; font-size: 0.9rem; }
+    .entry .type {
+      font-size: 0.72rem; color: var(--muted);
+      background: var(--bg); padding: 2px 8px; border-radius: 10px;
+    }
+    .entry .amount { font-weight: 700; font-size: 0.95rem; }
+    .entry .amount.in { color: var(--green); }
+    .entry .amount.out { color: var(--red); }
+    .entry .date { font-size: 0.72rem; color: var(--muted); }
+    .alert {
+      background: #fff3cd; border: 1px solid #ffc107; border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 16px; font-size: 0.85rem;
+    }
+    .alert .bell { margin-right: 6px; }
+    .form-group {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .form-group input, .form-group select {
+      flex: 1; min-width: 100px;
+      padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+    }
+    .btn {
+      background: var(--accent); color: #fff; border: none;
+      padding: 10px 24px; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+      width: 100%;
+    }
+    .btn:hover { opacity: 0.9; }
+    .net {
+      text-align: center; font-size: 0.9rem; color: var(--muted);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back">← 返回创意列表</a>
+    <header>
+      <h1>📒 人情往来账本</h1>
+      <p class="sub">Demo — 规则引擎模拟</p>
+    </header>
+
+    <!-- 提醒 -->
+    <div class="alert" id="alertBox" style="display:none">
+      <span class="bell">🔔</span><span id="alertMsg"></span>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="card">
+      <h3>📊 我的账本</h3>
+      <div class="stats">
+        <div class="stat">
+          <div class="num red" id="totalOut">¥0</div>
+          <div class="label">已随出</div>
+        </div>
+        <div class="stat">
+          <div class="num green" id="totalIn">¥0</div>
+          <div class="label">已收到</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="netBalance">¥0</div>
+          <div class="label">净差</div>
+        </div>
+      </div>
+      <div id="entriesList"></div>
+    </div>
+
+    <!-- 添加 -->
+    <div class="card">
+      <h3>➕ 记一笔</h3>
+      <div class="form-group">
+        <input type="text" id="person" placeholder="谁？（如：表哥）">
+        <input type="number" id="amount" placeholder="金额（元）" min="1">
+      </div>
+      <div class="form-group">
+        <select id="direction">
+          <option value="out">我随出</option>
+          <option value="in">别人随我</option>
+        </select>
+        <select id="eventType">
+          <option value="wedding">婚礼</option>
+          <option value="newborn">满月/百天</option>
+          <option value="funeral">白事</option>
+          <option value="spring">春节红包</option>
+          <option value="housewarming">乔迁</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <button class="btn" onclick="addEntry()">记下这一笔</button>
+    </div>
+
+    <div class="net">规则引擎 Demo · 模拟数据仅供参考</div>
+  </div>
+
+  <script>
+    // 预设数据（模拟用户已有的几笔人情）
+    var entries = [
+      { person: '表哥', amount: 1000, direction: 'out', event: 'wedding', date: '2026-03-15' },
+      { person: '大学室友老王', amount: 800, direction: 'out', event: 'newborn', date: '2026-04-02' },
+      { person: '同事小刘', amount: 500, direction: 'in', event: 'wedding', date: '2026-04-20' },
+      { person: '大学室友老王', amount: 600, direction: 'in', event: 'newborn', date: '2026-05-10' },
+      { person: '表哥', amount: 1200, direction: 'in', event: 'wedding', date: '2026-06-01' }
+    ];
+
+    var eventNames = {
+      wedding: '婚礼', newborn: '满月/百天', funeral: '白事',
+      spring: '春节红包', housewarming: '乔迁', other: '其他'
+    };
+
+    // 规则引擎：检查回礼提醒
+    function checkAlerts() {
+      var outMap = {}; // 我随给谁在哪件事上
+      var inMap = {};  // 谁在什么事上随我
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        var key = e.person + '|' + e.event;
+        if (e.direction === 'out') outMap[key] = e.amount;
+        if (e.direction === 'in') inMap[key] = e.amount;
+      }
+
+      var alerts = [];
+      // 规则1: 别人随过我，我没回
+      for (var k in inMap) {
+        if (!outMap[k]) {
+          var parts = k.split('|');
+          alerts.push(parts[0] + ' 在你' + eventNames[parts[1]] + '时随了 ¥' + inMap[k] + ' — 建议回礼至少 ¥' + inMap[k]);
+        }
+      }
+      // 规则2: 我随了别人，别人没回，且超过90天
+      for (var k2 in outMap) {
+        if (!inMap[k2]) {
+          for (var j = 0; j < entries.length; j++) {
+            var ej = entries[j];
+            if (ej.person + '|' + ej.event === k2 && ej.direction === 'out') {
+              var days = Math.floor((new Date() - new Date(ej.date)) / 86400000);
+              if (days > 90) {
+                var parts2 = k2.split('|');
+                alerts.push(parts2[0] + ' ' + eventNames[parts2[1]] + '未回我 ¥' + ej.amount + '（' + days + '天前）');
+              }
+            }
+          }
+        }
+      }
+
+      var box = document.getElementById('alertBox');
+      var msg = document.getElementById('alertMsg');
+      if (alerts.length > 0) {
+        box.style.display = 'block';
+        msg.textContent = alerts[0];
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function renderEntries() {
+      var totalOut = 0, totalIn = 0;
+      var html = '';
+      for (var i = entries.length - 1; i >= 0; i--) {
+        var e = entries[i];
+        var cls = e.direction === 'in' ? 'in' : 'out';
+        var sign = e.direction === 'in' ? '+' : '-';
+        if (e.direction === 'in') totalIn += e.amount; else totalOut += e.amount;
+        html += '<div class="entry">' +
+          '<div><div class="name">' + e.person + '</div>' +
+          '<div class="type">' + eventNames[e.event] + ' · ' + e.date + '</div></div>' +
+          '<div class="amount ' + cls + '">' + sign + '¥' + e.amount + '</div>' +
+        '</div>';
+      }
+      document.getElementById('entriesList').innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:20px;">还没有记录，记一笔吧</div>';
+      document.getElementById('totalOut').textContent = '¥' + totalOut;
+      document.getElementById('totalIn').textContent = '¥' + totalIn;
+      var net = totalIn - totalOut;
+      var netEl = document.getElementById('netBalance');
+      netEl.textContent = (net >= 0 ? '+' : '') + '¥' + net;
+      netEl.className = 'num' + (net < 0 ? ' red' : ' green');
+      checkAlerts();
+    }
+
+    function addEntry() {
+      var person = document.getElementById('person').value.trim();
+      var amount = parseInt(document.getElementById('amount').value);
+      var dir = document.getElementById('direction').value;
+      var event = document.getElementById('eventType').value;
+      if (!person || !amount || amount <= 0) return alert('请填写姓名和金额');
+      var today = new Date().toISOString().slice(0, 10);
+      entries.push({ person: person, amount: amount, direction: dir, event: event, date: today });
+      document.getElementById('person').value = '';
+      document.getElementById('amount').value = '';
+      renderEntries();
+    }
+
+    renderEntries();
+  </script>
+</body>
+</html>
