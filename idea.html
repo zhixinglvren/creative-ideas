@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "contract-guard": {
+        description: "你收到 offer 了，HR 催你签字。但合同里藏着竞业限制、期权陷阱、绩效霸王条款——你签还是不签？",
+        sections: [
+          { title: "🎯 场景", text: "每年数亿份劳动合同被签署。95% 的求职者只看了薪资和岗位，直接翻到最后一页签字。竞业限制覆盖全行业、绩效奖金「根据公司制度发放」、知识产权全部归公司——这些条款在合同第 7 页用 8 号字写着。等你离职时才发现竞业让你两年进不了同行、期权从来没兑现过、加班费按最低工资算。你不是不懂法，你是看不懂合同——而签字的那一刻，法律上你已经「同意」了。" },
+          { title: "💡 方案", text: "拍照上传合同（支持截图/PDF/拍照）→ AI 逐条扫描 → 按风险等级（高危/中危/低危）标记问题条款 → 给出法律依据和修改建议 → 生成「签约前必查清单」。四类高频陷阱全覆盖：薪酬结构（绩效占比、期权兑现条件、年终发放时间）、竞业限制（范围是否过宽、补偿金是否达标）、工时加班（加班费基数是否合规）、离职条款（交接期、赔偿金、培训费绑定）。不做律师——做你的签约前最后一道防线。" },
+          { title: "🔧 技术", text: "Demo 覆盖 4 种公司类型 × 3 种岗位的 20+ 条常见风险规则。真实产品：OCR 识别合同 → LLM 逐条对比《劳动合同法》《竞业限制司法解释》等法规库 → 结构化风险报告。微信小程序形态即可，上传即审，1 分钟出结果。" },
+          { title: "📈 为什么值得做", html: "中国每年跳槽人次超 2 亿，每一跳都签新合同。互联网上劳动合同「避坑指南」帖子篇篇 10w+——说明焦虑巨大但解决方案为零。这是一个<b>低频但极高价值</b>的信任产品：一辈子用不到 10 次，但每次都能帮你省几万块甚至一个职业生涯。获客靠离职季/秋招季自然流量 + 社交裂变（「帮我看下这份合同」的转发行为天然存在），变现路径：免费基础审查 + ¥9.9 深度报告。" }
+        ],
+        demoUrl: "demo-contract-guard/"
+      },
       "social-ledger": {
         description: "你忘了三年前表哥结婚你随了多少——现在他孩子满月，你该随多少才不尴尬？人情债，是中国人最难算的一笔账。",
         sections: [
@@ -351,11 +361,11 @@
     }
 
     function getIcon(id) {
-      const m = {'social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 

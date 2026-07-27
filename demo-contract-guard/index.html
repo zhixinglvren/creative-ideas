@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>劳动合同审查官 — Demo</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #e07a5f; --green: #2e8b57; --red: #c0392b; --yellow: #b8860b;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 28px; }
+    header h1 { font-size: 1.4rem; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .back {
+      display: inline-block; color: var(--accent); text-decoration: none;
+      font-size: 0.85rem; margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--accent); }
+
+    /* 上传区 */
+    .upload-area {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 36px 20px; text-align: center; cursor: pointer; margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .upload-area:hover { border-color: var(--accent); }
+    .upload-area .icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .upload-area .hint { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+
+    /* 模拟模式 */
+    .sim-section { margin-bottom: 16px; }
+    .sim-section label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .sim-section select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+    }
+    .btn {
+      background: var(--accent); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: inherit; width: 100%;
+    }
+    .btn:hover { opacity: 0.9; }
+
+    /* 结果 */
+    .result { display: none; }
+    .score-row {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+    }
+    .score-circle {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 800; flex-shrink: 0;
+    }
+    .score-circle.safe { background: #2e8b5733; color: #2e8b57; }
+    .score-circle.warn { background: #b8860b33; color: #b8860b; }
+    .score-circle.danger { background: #c0392b33; color: #c0392b; }
+    .risk-item {
+      padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;
+      display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .risk-item.high { background: #c0392b11; border-left: 3px solid var(--red); }
+    .risk-item.medium { background: #b8860b11; border-left: 3px solid var(--yellow); }
+    .risk-item.low { background: #2e8b5711; border-left: 3px solid var(--green); }
+    .risk-item .severity {
+      font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .severity-high { background: var(--red); color: #fff; }
+    .severity-medium { background: var(--yellow); color: #fff; }
+    .severity-low { background: var(--green); color: #fff; }
+
+    .advice {
+      background: var(--bg); border-radius: var(--radius); padding: 14px 16px;
+      margin-top: 16px; font-size: 0.85rem; line-height: 1.6;
+    }
+    .advice .tip { margin-bottom: 6px; }
+    .advice .emoji { margin-right: 6px; }
+    .net {
+      text-align: center; font-size: 0.8rem; color: var(--muted);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back">← 返回创意列表</a>
+    <header>
+      <h1>📄 劳动合同审查官</h1>
+      <p class="sub">Demo — 规则引擎模拟审查</p>
+    </header>
+
+    <!-- 上传区（模拟） -->
+    <div class="upload-area" onclick="quickSim()">
+      <div class="icon">📤</div>
+      <div>上传劳动合同（拍照 / PDF / 截图）</div>
+      <div class="hint">点击此处快速模拟 →</div>
+    </div>
+
+    <!-- 模拟选项 -->
+    <div class="card">
+      <h3>🔧 模拟参数</h3>
+      <div class="sim-section">
+        <label>公司类型</label>
+        <select id="companyType">
+          <option value="startup">创业公司（A轮前）</option>
+          <option value="tech">互联网中厂</option>
+          <option value="factory">制造业</option>
+          <option value="outsource">外包公司</option>
+        </select>
+      </div>
+      <div class="sim-section">
+        <label>岗位类型</label>
+        <select id="roleType">
+          <option value="dev">技术研发</option>
+          <option value="sales">销售/市场</option>
+          <option value="admin">行政/职能</option>
+        </select>
+      </div>
+      <button class="btn" onclick="runReview()">🔍 开始审查</button>
+    </div>
+
+    <!-- 结果 -->
+    <div class="card result" id="resultCard">
+      <h3 id="resultTitle">审查结果</h3>
+      <div class="score-row">
+        <div class="score-circle" id="scoreCircle">72</div>
+        <div id="scoreDesc" style="font-size:0.85rem;line-height:1.5;color:var(--muted)"></div>
+      </div>
+      <div id="riskList"></div>
+      <div class="advice" id="adviceBox"></div>
+    </div>
+
+    <div class="net">规则引擎 Demo · 模拟数据仅供参考 · 不构成法律意见</div>
+  </div>
+
+  <script>
+    // 风险规则库
+    var riskRules = {
+      startup: [
+        { text: '试用期超过 6 个月', detail: '劳动法规定合同期 3 年以上试用期不超 6 个月。创业公司常设 6 个月试用期压到上限，转正考核主观性强，有「用完即弃」风险。', severity: 'high', clause: '试用期条款' },
+        { text: '薪资结构为「底薪+期权」，底薪低于市场 30%', detail: '期权在 A 轮前几乎无流动性。「低底薪+高期权」本质上是把公司风险转嫁给你——万一公司没起来，期权是废纸。', severity: 'high', clause: '薪酬条款' },
+        { text: '竞业限制范围过宽', detail: '竞业限制覆盖「同类行业所有公司」且补偿金低于月薪 30%，属于过宽限制。合理范围应限定直接竞争对手。', severity: 'medium', clause: '竞业限制条款' },
+        { text: '未明确加班费计算方式', detail: '合同只写了「根据工作需要安排加班」，未说明加班费基数。创业公司加班是常态，但没有明确计算方式就等于白干。', severity: 'medium', clause: '工时条款' },
+        { text: '劳动合同期限 1 年（续签风险）', detail: '1 年期合同到期后公司可以不续签且无需赔偿。建议争取 3 年期，或注明「到期自动续约」。', severity: 'low', clause: '合同期限' }
+      ],
+      tech: [
+        { text: '竞业限制覆盖全行业且补偿金不足', detail: '互联网公司竞业限制常覆盖几乎所有同行。法律规定补偿金不得低于离职前 12 个月平均工资的 30%，补偿期不超过 2 年。', severity: 'high', clause: '竞业限制条款' },
+        { text: '绩效考核标准未明确写入合同', detail: '合同写「绩效奖金根据公司考核制度发放」，但考核制度随时可改。没写进合同的绩效等于没有。要求明确 KPI 指标和发放条件。', severity: 'high', clause: '薪酬绩效条款' },
+        { text: '知识产权归属条款存在隐患', detail: '合同可能规定「在职期间一切智力成果归公司所有」。但业余时间做的个人项目也可能被公司主张权利。尝试限定为「利用公司资源完成的、与公司业务相关的」成果。', severity: 'medium', clause: '知识产权条款' },
+        { text: '年终奖发放时间在次年 6 月后', detail: '年终奖次年 6 月发放意味着你如果年中离职可能拿不到前一年的年终奖。争取约定「按在职时间比例折算发放」。', severity: 'medium', clause: '奖金条款' },
+        { text: '社保公积金按最低基数缴纳', detail: '虽不违法但影响你的医保报销上限和公积金贷款额度。如果能拿到更高的 offer，可以此为由要求按实际工资基数缴纳。', severity: 'low', clause: '福利条款' }
+      ],
+      factory: [
+        { text: '加班工资基数按最低工资计算', detail: '法律规定加班费应按实际工资为基数计算。按最低工资算加班费是灰色操作——你的加班费被大打折扣。', severity: 'high', clause: '加班费条款' },
+        { text: '安全责任条款模糊', detail: '合同未明确发生工伤后公司的赔偿责任和流程。制造业工伤风险高，安全责任条款必须清晰。', severity: 'high', clause: '安全责任条款' },
+        { text: '调岗权过于宽泛', detail: '合同规定「公司可根据经营需要调整工作岗位」。这意味着可能把你从办公室调到车间，且无需你同意。', severity: 'medium', clause: '调岗条款' },
+        { text: '合同未注明工作地点', detail: '工作地点模糊意味着公司可以把你调去外地分厂。要求明确具体的工作地址。', severity: 'medium', clause: '工作地点' },
+        { text: '离职交接期过长（3 个月）', detail: '法律规定提前 30 天书面通知即可解除合同。3 个月交接期不合法，公司不得以未完成交接为由扣留档案。', severity: 'low', clause: '离职条款' }
+      ],
+      outsource: [
+        { text: '合同性质为「劳务合同」而非「劳动合同」', detail: '外包公司签劳务合同规避劳动法。这意味着：没有五险一金、没有年假、没有辞退赔偿。这是最严重的坑——直接拒绝。', severity: 'high', clause: '合同性质' },
+        { text: '项目制用工，项目结束即解约且无补偿', detail: '以「完成一定工作任务为期限」的合同结束时如果公司不再续签，不支付经济补偿。要求约定补偿机制。', severity: 'high', clause: '合同期限' },
+        { text: '甲方（客户方）管理权混入合同', detail: '合同可能规定你要同时遵守外包公司和你驻场客户的规章制度。双头管理复杂度高，且责任边界不清。', severity: 'medium', clause: '管理条款' },
+        { text: '培训费绑定', detail: '公司以「提供岗前培训」为由绑定服务期 2-3 年，提前离职需赔培训费。但《劳动合同法》规定只有专项技术培训才能约定服务期。岗前培训不在此列。', severity: 'medium', clause: '培训费条款' },
+        { text: '出差补贴标准未明确', detail: '外包常需驻场出差，但合同未明确差旅标准和补贴。口头承诺不可靠，要求写入合同。', severity: 'low', clause: '差旅条款' }
+      ]
+    };
+
+    // 岗位额外规则
+    var roleRules = {
+      dev: [
+        { text: '代码著作权归属不清晰', detail: '口头约定「你写的代码归公司」没问题，但合同里如果有在职期间一切代码归公司的条款，你的开源贡献和个人项目也可能被覆盖。', severity: 'medium', clause: '知识产权条款' }
+      ],
+      sales: [
+        { text: '提成计算方式模糊或「根据公司政策」', detail: '销售岗的核心收入是提成。如果合同只说「提成按公司制度执行」而不给出具体公式，等于你的收入由公司单方面决定。', severity: 'high', clause: '提成条款' }
+      ],
+      admin: [
+        { text: '岗位职责描述过于宽泛', detail: '「完成上级交办的其他工作」这八个字让公司可以给你安排任何工作。要求明确岗位核心职责。', severity: 'medium', clause: '岗位职责' }
+      ]
+    };
+
+    function quickSim() {
+      document.getElementById('companyType').selectedIndex = Math.floor(Math.random() * 4);
+      document.getElementById('roleType').selectedIndex = Math.floor(Math.random() * 3);
+      runReview();
+    }
+
+    function runReview() {
+      var company = document.getElementById('companyType').value;
+      var role = document.getElementById('roleType').value;
+
+      var risks = (riskRules[company] || []).slice();
+      var extra = (roleRules[role] || []);
+      for (var i = 0; i < extra.length; i++) {
+        // 去重
+        var dup = false;
+        for (var j = 0; j < risks.length; j++) {
+          if (risks[j].clause === extra[i].clause) { dup = true; break; }
+        }
+        if (!dup) risks.push(extra[i]);
+      }
+
+      // 计算评分
+      var score = 100;
+      for (var k = 0; k < risks.length; k++) {
+        if (risks[k].severity === 'high') score -= 8;
+        else if (risks[k].severity === 'medium') score -= 4;
+        else score -= 2;
+      }
+      score = Math.max(20, Math.min(100, score));
+
+      // 渲染结果
+      var resultCard = document.getElementById('resultCard');
+      resultCard.style.display = 'block';
+
+      var circle = document.getElementById('scoreCircle');
+      var desc = document.getElementById('scoreDesc');
+      var titleEl = document.getElementById('resultTitle');
+      circle.className = 'score-circle';
+      if (score >= 70) {
+        circle.classList.add('safe');
+        titleEl.textContent = '✅ 合同基本安全';
+        desc.textContent = '风险评分 ' + score + ' 分。没有重大陷阱，但仍有改进空间。建议按以下清单逐条核实后再签署。';
+      } else if (score >= 45) {
+        circle.classList.add('warn');
+        titleEl.textContent = '⚠️ 合同存在中等风险';
+        desc.textContent = '风险评分 ' + score + ' 分。发现多处需警惕的条款，强烈建议在签署前逐一与 HR 沟通澄清。';
+      } else {
+        circle.classList.add('danger');
+        titleEl.textContent = '🚨 合同存在高风险';
+        desc.textContent = '风险评分 ' + score + ' 分。发现多项严重风险条款，建议在问题解决前暂不签署。';
+      }
+      circle.textContent = score;
+
+      // 风险列表
+      var riskHtml = '';
+      for (var l = 0; l < risks.length; l++) {
+        var r = risks[l];
+        riskHtml += '<div class="risk-item ' + r.severity + '">' +
+          '<span class="severity severity-' + r.severity + '">' +
+          (r.severity === 'high' ? '高危' : r.severity === 'medium' ? '中危' : '低危') +
+          '</span>' +
+          '<div><strong>' + r.text + '</strong><br><span style="color:var(--muted)">' +
+          r.detail + '</span></div></div>';
+      }
+      document.getElementById('riskList').innerHTML = riskHtml;
+
+      // 行动建议
+      var adviceHtml = '<div class="tip"><span class="emoji">📋</span><strong>行动清单：</strong></div>';
+      var highCount = 0, medCount = 0;
+      for (var m = 0; m < risks.length; m++) {
+        if (risks[m].severity === 'high') highCount++;
+        if (risks[m].severity === 'medium') medCount++;
+      }
+      if (highCount > 0) {
+        adviceHtml += '<div class="tip">🔴 <strong>高危风险 ' + highCount + ' 项</strong>：必须解决。逐一书面要求 HR 说明或修改条款。如公司拒绝修改，考虑终止签约。</div>';
+      }
+      if (medCount > 0) {
+        adviceHtml += '<div class="tip">🟡 <strong>中危风险 ' + medCount + ' 项</strong>：建议沟通。可通过邮件或微信要求 HR 书面确认解释，保留记录作为证据。</div>';
+      }
+      adviceHtml += '<div class="tip">💡 签署前做三件事：① 完整截图每一页 ② 所有口头承诺要求书面确认 ③ 保留入职后第一份工资条核实社保基数</div>';
+      document.getElementById('adviceBox').innerHTML = adviceHtml;
+
+      resultCard.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

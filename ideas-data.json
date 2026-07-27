@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "contract-guard",
+      "icon": "📄",
+      "title": "劳动合同审查官",
+      "tagline": "拍照上传合同，AI 逐条扫描隐藏的坑——不让你在签字前吃亏",
+      "status": "live",
+      "category": "职业发展"
+    },
+    {
       "id": "social-ledger",
       "icon": "📒",
       "title": "人情往来账本",
