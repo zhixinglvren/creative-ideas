@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人税务助手 — Demo</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #e07a5f; --green: #2e8b57; --red: #c0392b;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 28px; }
+    header h1 { font-size: 1.4rem; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .back {
+      display: inline-block; color: var(--accent); text-decoration: none;
+      font-size: 0.85rem; margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--accent); }
+
+    .form-row {
+      display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .form-row label { font-size: 0.8rem; color: var(--muted); width: 100%; }
+    .form-row input, .form-row select {
+      flex: 1; min-width: 100px;
+      padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+    }
+    .btn {
+      background: var(--accent); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: inherit; width: 100%;
+    }
+    .btn:hover { opacity: 0.9; }
+
+    /* 结果 */
+    .result { display: none; }
+    .big-num {
+      text-align: center; padding: 24px 0;
+    }
+    .big-num .amount {
+      font-size: 2.2rem; font-weight: 800;
+    }
+    .big-num .amount.owe { color: var(--red); }
+    .big-num .amount.refund { color: var(--green); }
+    .big-num .label { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+
+    .comparison {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+    }
+    .cmp-box {
+      padding: 14px; border-radius: 8px; text-align: center;
+      border: 1px solid var(--border);
+    }
+    .cmp-box .method { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+    .cmp-box .tax { font-size: 1.3rem; font-weight: 800; }
+    .cmp-box.best { border: 2px solid var(--green); background: #2e8b5711; }
+    .cmp-box .badge {
+      display: inline-block; background: var(--green); color: #fff;
+      font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; margin-top: 4px;
+    }
+
+    .deduction-table {
+      width: 100%; border-collapse: collapse; font-size: 0.8rem;
+    }
+    .deduction-table th {
+      text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--border);
+      color: var(--muted); font-weight: 600;
+    }
+    .deduction-table td {
+      padding: 8px 4px; border-bottom: 1px solid var(--border);
+    }
+    .deduction-table .amount { text-align: right; font-weight: 600; }
+
+    .tip-box {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 14px 16px; margin-top: 12px; font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    .tip-box .tip { margin-bottom: 4px; }
+    .net {
+      text-align: center; font-size: 0.8rem; color: var(--muted);
+      margin-top: 20px;
+    }
+
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 16px;
+    }
+    .tab {
+      flex: 1; padding: 10px; text-align: center; font-size: 0.85rem;
+      border: 1px solid var(--border); cursor: pointer; background: var(--card);
+      font-weight: 600;
+    }
+    .tab:first-child { border-radius: 8px 0 0 8px; }
+    .tab:last-child { border-radius: 0 8px 8px 0; }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back">← 返回创意列表</a>
+    <header>
+      <h1>📊 个人税务助手</h1>
+      <p class="sub">Demo — 年终奖计税方式对比 + 专项扣除测算</p>
+    </header>
+
+    <!-- Tab 切换 -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('bonus')">💰 年终奖计税</div>
+      <div class="tab" onclick="switchTab('deduction')">📋 专项扣除</div>
+    </div>
+
+    <!-- 年终奖计税 -->
+    <div id="tab-bonus">
+      <div class="card">
+        <h3>📥 输入收入数据</h3>
+        <div class="form-row">
+          <label>年薪（税前，不含年终奖）</label>
+          <input type="number" id="salary" value="300000" min="0" step="1000">
+          <span style="align-self:flex-end;font-size:0.8rem;color:var(--muted);margin-bottom:10px">元</span>
+        </div>
+        <div class="form-row">
+          <label>年终奖金额</label>
+          <input type="number" id="bonus" value="120000" min="0" step="1000">
+          <span style="align-self:flex-end;font-size:0.8rem;color:var(--muted);margin-bottom:10px">元</span>
+        </div>
+        <div class="form-row">
+          <label>五险一金月扣缴（个人部分）</label>
+          <input type="number" id="insurance" value="3500" min="0" step="100">
+          <span style="align-self:flex-end;font-size:0.8rem;color:var(--muted);margin-bottom:10px">元</span>
+        </div>
+        <div class="form-row">
+          <label>专项附加扣除（年总额）</label>
+          <select id="specialDeduction">
+            <option value="0">无</option>
+            <option value="24000">房贷利息（¥24,000/年）</option>
+            <option value="18000">租房（¥18,000/年）</option>
+            <option value="24000">房贷 + 赡养老人（¥24,000+¥36,000=¥60,000）</option>
+            <option value="60000" selected>房贷 + 赡养老人（¥60,000/年）</option>
+            <option value="72000">房贷 + 赡养 + 子女教育（¥72,000/年）</option>
+            <option value="96000">房贷 + 赡养 + 子女 + 继续教育（¥96,000/年）</option>
+          </select>
+        </div>
+        <button class="btn" onclick="calcBonus()">🔍 对比两种计税方式</button>
+      </div>
+
+      <div class="result" id="bonusResult">
+        <div class="card">
+          <h3>📊 计税对比</h3>
+          <div class="comparison">
+            <div class="cmp-box" id="boxSeparate">
+              <div class="method">方案A：单独计税</div>
+              <div class="tax" id="taxSeparate">—</div>
+              <div class="badge" id="badgeSeparate" style="display:none">✅ 更优</div>
+            </div>
+            <div class="cmp-box" id="boxMerge">
+              <div class="method">方案B：并入综合所得</div>
+              <div class="tax" id="taxMerge">—</div>
+              <div class="badge" id="badgeMerge" style="display:none">✅ 更优</div>
+            </div>
+          </div>
+          <div class="big-num" id="savingBox" style="display:none">
+            <div>选择更优方案可节省</div>
+            <div class="amount green" id="savingAmount">—</div>
+          </div>
+          <div class="tip-box" id="bonusTip"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 专项扣除 -->
+    <div id="tab-deduction" style="display:none">
+      <div class="card">
+        <h3>📋 2026 年度专项附加扣除项目</h3>
+        <table class="deduction-table">
+          <tr><th>项目</th><th>扣除标准</th><th class="amount">年扣除额</th></tr>
+          <tr><td>👶 3岁以下婴幼儿照护</td><td>¥2,000/月/孩</td><td class="amount">¥24,000</td></tr>
+          <tr><td>🎒 子女教育</td><td>¥2,000/月/孩</td><td class="amount">¥24,000</td></tr>
+          <tr><td>📚 继续教育</td><td>¥400/月 or ¥3,600/年</td><td class="amount">¥4,800</td></tr>
+          <tr><td>🏠 住房贷款利息</td><td>¥2,000/月</td><td class="amount">¥24,000</td></tr>
+          <tr><td>🏢 住房租金</td><td>¥800-1,500/月</td><td class="amount">¥18,000</td></tr>
+          <tr><td>👴 赡养老人</td><td>¥3,000/月</td><td class="amount">¥36,000</td></tr>
+          <tr><td>🏥 大病医疗</td><td>实报实销（上限¥80,000）</td><td class="amount">—</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>🧮 模拟计算</h3>
+        <div class="form-row">
+          <label>你的月薪（税前）</label>
+          <input type="number" id="monthSalary" value="25000" min="0" step="1000">
+          <span style="align-self:flex-end;font-size:0.8rem;color:var(--muted);margin-bottom:10px">元</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <label style="font-size:0.82rem"><input type="checkbox" id="ckHouse" checked onchange="calcDeduction()"> 🏠 房贷利息</label>
+          <label style="font-size:0.82rem"><input type="checkbox" id="ckParent" checked onchange="calcDeduction()"> 👴 赡养老人</label>
+          <label style="font-size:0.82rem"><input type="checkbox" id="ckChild" onchange="calcDeduction()"> 👶 婴幼儿/子女</label>
+          <label style="font-size:0.82rem"><input type="checkbox" id="ckEdu" onchange="calcDeduction()"> 📚 继续教育</label>
+        </div>
+        <button class="btn" onclick="calcDeduction()">📊 计算节税效果</button>
+        <div class="result" id="deductionResult" style="margin-top:16px">
+          <div class="big-num">
+            <div>年度可节税</div>
+            <div class="amount green" id="taxSaved">—</div>
+            <div class="label">基于当前月薪和专项扣除</div>
+          </div>
+          <div class="tip-box" id="deductionTip"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="net">规则引擎 Demo · 模拟数据仅供参考 · 不构成税务建议</div>
+  </div>
+
+  <script>
+    // 2026年个税累进税率表
+    var taxBrackets = [
+      { max: 36000, rate: 0.03, quick: 0 },
+      { max: 144000, rate: 0.10, quick: 2520 },
+      { max: 300000, rate: 0.20, quick: 16920 },
+      { max: 420000, rate: 0.25, quick: 31920 },
+      { max: 660000, rate: 0.30, quick: 52920 },
+      { max: 960000, rate: 0.35, quick: 85920 },
+      { max: Infinity, rate: 0.45, quick: 181920 }
+    ];
+
+    var monthlyThreshold = 5000; // 每月起征点
+
+    function calcTax(annualIncome) {
+      if (annualIncome <= 0) return 0;
+      for (var i = 0; i < taxBrackets.length; i++) {
+        if (annualIncome <= taxBrackets[i].max) {
+          return Math.round(annualIncome * taxBrackets[i].rate - taxBrackets[i].quick);
+        }
+      }
+      return 0;
+    }
+
+    // 年终奖单独计税
+    function bonusSeparateTax(bonus) {
+      var monthly = bonus / 12;
+      var rate = 0.03, quick = 0;
+      var monthlyBrackets = [
+        { max: 3000, rate: 0.03, quick: 0 },
+        { max: 12000, rate: 0.10, quick: 210 },
+        { max: 25000, rate: 0.20, quick: 1410 },
+        { max: 35000, rate: 0.25, quick: 2660 },
+        { max: 55000, rate: 0.30, quick: 4410 },
+        { max: 80000, rate: 0.35, quick: 7160 },
+        { max: Infinity, rate: 0.45, quick: 15160 }
+      ];
+      for (var i = 0; i < monthlyBrackets.length; i++) {
+        if (monthly <= monthlyBrackets[i].max) {
+          rate = monthlyBrackets[i].rate;
+          quick = monthlyBrackets[i].quick;
+          break;
+        }
+      }
+      return Math.round(bonus * rate - quick);
+    }
+
+    function calcBonus() {
+      var salary = parseInt(document.getElementById('salary').value) || 0;
+      var bonus = parseInt(document.getElementById('bonus').value) || 0;
+      var insurance = parseInt(document.getElementById('insurance').value) || 0;
+      var specialDeduction = parseInt(document.getElementById('specialDeduction').value) || 0;
+
+      var annualInsurance = insurance * 12;
+      var standardDeduction = monthlyThreshold * 12;
+
+      // 方案A：单独计税
+      var taxableSalaryA = Math.max(0, salary - annualInsurance - standardDeduction - specialDeduction);
+      var taxSalaryA = calcTax(taxableSalaryA);
+      var taxBonusA = bonusSeparateTax(bonus);
+      var totalTaxA = taxSalaryA + taxBonusA;
+
+      // 方案B：并入综合所得
+      var totalIncomeB = salary + bonus;
+      var taxableIncomeB = Math.max(0, totalIncomeB - annualInsurance - standardDeduction - specialDeduction);
+      var totalTaxB = calcTax(taxableIncomeB);
+
+      // 显示结果
+      document.getElementById('bonusResult').style.display = 'block';
+      document.getElementById('taxSeparate').textContent = '¥' + totalTaxA.toLocaleString();
+      document.getElementById('taxMerge').textContent = '¥' + totalTaxB.toLocaleString();
+
+      var boxS = document.getElementById('boxSeparate');
+      var boxM = document.getElementById('boxMerge');
+      var badgeS = document.getElementById('badgeSeparate');
+      var badgeM = document.getElementById('badgeMerge');
+      boxS.classList.remove('best'); boxM.classList.remove('best');
+      badgeS.style.display = 'none'; badgeM.style.display = 'none';
+
+      var saving = Math.abs(totalTaxA - totalTaxB);
+      var savingBox = document.getElementById('savingBox');
+
+      if (totalTaxA < totalTaxB) {
+        boxS.classList.add('best'); badgeS.style.display = 'inline-block';
+        savingBox.style.display = 'block';
+        document.getElementById('savingAmount').textContent = '¥' + saving.toLocaleString();
+        document.getElementById('bonusTip').innerHTML = '<div class="tip">✅ <strong>方案A（单独计税）更优。</strong>年收入较高时，将年终奖单独计税可避免拉高整体税率档次。</div><div class="tip">💡 一般规律：年收入较低（≤10万）选合并，年收入较高选单独计税。但具体需按实际数据计算。</div>';
+      } else if (totalTaxB < totalTaxA) {
+        boxM.classList.add('best'); badgeM.style.display = 'inline-block';
+        savingBox.style.display = 'block';
+        document.getElementById('savingAmount').textContent = '¥' + saving.toLocaleString();
+        document.getElementById('bonusTip').innerHTML = '<div class="tip">✅ <strong>方案B（并入综合所得）更优。</strong>年收入较低或专项扣除较多时，并入综合所得可利用更多免税额。</div><div class="tip">💡 一般规律：年收入较低（≤10万）选合并，年收入较高选单独计税。但具体需按实际数据计算。</div>';
+      } else {
+        savingBox.style.display = 'none';
+        document.getElementById('bonusTip').innerHTML = '<div class="tip">⚖️ 两种方案税负相同，选择任一均可。</div>';
+      }
+
+      document.getElementById('bonusResult').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function switchTab(name) {
+      document.getElementById('tab-bonus').style.display = name === 'bonus' ? 'block' : 'none';
+      document.getElementById('tab-deduction').style.display = name === 'deduction' ? 'block' : 'none';
+      var tabs = document.querySelectorAll('.tab');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      if (name === 'bonus') tabs[0].classList.add('active');
+      else tabs[1].classList.add('active');
+    }
+
+    function calcDeduction() {
+      var monthSalary = parseInt(document.getElementById('monthSalary').value) || 0;
+      var hasHouse = document.getElementById('ckHouse').checked;
+      var hasParent = document.getElementById('ckParent').checked;
+      var hasChild = document.getElementById('ckChild').checked;
+      var hasEdu = document.getElementById('ckEdu').checked;
+
+      var annualDeduction = 0;
+      var items = [];
+      if (hasHouse) { annualDeduction += 24000; items.push('房贷利息 ¥24,000'); }
+      if (hasParent) { annualDeduction += 36000; items.push('赡养老人 ¥36,000'); }
+      if (hasChild) { annualDeduction += 24000; items.push('子女教育/照护 ¥24,000'); }
+      if (hasEdu) { annualDeduction += 4800; items.push('继续教育 ¥4,800'); }
+
+      var annualIncome = monthSalary * 12;
+      var standardDeduction = 60000;
+      var taxableWithout = Math.max(0, annualIncome - standardDeduction);
+      var taxableWith = Math.max(0, annualIncome - standardDeduction - annualDeduction);
+      var taxWithout = calcTax(taxableWithout);
+      var taxWith = calcTax(taxableWith);
+      var saved = taxWithout - taxWith;
+
+      var result = document.getElementById('deductionResult');
+      result.style.display = 'block';
+      document.getElementById('taxSaved').textContent = '¥' + saved.toLocaleString();
+
+      var marginalRate = 0;
+      var temp = taxableWithout;
+      for (var i = 0; i < taxBrackets.length; i++) {
+        if (temp <= taxBrackets[i].max) { marginalRate = taxBrackets[i].rate; break; }
+      }
+      document.getElementById('deductionTip').innerHTML =
+        '<div class="tip">📋 当前符合条件的扣除项：' + (items.length > 0 ? items.join('、') : '无') + '</div>' +
+        '<div class="tip">📊 你当前适用边际税率 <strong>' + (marginalRate * 100).toFixed(0) + '%</strong>，每 ¥1 扣除额约可节税 ¥' + marginalRate.toFixed(2) + '</div>' +
+        '<div class="tip">💡 每年 12 月确认下一年度专项扣除，务必登录个税 App 填报。已填报的项目次年自动带入。</div>';
+
+      result.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

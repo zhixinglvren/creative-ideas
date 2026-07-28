@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "tax-helper",
+      "icon": "📊",
+      "title": "个人税务助手",
+      "tagline": "年终奖单独计税还是合并？30秒告诉你省多少钱——每年一次别选错",
+      "status": "live",
+      "category": "个人效率"
+    },
+    {
       "id": "contract-guard",
       "icon": "📄",
       "title": "劳动合同审查官",

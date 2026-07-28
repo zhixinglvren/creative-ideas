@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "tax-helper": {
+        description: "每年 1-3 月个税汇算清缴，几亿人对着 App 发愁：年终奖「单独计税」还是「并入综合所得」？选错可能多交几千甚至上万。",
+        sections: [
+          { title: "🎯 场景", text: "每年 1-3 月个税汇算清缴，全中国几亿打工人打开个税 App。年终奖计税方式有两个选项——「单独计税」和「并入综合所得」。选哪个？多数人凭感觉乱选。一个选项可能让你多交几千元税，另一个让你退税。这个决策每年只有一次，选错不可挽回。而绝大多数人不知道：年收入较高时选单独计税更省，年收入较低时选合并更省——背后的逻辑是边际税率。但具体多少算「高」、多少算「低」，没人能一句话说清楚。" },
+          { title: "💡 方案", text: "输入三个数（年薪、年终奖、五险一金月扣缴）→ AI 同时计算两种方案下的个税 → 直观对比告诉你哪个更优、省多少钱。不止于此：专项附加扣除项目自动匹配建议——你有房贷吗？有赡养老人吗？有小孩吗？每选一项，实时显示年度可节税金额。每年汇算清缴时打开一次，30 秒完成决策。" },
+          { title: "🔧 技术", text: "Demo 使用 2026 年个税累进税率表和年终奖单独计税月度表，精确计算两种方案的税负差异。真实产品：对接个人税务数据（需授权）→ 自动填充收入与扣除项 → 一键对比 → 一键跳转个税 App 提交。同时可做全年税务规划——比如即将涨薪，提前知道年终奖临界点。" },
+          { title: "📈 为什么值得做", html: "中国个税纳税人数超 1 亿，每年 1-3 月个税汇算清缴是<b>全民级刚需场景</b>。百度指数显示「年终奖单独计税」在每年 2-3 月搜索量暴增。核心壁垒：<b>税务计算的准确性</b>（税率表随时更新、专项扣除政策多变），一旦建立信任就是每年必用的工具。获客：个税季自然流量 + 「帮你算算年终奖怎么报」的社交转发天然存在。变现：免费试算 + ¥4.9 全年税务规划报告。" }
+        ],
+        demoUrl: "demo-tax-helper/"
+      },
       "contract-guard": {
         description: "你收到 offer 了，HR 催你签字。但合同里藏着竞业限制、期权陷阱、绩效霸王条款——你签还是不签？",
         sections: [
@@ -361,11 +371,11 @@
     }
 
     function getIcon(id) {
-      const m = {'contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'tax-helper':'📊','contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'tax-helper':'个人税务助手','contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 
