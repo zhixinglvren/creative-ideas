@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "noise-mediator",
+      "icon": "🔇",
+      "title": "邻里噪音调解员",
+      "tagline": "楼上的孩子又在跑？AI 帮你生成得体沟通文案——不伤和气解决问题",
+      "status": "live",
+      "category": "本地生活"
+    },
+    {
       "id": "tax-helper",
       "icon": "📊",
       "title": "个人税务助手",

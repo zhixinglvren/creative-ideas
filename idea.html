@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "noise-mediator": {
+        description: "楼上孩子每晚跑跳、隔壁深夜练琴、对门装修电钻震天响——你知道吵，但不知道怎么开口。说重了伤和气，说轻了没用。",
+        sections: [
+          { title: "🎯 场景", text: "中国城市住宅以高层为主，楼板隔音普遍不佳。小红书「楼上噪音」话题阅读量数十亿，豆瓣「楼上噪音受害者互助组」数万成员。这是当代中国最普遍、最令人崩溃的邻里矛盾。你被吵得睡不着、血压升高、甚至想上去砸门——但你知道不能这么做。大多数人憋着忍了几个月，最后爆发式沟通反而激化矛盾。问题的核心不是「吵」本身，而是你不知道怎么开口——说轻了怕没用，说重了怕伤和气。" },
+          { title: "💡 方案", text: "三个核心功能：① AI 生成沟通文案——根据噪音类型（小孩跑跳/练琴/装修/深夜聚会）和关系亲疏（陌生人/点头之交/熟人/租客）自动生成得体的微信沟通文案，一键复制发送；② 依法维权四步路径——自行沟通→物业介入→报警→诉讼，每步提供法律依据和证据清单；③ 噪音强度参考——对比国家标准（夜间≤45dB/白天≤55dB），帮你判断是否达到投诉门槛。不是教你吵架——是教你和气地不让自己吃亏。" },
+          { title: "🔧 技术", text: "Demo 覆盖 6 种噪音 × 4 种关系 × 3 种沟通次数的 72 种文案组合。真实产品：手机麦克风实时分贝检测 → 自动记录噪音时间线和强度 → 一键生成格式化投诉报告（含证据附件）。可扩展隔音方案推荐（DIY 材料/专业隔音公司）。" },
+          { title: "📈 为什么值得做", html: "受众人群：<b>每一个住高层住宅的中国人</b>，覆盖城市人口数亿。不是低频需求——噪音问题可能持续数月甚至数年。社交传播天然存在：「帮我看下这文案合适吗」的转发行为就是获客。变现：免费文案生成 + ¥3.9 法律函件模板/格式化投诉报告。核心壁垒：<b>文案质量</b>——需要让邻居觉得「这人挺讲道理的，我该配合」，而不是「这人在找茬」。这背后是大量社交心理学和表达技巧，不是通用 AI 能自动做到的。" }
+        ],
+        demoUrl: "demo-noise-mediator/"
+      },
       "tax-helper": {
         description: "每年 1-3 月个税汇算清缴，几亿人对着 App 发愁：年终奖「单独计税」还是「并入综合所得」？选错可能多交几千甚至上万。",
         sections: [
@@ -371,11 +381,11 @@
     }
 
     function getIcon(id) {
-      const m = {'tax-helper':'📊','contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'noise-mediator':'🔇','tax-helper':'📊','contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'tax-helper':'个人税务助手','contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'noise-mediator':'邻里噪音调解员','tax-helper':'个人税务助手','contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 

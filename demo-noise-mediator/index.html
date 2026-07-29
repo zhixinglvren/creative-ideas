@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>邻里噪音调解员 — Demo</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #e07a5f; --green: #2e8b57; --red: #c0392b;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 28px; }
+    header h1 { font-size: 1.4rem; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .back {
+      display: inline-block; color: var(--accent); text-decoration: none;
+      font-size: 0.85rem; margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--accent); }
+
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 16px;
+    }
+    .tab {
+      flex: 1; padding: 10px 6px; text-align: center; font-size: 0.8rem;
+      border: 1px solid var(--border); cursor: pointer; background: var(--card);
+      font-weight: 600;
+    }
+    .tab:first-child { border-radius: 8px 0 0 8px; }
+    .tab:last-child { border-radius: 0 8px 8px 0; }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .form-row select, .form-row textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+    }
+    .form-row textarea { resize: vertical; min-height: 80px; }
+    .btn {
+      background: var(--accent); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: inherit; width: 100%;
+    }
+    .btn:hover { opacity: 0.9; }
+
+    .result { display: none; margin-top: 16px; }
+    .msg-bubble {
+      background: #e8f5e9; padding: 16px; border-radius: 12px;
+      font-size: 0.88rem; line-height: 1.7; position: relative;
+      margin-bottom: 16px;
+    }
+    .msg-bubble::after {
+      content: ''; position: absolute; bottom: -10px; left: 30px;
+      width: 0; height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid #e8f5e9;
+    }
+    .copy-btn {
+      background: var(--border); border: none; padding: 6px 12px;
+      border-radius: 6px; font-size: 0.75rem; cursor: pointer;
+      float: right; margin-top: 8px; font-family: inherit;
+    }
+
+    .step-card {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 10px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .step-num {
+      background: var(--accent); color: #fff; min-width: 24px; height: 24px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; font-family: inherit;
+    }
+    .step-content { font-size: 0.82rem; line-height: 1.6; }
+
+    .db-meter {
+      display: flex; align-items: center; gap: 12px; margin: 16px 0;
+    }
+    .db-bar-bg {
+      flex: 1; height: 20px; background: var(--border); border-radius: 10px;
+      overflow: hidden;
+    }
+    .db-bar {
+      height: 100%; border-radius: 10px; transition: width 1.5s;
+    }
+    .db-value { font-weight: 800; font-size: 1.2rem; min-width: 50px; text-align: right; }
+    .db-label { min-width: 60px; font-size: 0.8rem; color: var(--muted); }
+
+    .tip-box {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 14px 16px; margin-top: 12px; font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    .net {
+      text-align: center; font-size: 0.8rem; color: var(--muted);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back">← 返回创意列表</a>
+    <header>
+      <h1>🔇 邻里噪音调解员</h1>
+      <p class="sub">Demo — 得体沟通 + 依法维权全路径</p>
+    </header>
+
+    <!-- Tab 切换 -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('msg')">💬 生成沟通文案</div>
+      <div class="tab" onclick="switchTab('law')">⚖️ 维权路径</div>
+      <div class="tab" onclick="switchTab('db')">🔊 噪音记录</div>
+    </div>
+
+    <!-- 沟通文案 -->
+    <div id="tab-msg">
+      <div class="card">
+        <h3>📝 场景配置</h3>
+        <div class="form-row">
+          <label>噪音类型</label>
+          <select id="noiseType">
+            <option value="child">小孩跑跳 / 哭闹</option>
+            <option value="piano">练琴 / 乐器</option>
+            <option value="reno">装修施工</option>
+            <option value="footstep">高跟鞋 / 拖拽椅子</option>
+            <option value="party">深夜聚会 / 音响</option>
+            <option value="pet">宠物跑动 / 吠叫</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>你和邻居的关系</label>
+          <select id="relation">
+            <option value="stranger">素不相识（从未说过话）</option>
+            <option value="nod">点头之交（电梯见过几次）</option>
+            <option value="familiar">比较熟（偶尔串门）</option>
+            <option value="tenant">我是租客 / 对方是租客</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>噪音时间</label>
+          <select id="noiseTime">
+            <option value="night">深夜（22:00 后）</option>
+            <option value="morning">清晨（6:00 前）</option>
+            <option value="siesta">午休时间</option>
+            <option value="allDay">全天不定时</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>已发生的次数</label>
+          <select id="frequency">
+            <option value="first">第一次 / 刚发生</option>
+            <option value="several">几次了（还在忍）</option>
+            <option value="many">持续很久了，忍无可忍</option>
+          </select>
+        </div>
+        <button class="btn" onclick="genMessage()">✨ 生成沟通文案</button>
+      </div>
+
+      <div class="result" id="msgResult">
+        <div class="msg-bubble" id="msgContent"></div>
+        <button class="copy-btn" onclick="copyMsg()" id="copyBtn" style="display:none">📋 一键复制</button>
+        <div class="tip-box" id="msgTip"></div>
+      </div>
+    </div>
+
+    <!-- 法律维权 -->
+    <div id="tab-law" style="display:none">
+      <div class="card">
+        <h3>⚖️ 依法维权四步走</h3>
+
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <strong>自行沟通</strong>（建议先做）<br>
+            <span style="color:var(--muted)">当面或留纸条/微信，礼貌说明情况。大部分邻居并不知道吵到你了。保留沟通记录。</span>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <strong>物业 / 居委会介入</strong>（沟通无效后）<br>
+            <span style="color:var(--muted)">向物业或居委会书面投诉，要求派人上门调解。依据：《物业管理条例》第 46 条。</span>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>报警处理</strong>（调解无效后）<br>
+            <span style="color:var(--muted)">拨打 110，依据《治安管理处罚法》第 58 条：制造噪声干扰他人正常生活的，处警告；警告后不改的处 200-500 元罚款。记得索要出警记录。</span>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <strong>民事诉讼</strong>（最后手段）<br>
+            <span style="color:var(--muted)">依据《民法典》第 288 条（相邻关系）和《环境噪声污染防治法》，向法院起诉要求停止侵害、赔偿损失。需要证据：噪音录音/视频、物业投诉记录、报警记录、医院诊断（如有健康损害）。</span>
+          </div>
+        </div>
+
+        <div class="tip-box">
+          <div style="margin-bottom:4px">📋 <strong>证据收集清单</strong></div>
+          <div>① 手机录音（带时间戳） ② 分贝检测截图 ③ 物业/居委会书面投诉记录 ④ 110 出警记录回执 ⑤ 与邻居的微信/短信沟通截图 ⑥ 其他邻居的证人证言</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 噪音记录 -->
+    <div id="tab-db" style="display:none">
+      <div class="card">
+        <h3>🔊 噪音强度参考</h3>
+        <div class="db-meter">
+          <div class="db-label">👶 小孩跑跳</div>
+          <div class="db-bar-bg"><div class="db-bar" id="bar1" style="width:0;background:#e07a5f"></div></div>
+          <div class="db-value">65 dB</div>
+        </div>
+        <div class="db-meter">
+          <div class="db-label">🎹 练琴</div>
+          <div class="db-bar-bg"><div class="db-bar" id="bar2" style="width:0;background:#b8860b"></div></div>
+          <div class="db-value">70 dB</div>
+        </div>
+        <div class="db-meter">
+          <div class="db-label">🔨 装修</div>
+          <div class="db-bar-bg"><div class="db-bar" id="bar3" style="width:0;background:#c0392b"></div></div>
+          <div class="db-value">85 dB</div>
+        </div>
+        <div class="db-meter">
+          <div class="db-label">👠 高跟鞋</div>
+          <div class="db-bar-bg"><div class="db-bar" id="bar4" style="width:0;background:#e07a5f"></div></div>
+          <div class="db-value">55 dB</div>
+        </div>
+        <div class="db-meter">
+          <div class="db-label">🎵 深夜音响</div>
+          <div class="db-bar-bg"><div class="db-bar" id="bar5" style="width:0;background:#c0392b"></div></div>
+          <div class="db-value">80 dB</div>
+        </div>
+        <button class="btn" onclick="animateBars()">🔊 模拟噪音强度</button>
+
+        <div class="tip-box" style="margin-top:16px">
+          <div>📊 <strong>国家标准（GB 3096-2008）</strong></div>
+          <div>🏠 居住区夜间（22:00-6:00）：≤ 45 dB</div>
+          <div>🏠 居住区白天：≤ 55 dB</div>
+          <div style="margin-top:8px">⚠️ 超过标准 10 dB 以上即可向环保部门投诉</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="net">规则引擎 Demo · 模拟数据仅供参考 · 不构成法律意见</div>
+  </div>
+
+  <script>
+    var msgTemplates = {
+      child: {
+        stranger: '邻居您好，我是楼下的住户。最近晚上经常听到小孩跑动的声音，可能小朋友精力比较旺盛😄 不知道方不方便铺一块地垫或者地毯？小朋友安全，我们也能安静休息。大家都是邻居，互相理解，感谢！🙏',
+        nod: '嗨，楼下邻居～ 最近晚上小朋友跑动声音有点明显，应该是地板传音比较好。方便的话铺块爬行垫就完美了，小朋友摔了也不疼～没有责怪的意思哈，就是提一下。😊',
+        familiar: '老兄/姐，最近娃晚上跑得挺欢啊哈哈～ 就是楼下听着有点响，方便的话给娃铺个垫子？改天请你们吃饭！😄',
+        tenant: '您好，我是楼下的租客。最近晚上能听到楼上小孩跑动的声音，可能是楼板隔音不太好。方便的话麻烦稍微注意一下，感谢理解！'
+      },
+      piano: {
+        stranger: '邻居您好，我是楼下的住户。您家（或孩子）练琴的声音非常悦耳，不过最近晚上练习时间有点晚，影响到我们休息了。不介意的话能否在 21:00 前结束练习？万分感谢！🎵',
+        nod: '嗨，楼下邻居～ 琴声很好听，不过最近晚上 10 点还能听到练习，我们家有小宝宝睡得比较早。方便的话 21:00 前练完可以吗？谢谢理解！',
+        familiar: '琴弹得越来越好了！就是晚上有点晚，娃睡了以后听着比较清楚。方便的话早一点练？改天给你家娃送本琴谱～',
+        tenant: '您好，我是楼下租客。最近晚上能听到练琴声，时间有点晚，影响休息。方便的话在 21:00 前结束可以吗？感谢！'
+      },
+      reno: {
+        stranger: '邻居您好，我是楼下的住户。注意到最近在装修，想问一下大概什么时候能完工？另外根据规定装修时间是工作日 8:00-12:00 和 14:00-18:00，周末和节假日禁止噪音施工。方便的话和装修师傅确认一下？谢谢！',
+        nod: '嗨，装修辛苦了！想问下大概什么时候完工呀？另外注意一下施工时间哈，规定工作日 8:00-12:00、14:00-18:00，周末不能有噪音。互相理解～',
+        familiar: '装修进展如何？提醒下施工时间别超哦，工作日早 8 到晚 6（中午休息），周末不能噪音施工。不然邻居投诉就麻烦了～',
+        tenant: '您好，我是楼下租客。装修施工请注意法定时间（工作日 8:00-12:00, 14:00-18:00），周末禁止噪音施工。谢谢配合！'
+      },
+      footstep: {
+        stranger: '邻居您好，我是楼下的住户。楼板隔音不太好，最近经常听到高跟鞋走路和拖拽椅子的声音，尤其在晚上比较明显。方便的话穿软底拖鞋或者给椅子贴个脚垫？网上几块钱就能买到。谢谢理解！',
+        nod: '嗨，楼下邻居～ 楼板隔音比较差，晚上走路和挪椅子的声音挺明显的。方便的话换软底拖鞋+椅子贴个脚垫？我这里有多的可以给你。😊',
+        familiar: '楼下听得见你走路哈哈～ 晚上换拖鞋呗，还有椅子贴个脚垫，不然楼下跟听鼓点一样。我这有多余的脚垫给你拿几个？',
+        tenant: '您好，我是楼下租客。楼板隔音不好，晚上走路和挪椅子声音比较明显。方便的话换软底拖鞋+椅子贴脚垫？感谢！'
+      },
+      party: {
+        stranger: '邻居您好，我是楼下的住户。最近几次深夜能听到聚会的声音和音响，已经严重影响到我们休息了。大家都是邻居，希望互相体谅。如果再持续到深夜，我只能请物业介入了。谢谢理解。',
+        nod: '嗨，最近晚上聚会有点频繁啊，音响声音不小。已经影响我们休息了。方便的话 22:00 之后控制一下音量？不是不让你开心，但互相体谅一下。🙏',
+        familiar: '兄弟/姐妹，最近嗨得有点频繁啊，楼下听得清清楚楚。22:00 以后能不能小点声？不然我真扛不住了，明天还要上班。😅',
+        tenant: '您好，我是楼下租客。深夜聚会和音响声音严重影响了休息。请在 22:00 后控制音量。如持续不改，我将通过物业和报警处理。请理解。'
+      },
+      pet: {
+        stranger: '邻居您好，我是楼下的住户。最近能听到宠物跑动和叫声，尤其是晚上比较明显。方便的话给毛孩子铺个垫子或者晚上关在离卧室远一点的房间？感谢理解！🐾',
+        nod: '嗨，楼下邻居～ 最近晚上能听到你家毛孩子跑动的声音，小家伙精力旺盛啊～ 方便的话晚上关在离卧室远的房间或者铺个垫子？谢谢！',
+        familiar: '你家毛孩子晚上挺活跃啊哈哈～ 楼下听着跟跑马拉松似的。方便的话晚上换个房间或者铺个垫子？改天带我家的一起遛～🐶',
+        tenant: '您好，我是楼下租客。最近晚上能听到宠物跑动和叫声，影响休息。方便的话采取一些隔音措施？感谢！'
+      }
+    };
+
+    var msgTips = {
+      first: '📌 第一次沟通建议语气温和。多数邻居并不知道吵到你了——楼板隔音差是普遍问题，对方可能毫无察觉。以"求助"而非"指责"的姿态沟通，成功率最高。',
+      several: '📌 已经多次了，语气可以稍坚定但保持礼貌。明确提出具体诉求（时间段/分贝/措施），让对方知道你不是随便说说。建议用微信文字沟通，保留记录。',
+      many: '📌 忍了很久了，但要控制情绪。愤怒沟通容易升级为邻里冲突。用事实说话（噪音类型、时间、持续时长），明确告知"如果再不改，将走正式投诉流程"。这既是给对方台阶，也是给自己留证据。'
+    };
+
+    function genMessage() {
+      var noise = document.getElementById('noiseType').value;
+      var rel = document.getElementById('relation').value;
+      var freq = document.getElementById('frequency').value;
+      var time = document.getElementById('noiseTime').value;
+
+      var msg = msgTemplates[noise][rel];
+
+      // 根据时间微调
+      if (time === 'night') {
+        msg = msg.replace('晚上', '深夜（23:00 后）');
+      } else if (time === 'morning') {
+        msg = msg.replace('晚上', '清晨（6:00 前）');
+      }
+
+      document.getElementById('msgResult').style.display = 'block';
+      document.getElementById('msgContent').textContent = msg;
+      document.getElementById('msgTip').textContent = msgTips[freq];
+      document.getElementById('copyBtn').style.display = 'inline-block';
+
+      document.getElementById('msgResult').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyMsg() {
+      var msg = document.getElementById('msgContent').textContent;
+      navigator.clipboard.writeText(msg).then(function() {
+        var btn = document.getElementById('copyBtn');
+        btn.textContent = '✅ 已复制';
+        setTimeout(function() { btn.textContent = '📋 一键复制'; }, 2000);
+      });
+    }
+
+    function switchTab(name) {
+      document.getElementById('tab-msg').style.display = name === 'msg' ? 'block' : 'none';
+      document.getElementById('tab-law').style.display = name === 'law' ? 'block' : 'none';
+      document.getElementById('tab-db').style.display = name === 'db' ? 'block' : 'none';
+      var tabs = document.querySelectorAll('.tab');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      if (name === 'msg') tabs[0].classList.add('active');
+      else if (name === 'law') tabs[1].classList.add('active');
+      else tabs[2].classList.add('active');
+    }
+
+    function animateBars() {
+      var bars = [
+        { id: 'bar1', width: 65, color: '#e07a5f' },
+        { id: 'bar2', width: 70, color: '#b8860b' },
+        { id: 'bar3', width: 85, color: '#c0392b' },
+        { id: 'bar4', width: 55, color: '#e07a5f' },
+        { id: 'bar5', width: 80, color: '#c0392b' }
+      ];
+      // reset
+      for (var i = 0; i < bars.length; i++) {
+        document.getElementById(bars[i].id).style.width = '0';
+      }
+      // animate sequentially
+      for (var j = 0; j < bars.length; j++) {
+        (function(idx) {
+          setTimeout(function() {
+            document.getElementById(bars[idx].id).style.width = bars[idx].width + '%';
+            document.getElementById(bars[idx].id).style.background = bars[idx].color;
+          }, idx * 200);
+        })(j);
+      }
+    }
+  </script>
+</body>
+</html>
