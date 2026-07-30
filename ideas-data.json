@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "interview-sim",
+      "icon": "🎤",
+      "title": "求职面试模拟器",
+      "tagline": "AI 面试官逐题追问——不是背答案，是让你在面试前把坑都踩一遍",
+      "status": "live",
+      "category": "职业发展"
+    },
+    {
       "id": "noise-mediator",
       "icon": "🔇",
       "title": "邻里噪音调解员",

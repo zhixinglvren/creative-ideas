@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>求职面试模拟器 — Demo</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #2563eb; --green: #2e8b57; --red: #c0392b; --amber: #d97706;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 28px; }
+    header h1 { font-size: 1.4rem; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .back {
+      display: inline-block; color: var(--accent); text-decoration: none;
+      font-size: 0.85rem; margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--accent); }
+
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 16px;
+    }
+    .tab {
+      flex: 1; padding: 10px 6px; text-align: center; font-size: 0.8rem;
+      border: 1px solid var(--border); cursor: pointer; background: var(--card);
+      font-weight: 600; font-family: inherit;
+    }
+    .tab:first-child { border-radius: 8px 0 0 8px; }
+    .tab:last-child { border-radius: 0 8px 8px 0; }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .form-row select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+    }
+    .btn {
+      background: var(--accent); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: inherit; width: 100%;
+    }
+    .btn:hover { opacity: 0.9; }
+
+    .result { display: none; }
+
+    /* 面试对话 */
+    .chat { margin: 16px 0; }
+    .msg {
+      padding: 12px 16px; border-radius: 12px; margin-bottom: 10px;
+      font-size: 0.85rem; line-height: 1.6; max-width: 90%;
+    }
+    .msg.interviewer {
+      background: #f0f4ff; margin-right: auto; border-bottom-left-radius: 4px;
+    }
+    .msg.you {
+      background: #e8f5e9; margin-left: auto; border-bottom-right-radius: 4px;
+      text-align: right;
+    }
+    .msg .role { font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
+
+    .answer-opts { display: grid; gap: 8px; margin: 16px 0; }
+    .answer-opt {
+      padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; font-size: 0.82rem; line-height: 1.5;
+      background: var(--card); transition: all 0.2s;
+    }
+    .answer-opt:hover { border-color: var(--accent); background: #f0f4ff; }
+
+    /* 评分 */
+    .score-card {
+      text-align: center; padding: 20px;
+    }
+    .score { font-size: 2.5rem; font-weight: 800; }
+    .score.good { color: var(--green); }
+    .score.ok { color: var(--amber); }
+    .score.poor { color: var(--red); }
+    .score-label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+    .feedback-list { margin: 12px 0; }
+    .feedback-item {
+      font-size: 0.82rem; padding: 8px 12px; margin-bottom: 6px;
+      border-radius: 6px; line-height: 1.5;
+    }
+    .feedback-item.star { background: #e8f5e9; }
+    .feedback-item.warn { background: #fff7ed; }
+    .feedback-item.tip { background: #f0f4ff; }
+
+    .tip-box {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 14px 16px; margin-top: 12px; font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    .net {
+      text-align: center; font-size: 0.8rem; color: var(--muted);
+      margin-top: 20px;
+    }
+    .q-num { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back">← 返回创意列表</a>
+    <header>
+      <h1>🎤 求职面试模拟器</h1>
+      <p class="sub">Demo — AI 面试官实景模拟 + 即时反馈评分</p>
+    </header>
+
+    <!-- Tab 切换 -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('sim')">🎤 模拟面试</div>
+      <div class="tab" onclick="switchTab('bank')">📚 题库预览</div>
+    </div>
+
+    <!-- 模拟面试 -->
+    <div id="tab-sim">
+      <div class="card" id="setupCard">
+        <h3>📋 面试设置</h3>
+        <div class="form-row">
+          <label>目标岗位</label>
+          <select id="role">
+            <option value="java">Java 后端开发</option>
+            <option value="frontend">前端开发</option>
+            <option value="product">产品经理</option>
+            <option value="data">数据分析</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>工作经验</label>
+          <select id="experience">
+            <option value="junior">应届 / 1-2 年</option>
+            <option value="mid">3-5 年</option>
+            <option value="senior">5 年以上</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>面试轮次</label>
+          <select id="round">
+            <option value="tech">技术面</option>
+            <option value="behavior">行为面（软素质）</option>
+          </select>
+        </div>
+        <button class="btn" onclick="startInterview()">▶ 开始模拟面试</button>
+      </div>
+
+      <div id="interviewArea" style="display:none">
+        <div class="card">
+          <h3>🎤 面试进行中</h3>
+          <div class="q-num" id="qNum">第 1/3 题</div>
+          <div class="chat" id="chatArea"></div>
+          <div class="answer-opts" id="answerOpts"></div>
+          <button class="btn" id="nextBtn" style="display:none;margin-top:12px" onclick="nextQuestion()">下一题 →</button>
+        </div>
+      </div>
+
+      <div class="result" id="scoreResult">
+        <div class="card">
+          <h3>📊 面试评估报告</h3>
+          <div class="score-card">
+            <div class="score" id="totalScore">—</div>
+            <div class="score-label">综合评分</div>
+          </div>
+          <div class="feedback-list" id="feedbackList"></div>
+          <div class="tip-box" id="finalTip"></div>
+          <button class="btn" style="margin-top:12px" onclick="resetInterview()">🔄 再来一次</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 题库预览 -->
+    <div id="tab-bank" style="display:none">
+      <div class="card">
+        <h3>📚 内置面试题库</h3>
+        <div class="tip-box" style="margin-bottom:12px">
+          Demo 展示了 Java 后端岗位的 9 道经典面试题。真实产品覆盖 20+ 行业 × 3 经验等级 × 4 轮次，按真实面试反馈持续迭代。
+        </div>
+        <div style="display:grid;gap:8px">
+          <div class="feedback-item star">💻 <strong>技术面</strong>：HashMap 底层原理？JDK 1.8 做了什么优化？</div>
+          <div class="feedback-item star">💻 <strong>技术面</strong>：线程池的核心参数和执行流程？拒绝策略有哪些？</div>
+          <div class="feedback-item star">💻 <strong>技术面</strong>：Spring AOP 的实现原理？JDK 动态代理 vs CGLIB？</div>
+          <div class="feedback-item star">💻 <strong>技术面</strong>：MySQL 索引的 B+ 树结构？为什么不用红黑树？</div>
+          <div class="feedback-item warn">🤝 <strong>行为面</strong>：说说你遇到的最难的技术挑战，怎么解决的？</div>
+          <div class="feedback-item warn">🤝 <strong>行为面</strong>：你和同事意见严重不合时怎么办？举例。</div>
+          <div class="feedback-item warn">🤝 <strong>行为面</strong>：如果项目上线前一天发现重大 bug，你怎么处理？</div>
+          <div class="feedback-item star">💻 <strong>技术面</strong>：Redis 缓存穿透、击穿、雪崩的区别和解决方案？</div>
+          <div class="feedback-item warn">🤝 <strong>行为面</strong>：你最近学到了什么新技术？怎么学的？</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="net">规则引擎 Demo · 模拟数据仅供参考</div>
+  </div>
+
+  <script>
+    var questions = {
+      java: {
+        tech: [
+          {
+            q: '请说一下 HashMap 的底层实现原理。JDK 1.8 相比之前做了什么关键优化？',
+            opts: [
+              'A：数组+链表实现；JDK 1.8 引入了红黑树，当链表长度 > 8 且数组长度 ≥ 64 时，链表转红黑树，查找从 O(n) 降到 O(log n)。',
+              'B：纯数组实现，冲突用开放地址法。JDK 1.8 改用链地址法。',
+              'C：红黑树实现。JDK 1.8 把红黑树改成了链表，因为链表更省内存。'
+            ],
+            correct: 0,
+            feedback: {
+              star: '✅ 此回答准确描述了 JDK 1.8 的核心优化（链表→红黑树），且给出了触发条件。面试官会继续追问：为什么阈值是8？为什么是红黑树而不是AVL树？',
+              warn: '',
+              tip: '💡 加分项：提到 hash 扰动函数 (h ^ h>>>16)、扩容机制 (2倍)、loadFactor 默认 0.75 的原因。'
+            }
+          },
+          {
+            q: '线程池 ThreadPoolExecutor 的核心参数有哪些？任务提交后的执行流程是怎样的？',
+            opts: [
+              'A：就两个参数——核心线程数和最大线程数。任务来就创建线程，超过就排队。',
+              'B：7个参数：corePoolSize、maximumPoolSize、keepAliveTime、unit、workQueue、threadFactory、handler。流程：核心线程→队列→最大线程→拒绝策略。',
+              'C：线程池就是一个线程列表，任务提交后随机分配一个线程执行，线程用完就新建。'
+            ],
+            correct: 1,
+            feedback: {
+              star: '✅ 完整列出7个参数且准确描述执行流程。面霸级回答。',
+              warn: '',
+              tip: '💡 加分项：举例说明4种拒绝策略的使用场景（AbortPolicy/CallerRuns/Discard/DiscardOldest），以及如何合理设置线程数（CPU密集型=核数+1；IO密集型=核数×2）。'
+            }
+          },
+          {
+            q: 'Spring AOP 的底层实现原理是什么？JDK 动态代理和 CGLIB 代理有什么区别？',
+            opts: [
+              'A：Spring AOP 用的是反射，在运行时修改字节码。JDK 代理和 CGLIB 没区别。',
+              'B：JDK 动态代理基于接口，通过 Proxy 和 InvocationHandler 实现；CGLIB 通过字节码技术生成目标类的子类。Spring 默认用 JDK 代理，目标类没有实现接口时用 CGLIB。Spring Boot 2.x 后默认使用 CGLIB。',
+              'C：AOP 就是用 @Aspect 注解标记一下，Spring 会自动处理，不需要了解原理。'
+            ],
+            correct: 1,
+            feedback: {
+              star: '✅ 准确区分两种代理方式，且提到 Spring Boot 2.x 的默认策略变化——这是区分初级和高级的分水岭。',
+              warn: '',
+              tip: '💡 加分项：CGLIB 的局限性（final 方法/类无法代理、构造函数会调用两次）、AspectJ 与 Spring AOP 的区别（编译期织入 vs 运行时代理）。'
+            }
+          }
+        ],
+        behavior: [
+          {
+            q: '请描述一个你遇到的最难的技术挑战，以及你是如何解决的？',
+            opts: [
+              'A：我们项目用到了微服务架构，有一次线上出现了内存泄漏，我用 jmap dump 了堆快照，MAT 分析发现是 ThreadLocal 没及时清理，修复后上线就解决了。整个过程大概花了半天。',
+              'B：没什么特别难的，遇到问题就百度一下，一般都能解决。',
+              'C：有一次数据库查询很慢，我把所有 SQL 都加了索引就好了。'
+            ],
+            correct: 0,
+            feedback: {
+              star: '✅ 结构化描述：问题 → 工具 → 定位 → 修复。面试官会继续追问：为什么 ThreadLocal 会导致内存泄漏？',
+              warn: '',
+              tip: '💡 STAR 法则非常到位。加分项：补充监控告警的改进（预防复发）和团队内的复盘分享。'
+            }
+          },
+          {
+            q: '如果项目上线前一天，你发现了一个可能导致数据丢失的重大 bug。你会怎么处理？',
+            opts: [
+              'A：马上修复，然后直接上线。反正早晚要修。',
+              'B：立即报告上级和技术负责人 → 评估 bug 影响范围和修复风险 → 如可快速修复则加班解决并补测试 → 如修复复杂则建议延期上线，用数据说话。同时准备回滚方案。',
+              'C：这是测试的责任，我代码写好了，bug 让他们去提。'
+            ],
+            correct: 1,
+            feedback: {
+              star: '✅ 展示了风险意识、沟通能力和决策框架。面试官要的是「你能在压力下做出正确判断」。',
+              warn: '',
+              tip: '💡 加分项：说明你会用数据量化影响（影响多少用户、多少数据），以及如何向上沟通（不只报告问题，同时带解决方案）。'
+            }
+          },
+          {
+            q: '你最近学到了什么新技术？你怎么学的？',
+            opts: [
+              'A：最近在用 Claude Code 做 AI 辅助编程，看了它的 Agent Loop 源码（TypeScript），把它和 Python 实现的 Nanobot 做了对比分析。学习方式：先看架构图理解整体 → 定位核心模块读源码 → 做对比笔记 → 在项目中实际应用。',
+              'B：看了很多技术文章和视频，但是还没来得及实践。',
+              'C：公司用什么我就学什么，没什么特别的。'
+            ],
+            correct: 0,
+            feedback: {
+              star: '✅ 展示了自发学习动力和方法论——面试官最喜欢听这个。有具体项目、有对比分析、有学习方法。',
+              warn: '',
+              tip: '💡 加分项：把学到的东西应用到实际工作/项目中，产生可量化的效果（效率提升了X%、解决了Y问题）。'
+            }
+          }
+        ]
+      }
+    };
+
+    var currentInterview = null;
+    var scores = [];
+
+    function switchTab(name) {
+      document.getElementById('tab-sim').style.display = name === 'sim' ? 'block' : 'none';
+      document.getElementById('tab-bank').style.display = name === 'bank' ? 'block' : 'none';
+      var tabs = document.querySelectorAll('.tab');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+      if (name === 'sim') tabs[0].classList.add('active');
+      else tabs[1].classList.add('active');
+    }
+
+    function startInterview() {
+      var role = document.getElementById('role').value;
+      var exp = document.getElementById('experience').value;
+      var round = document.getElementById('round').value;
+
+      if (!questions[role] || !questions[role][round]) {
+        role = 'java'; round = 'tech';
+      }
+
+      currentInterview = {
+        role: role,
+        exp: exp,
+        round: round,
+        questions: questions[role][round],
+        currentIdx: 0,
+        answered: false,
+        totalScore: 0
+      };
+      scores = [];
+
+      document.getElementById('setupCard').style.display = 'none';
+      document.getElementById('interviewArea').style.display = 'block';
+      document.getElementById('scoreResult').style.display = 'none';
+
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      var q = currentInterview.questions[currentInterview.currentIdx];
+      var idx = currentInterview.currentIdx;
+      currentInterview.answered = false;
+
+      document.getElementById('qNum').textContent = '第 ' + (idx + 1) + '/' + currentInterview.questions.length + ' 题';
+      document.getElementById('nextBtn').style.display = 'none';
+
+      var chat = document.getElementById('chatArea');
+      chat.innerHTML = '<div class="msg interviewer"><div class="role">🤖 面试官</div>' + q.q + '</div>';
+
+      var optsHtml = '';
+      for (var i = 0; i < q.opts.length; i++) {
+        optsHtml += '<div class="answer-opt" onclick="selectAnswer(' + i + ')">' + q.opts[i] + '</div>';
+      }
+      document.getElementById('answerOpts').innerHTML = optsHtml;
+    }
+
+    function selectAnswer(idx) {
+      if (currentInterview.answered) return;
+
+      var q = currentInterview.questions[currentInterview.currentIdx];
+      var selectedOpt = q.opts[idx];
+
+      // show user's answer
+      var chat = document.getElementById('chatArea');
+      chat.innerHTML += '<div class="msg you"><div class="role">👤 你</div>' + selectedOpt + '</div>';
+
+      // disable options
+      var opts = document.querySelectorAll('.answer-opt');
+      for (var i = 0; i < opts.length; i++) {
+        opts[i].style.pointerEvents = 'none';
+        opts[i].style.opacity = '0.5';
+        if (i === q.correct) opts[i].style.borderColor = '#2e8b57';
+        if (i === idx && i !== q.correct) opts[i].style.borderColor = '#c0392b';
+      }
+
+      // score
+      var score = (idx === q.correct) ? 3 : (idx === 1 && q.correct !== 1 ? 1 : 0);
+      if (q.correct === 1 && idx === 0) score = 1;
+      scores.push(score);
+
+      // feedback
+      var fb = q.feedback;
+      var fbHtml = '';
+      if (fb.star) fbHtml += '<div class="feedback-item star">' + fb.star + '</div>';
+      if (fb.warn) fbHtml += '<div class="feedback-item warn">' + fb.warn + '</div>';
+      if (fb.tip) fbHtml += '<div class="feedback-item tip">' + fb.tip + '</div>';
+
+      chat.innerHTML += '<div class="msg interviewer"><div class="role">🤖 面试官</div>' + fbHtml + '</div>';
+
+      currentInterview.answered = true;
+
+      if (currentInterview.currentIdx < currentInterview.questions.length - 1) {
+        document.getElementById('nextBtn').style.display = 'block';
+      } else {
+        document.getElementById('nextBtn').style.display = 'block';
+        document.getElementById('nextBtn').textContent = '查看评估报告 📊';
+        document.getElementById('nextBtn').onclick = showResult;
+      }
+
+      document.getElementById('chatArea').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function nextQuestion() {
+      currentInterview.currentIdx++;
+      renderQuestion();
+      document.getElementById('interviewArea').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showResult() {
+      document.getElementById('interviewArea').style.display = 'none';
+
+      var total = 0;
+      for (var i = 0; i < scores.length; i++) total += scores[i];
+      var maxScore = currentInterview.questions.length * 3;
+      var pct = Math.round(total / maxScore * 100);
+      var allCorrect = total === maxScore;
+
+      var scoreEl = document.getElementById('totalScore');
+      scoreEl.textContent = total + '/' + maxScore + ' (' + pct + '%)';
+      scoreEl.className = 'score';
+      if (pct >= 80) scoreEl.classList.add('good');
+      else if (pct >= 50) scoreEl.classList.add('ok');
+      else scoreEl.classList.add('poor');
+
+      var feedbackList = document.getElementById('feedbackList');
+      var items = [];
+      if (allCorrect) {
+        items.push('<div class="feedback-item star">🏆 全部答对！你在这个岗位的面试准备非常充分。</div>');
+      } else if (pct >= 67) {
+        items.push('<div class="feedback-item star">👍 整体表现不错。技术基础扎实，继续打磨深度追问的回答。</div>');
+      } else {
+        items.push('<div class="feedback-item warn">📚 建议花时间系统复习核心技术点。面试官会追问细节——你的回答停在表面。</div>');
+      }
+      items.push('<div class="feedback-item tip">💡 真实面试中，回答完问题后面试官通常会追问 2-3 层。本 Demo 每题展示了标准答案和加分项——练习时重点关注这些追问方向。</div>');
+      feedbackList.innerHTML = items.join('');
+
+      document.getElementById('finalTip').innerHTML =
+        '<div>📊 模拟面试共 ' + currentInterview.questions.length + ' 题（' + currentInterview.round + '），每题满分 3 分。</div>' +
+        '<div style="margin-top:4px">🔁 建议每天模拟 1-2 轮。同一道题多次练习，直到能流利回答并应对 3 层追问。</div>';
+
+      document.getElementById('scoreResult').style.display = 'block';
+      document.getElementById('scoreResult').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetInterview() {
+      document.getElementById('setupCard').style.display = 'block';
+      document.getElementById('interviewArea').style.display = 'none';
+      document.getElementById('scoreResult').style.display = 'none';
+      document.getElementById('nextBtn').textContent = '下一题 →';
+      document.getElementById('nextBtn').onclick = nextQuestion;
+      currentInterview = null;
+      scores = [];
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
