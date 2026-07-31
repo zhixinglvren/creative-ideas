@@ -1,6 +1,14 @@
 {
   "ideas": [
     {
+      "id": "pet-symptom",
+      "icon": "🐾",
+      "title": "毛孩急诊判断",
+      "tagline": "半夜猫狗吐了拉稀了——AI 帮你判断要不要连夜去医院，还是等到明早",
+      "status": "live",
+      "category": "宠物经济"
+    },
+    {
       "id": "interview-sim",
       "icon": "🎤",
       "title": "求职面试模拟器",

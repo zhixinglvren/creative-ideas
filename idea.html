@@ -71,6 +71,16 @@
 
   <script>
     const details = {
+      "pet-symptom": {
+        description: "凌晨两点，你家猫吐了。你盯着手机，犹豫要不要去宠物医院——去一趟至少 500，不去又怕耽误。每个养宠物的人，都经历过这种半夜的焦虑。",
+        sections: [
+          { title: "🎯 场景", text: "凌晨两点，你家猫吐了。你盯着手机，犹豫要不要去宠物医院——去一趟急诊至少 500，不去又怕耽误病情。百度查症状，越查越害怕，全是「猫瘟」「肾衰竭」「胰腺炎」。每个养宠人都经历过这种半夜的焦虑：去，可能只是毛球吐了就花 800 检查费；不去，万一是急症就是命。问题的核心不是「要不要去」，而是你手里没有足够的信息做判断。你不知道什么症状是急症、什么可以观察一晚上。" },
+          { title: "💡 方案", text: "选择宠物类型（猫/狗）→ 勾选症状（呕吐/拉稀/拒食/抽搐等）→ 补充持续时间和年龄 → AI 给出三级判断：🚨 立即就医 / ⚠️ 24 小时内就医 / ✅ 在家观察。每级结果附「现在可做的事」「不要做的事」「什么情况必须升级」，以及同症状的常见病因参考和预估费用。不是替代兽医——是让你在半夜有个靠谱的决策参考，不用对着百度把自己吓哭。" },
+          { title: "🔧 技术", text: "Demo 内置猫狗各 12 种症状（含 4 种急症标识），三级判断逻辑：急症症状 or 精神极差 → 立即就医；症状持续多日 or 老年宠物 → 24 小时就医；其他 → 在家观察。真实产品：接入宠物医院的症状-疾病知识图谱；根据地理位置推荐附近的 24 小时宠物医院；症状拍照+AI 辅助识别皮肤问题/眼部问题。" },
+          { title: "📈 为什么值得做", html: "中国宠物市场规模超 3000 亿，宠物医疗占比 25%。<b>每个养宠人都被这个问题折磨过</b>：半夜宠物不对劲了，去不去医院？信息不对称是宠物医疗最大的痛点——宠物不会说话，主人只能猜。小红书「猫吐了怎么办」搜索栏自动联想第一条就是「半夜」。变现：免费急诊判断 + ¥9.9 详细护理方案 + 宠物保险推荐佣金。核心壁垒：<b>症状-疾病知识图谱的积累</b>，需要兽医师审核的大量真实 case study，不是通用 AI 可以替代的。" }
+        ],
+        demoUrl: "demo-pet-symptom/"
+      },
       "interview-sim": {
         description: "「请你自我介绍一下」「说说你遇到的最难的技术挑战」——每个人都背过面试题，但一开口就卡壳。背答案的面试和真实的面试，中间隔着 100 次紧张。",
         sections: [
@@ -391,11 +401,11 @@
     }
 
     function getIcon(id) {
-      const m = {'interview-sim':'🎤','noise-mediator':'🔇','tax-helper':'📊','contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
+      const m = {'pet-symptom':'🐾','interview-sim':'🎤','noise-mediator':'🔇','tax-helper':'📊','contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
       return m[id] || '💡';
     }
     function getTitle(id) {
-      const m = {'interview-sim':'求职面试模拟器','noise-mediator':'邻里噪音调解员','tax-helper':'个人税务助手','contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
+      const m = {'pet-symptom':'毛孩急诊判断','interview-sim':'求职面试模拟器','noise-mediator':'邻里噪音调解员','tax-helper':'个人税务助手','contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
       return m[id] || id;
     }
 

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>毛孩急诊判断 — Demo</title>
+  <style>
+    :root {
+      --bg: #faf7f2; --card: #fff; --border: #e8e2d6;
+      --text: #2c2416; --muted: #8c8070;
+      --accent: #e07a5f; --green: #2e8b57; --red: #c0392b; --amber: #d97706;
+      --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      padding: 24px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 28px; }
+    header h1 { font-size: 1.4rem; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .back {
+      display: inline-block; color: var(--accent); text-decoration: none;
+      font-size: 0.85rem; margin-bottom: 16px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--accent); }
+
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .form-row select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-family: inherit;
+      background: var(--card); color: var(--text);
+    }
+    .btn {
+      background: var(--accent); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 0.9rem;
+      font-weight: 700; cursor: pointer; font-family: inherit; width: 100%;
+    }
+    .btn:hover { opacity: 0.9; }
+    .result { display: none; }
+
+    .urgency-banner {
+      padding: 16px; border-radius: var(--radius); margin-bottom: 16px;
+      text-align: center; font-weight: 800; font-size: 1.1rem;
+    }
+    .urgency-banner.urgent { background: #ffeaea; color: var(--red); border: 2px solid var(--red); }
+    .urgency-banner.moderate { background: #fff7ed; color: var(--amber); border: 2px solid var(--amber); }
+    .urgency-banner.safe { background: #e8f5e9; color: var(--green); border: 2px solid var(--green); }
+
+    .advice-item {
+      padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;
+      font-size: 0.85rem; line-height: 1.6;
+    }
+    .advice-item.do { background: #e8f5e9; }
+    .advice-item.dont { background: #fff7ed; }
+    .advice-item.info { background: #f0f4ff; }
+
+    .symptom-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    .symptom-tag {
+      padding: 6px 14px; border: 1px solid var(--border); border-radius: 20px;
+      font-size: 0.8rem; cursor: pointer; background: var(--card);
+      transition: all 0.2s; font-family: inherit;
+    }
+    .symptom-tag.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .cost-est {
+      display: flex; justify-content: space-between; font-size: 0.82rem;
+      border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px;
+    }
+    .cost-est span { color: var(--muted); }
+    .net {
+      text-align: center; font-size: 0.8rem; color: var(--muted);
+      margin-top: 20px;
+    }
+    .disclaimer {
+      font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 20px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../index.html" class="back">← 返回创意列表</a>
+    <header>
+      <h1>🐾 毛孩急诊判断</h1>
+      <p class="sub">Demo — 半夜猫狗突发症状，到底要不要去医院？</p>
+    </header>
+
+    <div class="card" id="inputCard">
+      <h3>🐶🐱 选择宠物</h3>
+      <div class="form-row">
+        <select id="petType" onchange="updateSymptoms()">
+          <option value="dog">🐶 狗</option>
+          <option value="cat">🐱 猫</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>症状表现（可多选）</label>
+        <div class="symptom-tags" id="symptomTags"></div>
+      </div>
+
+      <div class="form-row">
+        <label>症状持续时间</label>
+        <select id="duration">
+          <option value="hours">刚刚开始 / 几小时内</option>
+          <option value="day">1 天左右</option>
+          <option value="days">2-3 天</option>
+          <option value="week">一周以上</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>宠物年龄</label>
+        <select id="age">
+          <option value="young">幼年（&lt;1 岁）</option>
+          <option value="adult">成年（1-7 岁）</option>
+          <option value="senior">老年（&gt;7 岁）</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>精神状态</label>
+        <select id="spirit">
+          <option value="normal">正常（和平时一样）</option>
+          <option value="tired">嗜睡 / 精神稍差</option>
+          <option value="veryBad">精神极差 / 昏迷</option>
+        </select>
+      </div>
+
+      <button class="btn" onclick="checkSymptoms()">🔍 开始急诊判断</button>
+    </div>
+
+    <div class="result" id="resultCard"></div>
+
+    <div class="disclaimer">
+      ⚠️ AI 症状预判仅供参考，不构成兽医诊断。<br>
+      如宠物流血不止、呼吸困难、抽搐、失去意识——请立即送往最近的 24 小时宠物医院。
+    </div>
+    <div class="net">规则引擎 Demo · 模拟数据仅供参考</div>
+  </div>
+
+  <script>
+    var selectedSymptoms = [];
+
+    var dogSymptoms = [
+      { id: 'vomit', label: '🤮 呕吐', severe: false },
+      { id: 'diarrhea', label: '💩 拉稀/软便', severe: false },
+      { id: 'notEat', label: '🍽 不吃东西', severe: false },
+      { id: 'bloodVomit', label: '🩸 呕吐物带血', severe: true },
+      { id: 'bloodStool', label: '🩸 便血', severe: true },
+      { id: 'bloat', label: '🎈 腹部鼓胀', severe: true },
+      { id: 'choke', label: '😤 呼吸困难', severe: true },
+      { id: 'seizure', label: '⚡ 抽搐/癫痫', severe: true },
+      { id: 'lame', label: '🦴 跛行/疼痛', severe: false },
+      { id: 'itch', label: '😖 频繁抓挠', severe: false },
+      { id: 'cough', label: '😷 咳嗽/打喷嚏', severe: false },
+      { id: 'eye', label: '👁 眼部分泌物', severe: false },
+    ];
+
+    var catSymptoms = [
+      { id: 'vomit', label: '🤮 呕吐', severe: false },
+      { id: 'notEat', label: '🍽 不吃东西', severe: false },
+      { id: 'hide', label: '🙈 躲藏/不亲人', severe: true },
+      { id: 'noPee', label: '🚫 尿不出来', severe: true },
+      { id: 'bloodUrine', label: '🩸 尿血', severe: true },
+      { id: 'choke', label: '😤 张口呼吸', severe: true },
+      { id: 'seizure', label: '⚡ 抽搐/癫痫', severe: true },
+      { id: 'diarrhea', label: '💩 拉稀/软便', severe: false },
+      { id: 'eye', label: '👁 眼部分泌物/流泪', severe: false },
+      { id: 'itch', label: '😖 频繁抓挠/掉毛', severe: false },
+      { id: 'drool', label: '💧 流口水', severe: false },
+      { id: 'limb', label: '🦴 后腿无力', severe: true },
+    ];
+
+    function updateSymptoms() {
+      var petType = document.getElementById('petType').value;
+      var symptoms = petType === 'dog' ? dogSymptoms : catSymptoms;
+      var html = '';
+      for (var i = 0; i < symptoms.length; i++) {
+        html += '<div class="symptom-tag" data-id="' + symptoms[i].id + '" onclick="toggleSymptom(this)">' + symptoms[i].label + '</div>';
+      }
+      document.getElementById('symptomTags').innerHTML = html;
+      selectedSymptoms = [];
+    }
+
+    function toggleSymptom(el) {
+      el.classList.toggle('selected');
+      var id = el.getAttribute('data-id');
+      if (el.classList.contains('selected')) {
+        if (selectedSymptoms.indexOf(id) === -1) selectedSymptoms.push(id);
+      } else {
+        var idx = selectedSymptoms.indexOf(id);
+        if (idx > -1) selectedSymptoms.splice(idx, 1);
+      }
+    }
+
+    function checkSymptoms() {
+      if (selectedSymptoms.length === 0) {
+        alert('请至少选择一个症状');
+        return;
+      }
+
+      var petType = document.getElementById('petType').value;
+      var symptoms = petType === 'dog' ? dogSymptoms : catSymptoms;
+      var duration = document.getElementById('duration').value;
+      var age = document.getElementById('age').value;
+      var spirit = document.getElementById('spirit').value;
+
+      // check for critical symptoms
+      var hasSevere = false;
+      for (var i = 0; i < selectedSymptoms.length; i++) {
+        for (var j = 0; j < symptoms.length; j++) {
+          if (symptoms[j].id === selectedSymptoms[i] && symptoms[j].severe) {
+            hasSevere = true;
+            break;
+          }
+        }
+        if (hasSevere) break;
+      }
+
+      var level = '';
+      if (hasSevere || spirit === 'veryBad') {
+        level = 'urgent';
+      } else if (duration === 'days' || duration === 'week' || age === 'senior') {
+        level = 'moderate';
+      } else {
+        level = 'safe';
+      }
+
+      var petName = petType === 'dog' ? '狗' : '猫';
+      var resultHtml = '';
+
+      if (level === 'urgent') {
+        resultHtml += '<div class="urgency-banner urgent">🚨 建议立即就医</div>';
+        resultHtml += '<div class="card"><h3>📋 判断依据</h3>';
+        resultHtml += '<div class="advice-item dont">⚠️ 你的' + petName + '出现了<b>需紧急处理的症状</b>——这些症状可能预示着严重疾病，拖延有生命危险。</div>';
+        resultHtml += '<div class="advice-item info">📞 建议立即联系最近的 24 小时宠物医院，提前电话确认是否有急诊医生在岗。</div>';
+        resultHtml += '<div class="advice-item info">🚗 出门前：用毯子包裹宠物保持体温，准备好航空箱/牵引绳，带上之前的病历（如有）。</div>';
+        resultHtml += '<div class="cost-est"><span>💰 预估费用</span><span><b>¥500-2000+</b></span></div>';
+        resultHtml += '</div>';
+      } else if (level === 'moderate') {
+        resultHtml += '<div class="urgency-banner moderate">⚠️ 建议 24 小时内就医</div>';
+        resultHtml += '<div class="card"><h3>📋 判断依据</h3>';
+        resultHtml += '<div class="advice-item info">症状已持续一段时间，或宠物年龄较大。虽然不是急症，但需要专业诊断确认病因。</div>';
+        resultHtml += '<div class="advice-item do">✅ <b>现在可做的</b>：禁食 6-8 小时观察（不禁水），记录呕吐/排便频率和性状，拍照留档给医生看。</div>';
+        resultHtml += '<div class="advice-item dont">❌ <b>不要</b>：自行给宠物吃人药（对乙酰氨基酚对猫狗剧毒），不要强行喂食。</div>';
+        resultHtml += '<div class="advice-item info">🏥 明天一早预约常去的宠物医院即可，无需连夜急诊。</div>';
+        resultHtml += '<div class="cost-est"><span>💰 预估费用</span><span><b>¥200-800</b></span></div>';
+        resultHtml += '</div>';
+      } else {
+        resultHtml += '<div class="urgency-banner safe">✅ 大概率无需就医——先在家观察</div>';
+        resultHtml += '<div class="card"><h3>📋 判断依据</h3>';
+        resultHtml += '<div class="advice-item do">✅ <b>现在可做的</b>：</div>';
+        resultHtml += '<div class="advice-item do" style="margin-top:0">• 禁食 4-6 小时让肠胃休息（不禁水）</div>';
+        resultHtml += '<div class="advice-item do">• 少量多次喂水，防止脱水</div>';
+        resultHtml += '<div class="advice-item do">• 记录症状变化（频率、性状、时间）</div>';
+        resultHtml += '<div class="advice-item dont">❌ <b>什么情况需要升级</b>：</div>';
+        resultHtml += '<div class="advice-item dont" style="margin-top:0">• 24 小时后无任何好转</div>';
+        resultHtml += '<div class="advice-item dont">• 出现新症状（血便、呼吸困难等）</div>';
+        resultHtml += '<div class="advice-item dont">• 精神越来越差、不喝水超过 12 小时</div>';
+        resultHtml += '<div class="cost-est"><span>💰 预估费用</span><span><b>¥0（在家观察）</b></span></div>';
+        resultHtml += '</div>';
+      }
+
+      // Common tips for all levels
+      resultHtml += '<div class="card"><h3>📖 同类症状 · 常见病因参考</h3>';
+      resultHtml += '<div class="advice-item info">以下信息来自兽医知识库，但请注意：不同病因的症状可能相似，请以医生诊断为准。</div>';
+      var tips = getCommonCauses(petType, selectedSymptoms);
+      for (var k = 0; k < tips.length; k++) {
+        resultHtml += '<div class="advice-item info">' + tips[k] + '</div>';
+      }
+      resultHtml += '</div>';
+
+      document.getElementById('inputCard').style.display = 'none';
+      var resultEl = document.getElementById('resultCard');
+      resultEl.innerHTML = resultHtml;
+      resultEl.style.display = 'block';
+
+      resultEl.innerHTML += '<button class="btn" style="margin-top:12px" onclick="resetForm()">🔄 重新判断</button>';
+
+      resultEl.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function getCommonCauses(petType, symptomIds) {
+      var causes = [];
+      if (symptomIds.indexOf('vomit') > -1) {
+        if (petType === 'dog') causes.push('🐶 呕吐常见原因：吃得太快、食物不耐受、吞入异物、胰腺炎。偶尔吐一次且精神正常可先观察。');
+        else causes.push('🐱 呕吐常见原因：毛球、吃得太快、食物过敏、肠胃炎。猫频繁呕吐需警惕脂肪肝。');
+      }
+      if (symptomIds.indexOf('diarrhea') > -1) {
+        causes.push('💩 拉稀常见原因：饮食更换太快、寄生虫、细菌感染、应激反应。观察便便颜色和性状非常重要。');
+      }
+      if (symptomIds.indexOf('notEat') > -1) {
+        if (petType === 'dog') causes.push('🍽 拒食常见原因：口腔疼痛、肠胃不适、换粮不适应。但超过 24 小时不进食务必就医。');
+        else causes.push('🍽 猫超过 24 小时不进食有脂肪肝风险——这是猫特有的严重问题，务必尽快就医。');
+      }
+      if (symptomIds.indexOf('noPee') > -1) {
+        causes.push('🚫 猫尿不出来是急症！常见于公猫下泌尿道梗阻，24 小时内可致死。必须立即就医。');
+      }
+      if (symptomIds.indexOf('bloat') > -1) {
+        causes.push('🎈 腹部鼓胀对大型犬是严重急症——可能是胃扭转（GDV），死亡率极高，必须立即就医。');
+      }
+      if (symptomIds.indexOf('seizure') > -1) {
+        causes.push('⚡ 抽搐可能原因：癫痫、低血糖、中毒、脑部疾病。首次发作务必全面检查。');
+      }
+      if (causes.length === 0) {
+        causes.push('📖 建议记录症状的持续时间和变化，就医时提供给兽医参考。');
+      }
+      return causes;
+    }
+
+    function resetForm() {
+      document.getElementById('inputCard').style.display = 'block';
+      document.getElementById('resultCard').style.display = 'none';
+      selectedSymptoms = [];
+      updateSymptoms();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // init
+    updateSymptoms();
+  </script>
+</body>
+</html>
