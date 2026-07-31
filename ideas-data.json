@@ -6,7 +6,8 @@
       "title": "毛孩急诊判断",
       "tagline": "半夜猫狗吐了拉稀了——AI 帮你判断要不要连夜去医院，还是等到明早",
       "status": "live",
-      "category": "宠物经济"
+      "category": "宠物经济",
+      "demoUrl": "demo-pet-symptom/"
     },
     {
       "id": "interview-sim",
@@ -14,7 +15,8 @@
       "title": "求职面试模拟器",
       "tagline": "AI 面试官逐题追问——不是背答案，是让你在面试前把坑都踩一遍",
       "status": "live",
-      "category": "职业发展"
+      "category": "职业发展",
+      "demoUrl": "demo-interview-sim/"
     },
     {
       "id": "noise-mediator",
@@ -22,7 +24,8 @@
       "title": "邻里噪音调解员",
       "tagline": "楼上的孩子又在跑？AI 帮你生成得体沟通文案——不伤和气解决问题",
       "status": "live",
-      "category": "本地生活"
+      "category": "本地生活",
+      "demoUrl": "demo-noise-mediator/"
     },
     {
       "id": "tax-helper",
@@ -30,7 +33,8 @@
       "title": "个人税务助手",
       "tagline": "年终奖单独计税还是合并？30秒告诉你省多少钱——每年一次别选错",
       "status": "live",
-      "category": "个人效率"
+      "category": "个人效率",
+      "demoUrl": "demo-tax-helper/"
     },
     {
       "id": "contract-guard",
@@ -38,7 +42,8 @@
       "title": "劳动合同审查官",
       "tagline": "拍照上传合同，AI 逐条扫描隐藏的坑——不让你在签字前吃亏",
       "status": "live",
-      "category": "职业发展"
+      "category": "职业发展",
+      "demoUrl": "demo-contract-guard/"
     },
     {
       "id": "social-ledger",
@@ -46,7 +51,8 @@
       "title": "人情往来账本",
       "tagline": "记下每一笔人情，知道谁该还、该还多少——不再靠脑子记",
       "status": "live",
-      "category": "社交工具"
+      "category": "社交工具",
+      "demoUrl": "demo-social-ledger/"
     },
     {
       "id": "clinic-companion",
@@ -54,7 +60,8 @@
       "title": "陪诊助手",
       "tagline": "帮爸妈看病不抓瞎 —— 就诊准备清单 + 帮父母列好该问医生的 5 个问题 + 诊后记录模板",
       "status": "live",
-      "category": "家庭关怀"
+      "category": "家庭关怀",
+      "demoUrl": "demo-clinic-companion/"
     },
     {
       "id": "date-icebreaker",
@@ -62,7 +69,8 @@
       "title": "相亲破冰卡",
       "tagline": "告别相亲第一面的 47 秒冷场 —— 4 种场景 × 3 轮渐进话题卡片，每张附话术 + 避雷指南",
       "status": "live",
-      "category": "社交工具"
+      "category": "社交工具",
+      "demoUrl": "demo-date-icebreaker/"
     },
     {
       "id": "interview-q",
@@ -70,7 +78,8 @@
       "title": "面试反问官",
       "tagline": "面试官说「你有什么想问的？」——3 类面试官 × 12 个高价值反问，每个附解析告诉你好在哪",
       "status": "live",
-      "category": "职业发展"
+      "category": "职业发展",
+      "demoUrl": "demo-interview-q/"
     },
     {
       "id": "market-guide",
@@ -78,7 +87,8 @@
       "title": "菜场翻译官",
       "tagline": "拍照识菜 + 教你怎么挑 + 告诉你怎么做 —— 菜场的 AI 导购，年轻人逛菜场不再怂",
       "status": "live",
-      "category": "本地生活"
+      "category": "本地生活",
+      "demoUrl": "demo-market-guide/"
     },
     {
       "id": "deposit-defender",
@@ -86,7 +96,8 @@
       "title": "退租押金守卫",
       "tagline": "房东找理由扣押金？AI 匹配《民法典》条款生成专业回复话术，附投诉路径",
       "status": "live",
-      "category": "租房生活"
+      "category": "租房生活",
+      "demoUrl": "demo-deposit-defender/"
     },
     {
       "id": "vendor-map",
@@ -94,7 +105,8 @@
       "title": "摊贩地图",
       "tagline": "城市里最好吃的小吃从来不在美团上——众包地图找到每一辆三轮车",
       "status": "live",
-      "category": "本地生活"
+      "category": "本地生活",
+      "demoUrl": "demo-vendor-map/"
     },
     {
       "id": "roommate-match",
@@ -102,7 +114,8 @@
       "title": "合租室友匹配器",
       "tagline": "不只找房源，更要找对人——6 维生活习惯匹配，告别合租开盲盒",
       "status": "live",
-      "category": "租房生活"
+      "category": "租房生活",
+      "demoUrl": "demo-roommate-match/"
     },
     {
       "id": "neighbor-bank",
@@ -110,7 +123,8 @@
       "title": "邻里互助存折",
       "tagline": "帮邻居遛狗 = 赚 30 分钟时间币，再用时间币换别人帮你修电脑",
       "status": "live",
-      "category": "共享经济"
+      "category": "共享经济",
+      "demoUrl": "demo-neighbor-bank/"
     },
     {
       "id": "health-decoder",
@@ -118,7 +132,8 @@
       "title": "体检报告解码器",
       "tagline": "不再对着一堆箭头瞎猜——AI 逐项解读 + 组合分析 + 就诊建议",
       "status": "live",
-      "category": "医疗健康"
+      "category": "医疗健康",
+      "demoUrl": "demo-health-decoder/"
     },
     {
       "id": "scam-radar",
@@ -138,7 +153,7 @@
     },
     {
       "id": "side-hustle-finder",
-      "icon": "\ud83e\udded",
+      "icon": "🧭",
       "title": "副业起步器",
       "tagline": "不知道做什么副业？AI 根据你的时间、技能和性格精准匹配",
       "status": "live",
@@ -150,7 +165,8 @@
       "title": "AI 吵架教练",
       "tagline": "先模拟再上场——关键对话练习器，不再事后懊悔",
       "status": "live",
-      "category": "效率工具"
+      "category": "效率工具",
+      "demoUrl": "demo-argument-coach/"
     },
     {
       "id": "goodnight-daily",
@@ -158,7 +174,8 @@
       "title": "晚安宝贝",
       "tagline": "30秒输入今天的故事，AI 生成专属哄睡童话",
       "status": "live",
-      "category": "亲子育儿"
+      "category": "亲子育儿",
+      "demoUrl": "demo-goodnight-daily/"
     },
     {
       "id": "secondhand-spy",
@@ -166,7 +183,8 @@
       "title": "二手价探子",
       "tagline": "别凭感觉砍价——让数据告诉你该出多少钱",
       "status": "live",
-      "category": "二手交易"
+      "category": "二手交易",
+      "demoUrl": "demo-secondhand-spy/"
     },
     {
       "id": "nanny-check",
@@ -174,7 +192,8 @@
       "title": "育儿嫂背调",
       "tagline": "别让中介替你背调——孩子的安全，自己查过才放心",
       "status": "live",
-      "category": "家政服务"
+      "category": "家政服务",
+      "demoUrl": "demo-nanny-check/"
     },
     {
       "id": "house-fax",
@@ -182,7 +201,8 @@
       "title": "房子出生证明",
       "tagline": "每套二手房都有档案——不再被中介牵着走",
       "status": "live",
-      "category": "房产交易"
+      "category": "房产交易",
+      "demoUrl": "demo-house-fax/"
     },
     {
       "id": "treasure-verify",
@@ -190,7 +210,8 @@
       "title": "鉴宝参谋",
       "tagline": "你想买的古董，让行家先看——不做冤大头",
       "status": "live",
-      "category": "文玩收藏"
+      "category": "文玩收藏",
+      "demoUrl": "demo-treasure-verify/"
     },
     {
       "id": "final-home-guide",
@@ -198,7 +219,8 @@
       "title": "终宅指南",
       "tagline": "告别价格黑箱——让每一程走得安详",
       "status": "live",
-      "category": "银发经济"
+      "category": "银发经济",
+      "demoUrl": "demo-final-home-guide/"
     },
     {
       "id": "reno-guard",
@@ -206,7 +228,8 @@
       "title": "装修避坑事务所",
       "tagline": "一口价监理，不按装修金额抽佣——让你的钱花在刀刃上",
       "status": "live",
-      "category": "家装服务"
+      "category": "家装服务",
+      "demoUrl": "demo-reno-guard/"
     },
     {
       "id": "pet-price-guide",
@@ -214,7 +237,8 @@
       "title": "宠物医疗价格指南",
       "tagline": "宠物看病不花冤枉钱——同城同病，价格透明",
       "status": "live",
-      "category": "宠物经济"
+      "category": "宠物经济",
+      "demoUrl": "demo-pet-price-guide/"
     },
     {
       "id": "second-opinion",
@@ -222,7 +246,8 @@
       "title": "就医第二意见",
       "tagline": "确诊之后，手术之前——让顶尖专家帮你再看一次",
       "status": "live",
-      "category": "医疗健康"
+      "category": "医疗健康",
+      "demoUrl": "demo-second-opinion/"
     },
     {
       "id": "deadline-oracle",
@@ -230,7 +255,8 @@
       "title": "截止日预言家",
       "tagline": "AI 预测你真正会拖到什么时候",
       "status": "live",
-      "category": "个人效率"
+      "category": "个人效率",
+      "demoUrl": "demo-deadline-oracle/"
     },
     {
       "id": "subscription-assassin",
@@ -238,7 +264,8 @@
       "title": "订阅刺客",
       "tagline": "找出你忘了取消的付费订阅，堵上钱包漏洞",
       "status": "live",
-      "category": "个人效率"
+      "category": "个人效率",
+      "demoUrl": "demo-subscription-assassin/"
     },
     {
       "id": "sunk-cost-mirror",
@@ -246,7 +273,8 @@
       "title": "沉没成本照妖镜",
       "tagline": "AI 帮你算继续亏下去的真实代价",
       "status": "live",
-      "category": "自我认知"
+      "category": "自我认知",
+      "demoUrl": "demo-sunk-cost-mirror/"
     },
     {
       "id": "mouthpiece",
@@ -254,7 +282,8 @@
       "title": "AI 嘴替",
       "tagline": "不敢说的话，AI 帮你说",
       "status": "live",
-      "category": "社交效率"
+      "category": "社交效率",
+      "demoUrl": "demo-mouthpiece/"
     },
     {
       "id": "biz-translator",
@@ -262,7 +291,8 @@
       "title": "野路子翻译官",
       "tagline": "黑话↔人话双向翻译",
       "status": "live",
-      "category": "职场效率"
+      "category": "职场效率",
+      "demoUrl": "demo-biz-translator/"
     },
     {
       "id": "error-book",
@@ -270,7 +300,8 @@
       "title": "人生错题本",
       "tagline": "发现你反复犯的错",
       "status": "live",
-      "category": "自我认知"
+      "category": "自我认知",
+      "demoUrl": "demo-error-book/"
     },
     {
       "id": "anti-guide",
@@ -278,7 +309,8 @@
       "title": "反攻略",
       "tagline": "告诉你别去哪+替代方案",
       "status": "live",
-      "category": "旅行"
+      "category": "旅行",
+      "demoUrl": "demo-anti-guide/"
     },
     {
       "id": "bubble-breaker",
@@ -286,7 +318,8 @@
       "title": "认知破圈器",
       "tagline": "每天一条逆耳观点",
       "status": "live",
-      "category": "认知成长"
+      "category": "认知成长",
+      "demoUrl": "demo-bubble-breaker/"
     },
     {
       "id": "personal-board",
@@ -294,7 +327,8 @@
       "title": "个人董事会",
       "tagline": "重大决策AI陪练",
       "status": "live",
-      "category": "AI决策"
+      "category": "AI决策",
+      "demoUrl": "demo-personal-board/"
     },
     {
       "id": "knowledge-fossil",
@@ -302,7 +336,8 @@
       "title": "知识化石挖掘机",
       "tagline": "隐性知识不流失",
       "status": "live",
-      "category": "企业效率"
+      "category": "企业效率",
+      "demoUrl": "demo-knowledge-fossil/"
     },
     {
       "id": "parent-translator",
@@ -310,7 +345,8 @@
       "title": "父母说明书",
       "tagline": "代际沟通翻译器",
       "status": "live",
-      "category": "情感科技"
+      "category": "情感科技",
+      "demoUrl": "demo-parent-translator/"
     },
     {
       "id": "digital-declutter",
@@ -342,7 +378,8 @@
       "title": "会议复盘官",
       "tagline": "不只记录，更分析会议质量",
       "status": "live",
-      "category": "职场效率"
+      "category": "职场效率",
+      "demoUrl": "demo-meeting-autopsy/"
     }
   ]
 }
