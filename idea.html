@@ -365,49 +365,53 @@
 
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
-    const idea = details[id];
 
-    if (!idea) {
-      document.getElementById('content').innerHTML = `
-        <div class="hero"><div class="icon">❓</div><h1>未找到创意</h1></div>`;
-    } else {
-      const badge = idea.demoUrl
-        ? '<span class="badge badge-live">🟢 可体验</span>'
-        : '<span class="badge badge-wip">🟡 构思中</span>';
-      const sections = idea.sections.map(s => `
-        <div class="section">
-          <h2>${s.title}</h2>
-          ${s.html ? s.html : `<p>${s.text}</p>`}
-        </div>
-      `).join('');
-      const cta = idea.demoUrl
-        ? `<a href="${idea.demoUrl}">✨ 打开 Demo</a>`
-        : `<a href="mailto:zhixinglvren@163.com?subject=我对「${document.title}」感兴趣">📬 我感兴趣，聊聊</a>`;
+    // Load ideas-data.json, then render
+    fetch('ideas-data.json')
+      .then(r => r.json())
+      .then(data => {
+        const meta = (data.ideas || []).find(i => i.id === id);
+        if (!meta) {
+          document.getElementById('content').innerHTML = '<div class="hero"><div class="icon">❓</div><h1>未找到创意</h1></div>';
+          return;
+        }
+        const idea = details[id]; // rich content (may be undefined)
+        const hasDetail = idea && idea.sections;
 
-      document.title = `${details[id] ? '父母说明书|知识化石挖掘机|数字断舍离教练|信息遗嘱|逆向简历'.split('|')[Object.keys(details).indexOf(id)] : '创意'} — 知行旅人`;
+        document.title = meta.title + ' — 知行旅人';
+        const badgeCls = meta.status === 'live' ? 'badge-live' : 'badge-wip';
+        const badgeText = meta.status === 'live' ? '🟢 可体验' : '🟡 构思中';
 
-      document.getElementById('content').innerHTML = `
-        <div class="hero">
-          <div class="icon">${getIcon(id)}</div>
-          <h1>${getTitle(id)}</h1>
-          <p class="tagline">${idea.description}</p>
-          ${badge}
-        </div>
-        ${sections}
-        <div class="actions">
-          ${cta}
-          ${!idea.demoUrl ? '<span class="note">Demo 开发中，感兴趣可提前联系</span>' : ''}
-        </div>`;
-    }
+        let sectionsHtml = '';
+        let ctaHtml = '';
+        if (hasDetail) {
+          sectionsHtml = idea.sections.map(s =>
+            '<div class="section"><h2>' + s.title + '</h2>' + (s.html || '<p>' + s.text + '</p>') + '</div>'
+          ).join('');
+          ctaHtml = idea.demoUrl
+            ? '<a href="' + idea.demoUrl + '">✨ 打开 Demo</a>'
+            : '<a href="mailto:zhixinglvren@163.com?subject=我对「' + meta.title + '」感兴趣">📬 我感兴趣，聊聊</a>';
+        } else {
+          sectionsHtml = '<div class="section"><h2>💡 创意简介</h2><p>' + meta.tagline + '</p></div>'
+            + '<div class="section"><h2>📂 分类</h2><p>' + meta.category + '</p></div>';
+          ctaHtml = meta.demoUrl
+            ? '<a href="' + meta.demoUrl + '">✨ 打开 Demo</a>'
+            : '<a href="mailto:zhixinglvren@163.com?subject=我对「' + meta.title + '」感兴趣">📬 我感兴趣，聊聊</a>';
+        }
 
-    function getIcon(id) {
-      const m = {'pet-symptom':'🐾','interview-sim':'🎤','noise-mediator':'🔇','tax-helper':'📊','contract-guard':'📄','social-ledger':'📒','goodnight-daily':'🌙','nanny-check':'👶','house-fax':'🏠','reno-guard':'🏗️','final-home-guide':'🪦','treasure-verify':'🏺','pet-price-guide':'🐾','second-opinion':'🩺','deadline-oracle':'🔮','subscription-assassin':'🗡️','sunk-cost-mirror':'🪞','meeting-autopsy':'🔍','parent-translator':'👨‍👩‍👧','knowledge-fossil':'🦴','digital-declutter':'📦','info-will':'📜','reverse-resume':'🔄','personal-board':'🏛️','bubble-breaker':'🫧','anti-guide':'🗺️','error-book':'📝','biz-translator':'🗣️','mouthpiece':'🤐'};
-      return m[id] || '💡';
-    }
-    function getTitle(id) {
-      const m = {'pet-symptom':'毛孩急诊判断','interview-sim':'求职面试模拟器','noise-mediator':'邻里噪音调解员','tax-helper':'个人税务助手','contract-guard':'劳动合同审查官','social-ledger':'人情往来账本','goodnight-daily':'晚安宝贝','nanny-check':'育儿嫂背调','house-fax':'房子出生证明','reno-guard':'装修避坑事务所','final-home-guide':'终宅指南','treasure-verify':'鉴宝参谋','pet-price-guide':'宠物医疗价格指南','second-opinion':'就医第二意见','deadline-oracle':'截止日预言家','subscription-assassin':'订阅刺客','sunk-cost-mirror':'沉没成本照妖镜','meeting-autopsy':'会议复盘官','parent-translator':'父母说明书','knowledge-fossil':'知识化石挖掘机','digital-declutter':'数字断舍离教练','info-will':'信息遗嘱','reverse-resume':'逆向简历','personal-board':'个人董事会','bubble-breaker':'认知破圈器','anti-guide':'反攻略','error-book':'人生错题本','biz-translator':'野路子翻译官','mouthpiece':'AI 嘴替'};
-      return m[id] || id;
-    }
+        document.getElementById('content').innerHTML =
+          '<div class="hero">'
+          + '<div class="icon">' + meta.icon + '</div>'
+          + '<h1>' + meta.title + '</h1>'
+          + '<p class="tagline">' + (hasDetail ? idea.description : meta.tagline) + '</p>'
+          + '<span class="badge ' + badgeCls + '">' + badgeText + '</span>'
+          + '</div>'
+          + sectionsHtml
+          + '<div class="actions">' + ctaHtml + '</div>';
+      })
+      .catch(() => {
+        document.getElementById('content').innerHTML = '<div class="hero"><div class="icon">❓</div><h1>未找到创意</h1></div>';
+      });
 
     // 主题
     const html = document.documentElement;
