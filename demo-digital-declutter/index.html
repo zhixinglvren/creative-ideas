@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>数字断舍离教练 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f7fa;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#00897b,#00695c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85}
+.score-card{background:#fff;border-radius:14px;padding:18px;margin-bottom:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.score-ring{width:80px;height:80px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;background:conic-gradient(#4caf50 0deg 240deg,#ff9800 240deg 300deg,#f44336 300deg 360deg)}
+.score-ring-inner{width:66px;height:66px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.score-label{font-size:12px;color:#888}
+.category-row{display:flex;align-items:center;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.03);gap:10px;cursor:pointer}
+.category-row .c-icon{font-size:24px;width:36px;text-align:center}
+.category-row .c-info{flex:1}
+.category-row .c-name{font-size:14px;font-weight:600}
+.category-row .c-bar-bg{height:6px;background:#e0e0e0;border-radius:3px;margin-top:4px;overflow:hidden}
+.category-row .c-bar{height:100%;border-radius:3px;transition:width .5s}
+.category-row .c-size{font-size:11px;color:#888;text-align:right}
+.clean-btn{padding:6px 14px;border-radius:8px;border:1px solid #00897b;background:#fff;color:#00897b;font-size:12px;cursor:pointer;font-weight:600}
+.clean-btn:active{background:#e0f2f1}
+.coach-msg{background:#e0f2f1;border-radius:12px;padding:14px;margin:12px 0;font-size:13px;line-height:1.8;color:#00695c}
+.coach-msg .coach-icon{font-size:20px;margin-right:4px}
+.progress-bar{height:6px;background:#e0e0e0;border-radius:3px;margin:12px 0;overflow:hidden}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,#4caf50,#00897b);border-radius:3px;transition:width .4s}
+.stat-row{display:flex;gap:8px;margin-top:12px}
+.stat{flex:1;background:#fff;border-radius:8px;padding:10px;text-align:center;font-size:11px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.stat .s-num{font-size:20px;font-weight:800}
+.stat .s-label{color:#888;margin-top:2px}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#4caf50;color:#fff;padding:10px 24px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:10}
+.toast.show{opacity:1}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>📦 数字断舍离教练</h1><div class="sub">AI 教练引导清理 · 重获清爽数字生活</div></div>
+
+<div class="score-card">
+<div class="score-ring"><div class="score-ring-inner" style="color:#4caf50" id="scoreNum">67</div></div>
+<div class="score-label">数字整洁度评分 · 目标 90+</div>
+<div class="progress-bar" style="margin-top:10px"><div class="fill" id="progressFill" style="width:67%"></div></div>
+</div>
+
+<div class="stat-row">
+<div class="stat"><div class="s-num c-orange" style="color:#ff9800" id="statFiles">12,847</div><div class="s-label">📄 待清理文件</div></div>
+<div class="stat"><div class="s-num" style="color:#00897b" id="statSaved">32.5</div><div class="s-label">💾 可释放 GB</div></div>
+<div class="stat"><div class="s-num" style="color:#6a1b9a" id="statApps">23</div><div class="s-label">📱 未使用 App</div></div>
+</div>
+
+<div class="coach-msg"><span class="coach-icon">🧘</span><b>教练说：</b>先从一个类别开始，别贪多。每清理一个类别，给自己一个小奖励。今天的目标是：<b>清理 2 个类别</b>。</div>
+
+<div id="categories"></div>
+
+<div class="toast" id="toast"></div>
+<div class="footer">数字断舍离教练 · Demo · 模拟数据</div>
+</div>
+
+<script>
+var cats=[
+{icon:'📸',name:'照片与截图',size:'4,321 张',gb:12.4,bar:45,msg:'重复截图占比 60%！建议用重复照片检测工具先清理。',action:'清理截图'},
+{icon:'📥',name:'下载文件夹',size:'2,156 个',gb:8.2,bar:30,msg:'安装包、PDF、压缩包——大部分用过一次就没再打开。按「超过1年未打开」批量删除。',action:'按时间删除'},
+{icon:'💬',name:'聊天记录',size:'87 个群',gb:3.1,bar:55,msg:'退掉半年没说话的群、清理带大文件的聊天记录。',action:'退群+清理'},
+{icon:'📱',name:'手机 App',size:'23 个未用',gb:5.8,bar:50,msg:'超过 3 个月没打开的 App，果断卸载。需要时再装也不迟。',action:'卸载未用'},
+{icon:'📧',name:'邮件收件箱',size:'8,342 封',gb:1.2,bar:35,msg:'搜索「unsubscribe」批量退订，设置自动归档规则——超过90天的邮件自动归档。',action:'退订+归档'},
+{icon:'📂',name:'桌面文件',size:'189 个',gb:1.8,bar:25,msg:'桌面不是储物间！分类移入文档/图片/项目文件夹，只留 5 个以内快捷方式。',action:'分类移走'}
+];
+var totalScore=67;
+var initScore=67;
+
+(function render(){
+var h='';
+for(var i=0;i<cats.length;i++){
+var c=cats[i];
+h+='<div class="category-row">';
+h+='<div class="c-icon">'+c.icon+'</div>';
+h+='<div class="c-info"><div class="c-name">'+c.name+'</div>';
+h+='<div class="c-bar-bg"><div class="c-bar" style="width:'+c.bar+'%;background:'+(c.bar<40?'#f44336':c.bar<60?'#ff9800':'#4caf50')+'"></div></div>';
+h+='</div><div class="c-size">'+c.size+'<br>'+c.gb+' GB</div>';
+h+='<button class="clean-btn" onclick="clean('+i+')">'+c.action+'</button></div>';
+}
+document.getElementById('categories').innerHTML=h;
+})();
+
+function clean(idx){
+var c=cats[idx];
+if(c.done)return;
+c.done=true;
+totalScore=Math.min(100,totalScore+Math.floor(Math.random()*6+5));
+document.getElementById('scoreNum').textContent=totalScore;
+document.getElementById('scoreNum').style.color=totalScore>=80?'#4caf50':totalScore>=60?'#ff9800':'#f44336';
+document.getElementById('progressFill').style.width=totalScore+'%';
+
+var saved=parseFloat(document.getElementById('statSaved').textContent);
+saved=Math.max(0,(saved-c.gb*0.7+Math.random()*0.5).toFixed(1));
+document.getElementById('statSaved').textContent=saved;
+
+var files=parseInt(document.getElementById('statFiles').textContent.replace(/,/g,''));
+files=files-c.size.replace(/,/g,'')*0.7;
+document.getElementById('statFiles').textContent=Math.max(0,Math.floor(files)).toLocaleString();
+
+var apps=parseInt(document.getElementById('statApps').textContent);
+if(idx===3)apps=Math.max(0,apps-8);
+document.getElementById('statApps').textContent=apps;
+
+var rows=document.querySelectorAll('.category-row');
+rows[idx].style.opacity='0.4';
+rows[idx].querySelector('.clean-btn').textContent='✅ 已清理';
+rows[idx].querySelector('.clean-btn').style.borderColor='#4caf50';
+rows[idx].querySelector('.clean-btn').style.color='#4caf50';
+rows[idx].querySelector('.c-bar').style.width='95%';
+rows[idx].querySelector('.c-bar').style.background='#4caf50';
+
+var t=document.getElementById('toast');
+t.textContent='🧹 '+c.name+' 已清理！整洁度 +'+(totalScore-initScore);
+t.classList.add('show');
+initScore=totalScore;
+setTimeout(function(){t.classList.remove('show');},2000);
+}
+</script>
+</body>
+</html>

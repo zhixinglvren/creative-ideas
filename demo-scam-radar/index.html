@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>防骗雷达 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf5f0;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:20px 0;background:linear-gradient(135deg,#d32f2f,#c62828);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85}
+.alert-card{background:#fff3e0;border-left:4px solid #e65100;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(230,81,0,.2)}50%{box-shadow:0 0 0 8px rgba(230,81,0,0)}}
+.alert-card .type{font-weight:700;color:#e65100;margin-bottom:4px}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.scam-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f0ea}
+.scam-row:last-child{border-bottom:none}
+.scam-row .s-icon{font-size:28px;width:40px;text-align:center}
+.scam-row .s-info{flex:1;font-size:13px}
+.scam-row .s-name{font-weight:600}
+.scam-row .s-desc{color:#888;font-size:11px;margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-hot{background:#ffebee;color:#c62828}
+.badge-new{background:#e8f5e9;color:#2e7d32}
+.sim-box{background:#1a1a1a;border-radius:14px;padding:16px;color:#fff;margin:12px 0}
+.sim-msg{background:#2a2a2a;padding:12px;border-radius:10px;font-size:13px;margin-bottom:10px;line-height:1.6}
+.sim-msg .sender{color:#4fc3f7;font-size:11px;margin-bottom:4px}
+.sim-msg .highlight{background:rgba(255,0,0,.2);padding:1px 4px;border-radius:3px}
+.verdict{background:#c62828;color:#fff;padding:10px 14px;border-radius:10px;font-size:12px;line-height:1.6;margin-top:8px}
+.verdict .v-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.verdict .v-reason{opacity:.9}
+.input-area{display:flex;gap:8px;margin-top:12px}
+.input-area input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #444;background:#2a2a2a;color:#fff;font-size:13px;outline:none}
+.input-area button{padding:10px 16px;border-radius:10px;border:none;background:#d32f2f;color:#fff;font-weight:600;font-size:13px;cursor:pointer}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🛡️ 防骗雷达</h1><div class="sub">AI 实时诈骗检测 · 守护家人钱袋子</div></div>
+
+<div class="alert-card">
+<div class="type">⚠️ 近期高发骗局</div>
+<div>冒充公检法诈骗激增，骗子用 AI 合成声音冒充"警官"，已有老年人被骗数十万。</div>
+</div>
+
+<div class="card"><h3>🔥 最新骗局手法</h3><div id="scamList"></div></div>
+
+<div class="card"><h3>🧪 模拟检测</h3>
+<div class="sim-box">
+<div class="sim-msg"><div class="sender">未知号码 138****5678</div>您好，我是公安局的王警官，警号 008652。您的身份证在武汉被他人冒用，涉嫌洗钱案，案号<strong>武公刑字[2024]第 0816 号</strong>。请立即将名下所有存款转到安全账户 6222 **** **** 1234 配合调查，否则 2 小时内将<span class="highlight">冻结所有银行卡并拘留</span>。请不要挂断电话，也不要告诉任何人。</div>
+<div class="verdict"><div class="v-title">🔴 诈骗！置信度 98%</div><div class="v-reason">🚩 公检法不会电话办案<br>🚩 要求转账到"安全账户"<br>🚩 制造紧迫感（2小时/拘留）<br>🚩 要求保密、不挂断电话</div></div>
+</div>
+<div class="input-area">
+<input id="msgInput" placeholder="粘贴可疑短信试试...">
+<button onclick="checkMsg()">🔍 检测</button>
+</div>
+</div>
+
+<div class="footer">防骗雷达 · Demo · AI 模型仅供演示</div>
+</div>
+
+<script>
+var scams=[
+{icon:'👮',name:'冒充公检法',desc:'声称你涉嫌犯罪，要求转账到"安全账户"',badge:'hot'},
+{icon:'📱',name:'AI 声音合成',desc:'用 AI 模仿家人声音求救/要钱',badge:'hot'},
+{icon:'🎁',name:'中奖诈骗',desc:'"恭喜中奖"但需先交税/保证金',badge:'new'},
+{icon:'👴',name:'保健品骗局',desc:'免费体检→恐吓病情→推销天价保健品',badge:'hot'},
+{icon:'💕',name:'杀猪盘',desc:'网恋诱导投资/赌博，先给甜头后收割',badge:'hot'},
+{icon:'🏦',name:'冒充客服',desc:'谎称快递丢失/误开会员，诱导转账',badge:'new'}
+];
+(function(){
+var h='';
+for(var i=0;i<scams.length;i++){
+var s=scams[i];
+h+='<div class="scam-row"><div class="s-icon">'+s.icon+'</div>';
+h+='<div class="s-info"><div class="s-name">'+s.name+' <span class="badge badge-'+s.badge+'">'+(s.badge==='hot'?'高发':'新型')+'</span></div>';
+h+='<div class="s-desc">'+s.desc+'</div></div></div>';
+}
+document.getElementById('scamList').innerHTML=h;
+})();
+function checkMsg(){
+var t=document.getElementById('msgInput').value.trim();
+if(!t){alert('请输入要检测的消息');return;}
+var flags=[];
+if(t.indexOf('安全账户')!==-1||t.indexOf('转账')!==-1)flags.push('要求转账到指定账户');
+if(t.indexOf('公安')!==-1||t.indexOf('法院')!==-1||t.indexOf('检察院')!==-1)flags.push('冒充公检法机关');
+if(t.indexOf('不要告诉')!==-1||t.indexOf('保密')!==-1||t.indexOf('别挂')!==-1)flags.push('要求保密/不挂断');
+if(t.indexOf('冻结')!==-1||t.indexOf('拘留')!==-1||t.indexOf('逮捕')!==-1)flags.push('制造恐慌威胁');
+if(t.indexOf('中奖')!==-1&&t.indexOf('税')!==-1)flags.push('假中奖+缴税套路');
+if(t.indexOf('点击')!==-1&&t.indexOf('http')!==-1)flags.push('可疑链接');
+var isScam=flags.length>0;
+var v='<div class="verdict" style="background:'+(isScam?'#c62828':'#2e7d32')+'">';
+v+='<div class="v-title">'+(isScam?'🔴 疑似诈骗！置信度 '+Math.min(95,flags.length*20+30)+'%':'🟢 暂未发现明显诈骗特征')+'</div>';
+if(isScam)v+='<div class="v-reason">'+flags.map(function(f){return '🚩 '+f}).join('<br>')+'</div>';
+v+='</div>';
+var box=document.querySelector('.sim-box');
+var old=box.querySelector('.verdict');
+if(old)old.remove();
+box.insertAdjacentHTML('beforeend',v);
+}
+</script>
+</body>
+</html>

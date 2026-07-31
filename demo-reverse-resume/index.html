@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>逆向简历 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafafa;color:#333;min-height:100vh}
+.app{max-width:600px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+textarea{width:100%;height:160px;padding:12px;border:1px solid #e0e0e0;border-radius:10px;font-size:13px;line-height:1.6;resize:vertical;outline:none;font-family:inherit}
+textarea:focus{border-color:#6a1b9a}
+.label{font-size:12px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#fff;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+.result{display:none}
+.result.show{display:block;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.section{margin-bottom:14px}
+.section h4{font-size:13px;color:#6a1b9a;margin-bottom:8px;border-bottom:2px solid #f3e5f5;padding-bottom:4px}
+.skill-tags{display:flex;gap:6px;flex-wrap:wrap}
+.skill-tag{padding:4px 12px;border-radius:14px;font-size:11px;font-weight:600}
+.tag-extracted{background:#e8eaf6;color:#283593}
+.tag-matched{background:#e8f5e9;color:#2e7d32}
+.highlight{background:#fff9c4;padding:1px 3px;border-radius:2px}
+.bullet{font-size:13px;line-height:1.8;color:#555}
+.diff-box{padding:10px;border-radius:8px;font-size:12px;margin-top:8px;line-height:1.6}
+.diff-missing{background:#ffebee;color:#c62828}
+.diff-have{background:#e8f5e9;color:#2e7d32}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🔄 逆向简历</h1><div class="sub">粘贴 JD → AI 反向生成匹配简历 + 能力差距分析</div></div>
+
+<div class="card"><h3>📋 粘贴目标职位 JD</h3>
+<div class="label">📎 粘贴完整职位描述，AI 将提取关键要求并匹配你的能力</div>
+<textarea id="jdInput" placeholder="职位：高级 Java 开发工程师
+
+岗位职责：
+1. 负责核心交易系统的架构设计与开发
+2. 参与微服务治理，推动系统性能优化
+3. 编写高质量代码，进行 Code Review
+
+任职要求：
+1. 5年以上 Java 开发经验，熟悉 Spring Cloud 微服务架构
+2. 精通 MySQL 性能调优，有分库分表经验
+3. 熟悉 Redis、Kafka 等中间件
+4. 有金融行业经验优先
+5. 良好的沟通和团队协作能力
+
+加分项：
+- 有高并发系统设计经验
+- 开源项目贡献者
+- 熟悉 Docker/K8s"></textarea>
+</div>
+
+<div class="card"><h3>👤 你的现有技能（可编辑）</h3>
+<textarea id="skillInput">Java 开发 4年
+Spring Boot / Spring Cloud
+MySQL、Redis
+日常 SQL 调优
+Git、Jenkins
+做过 2 个微服务项目
+带过 1 个初级开发</textarea>
+</div>
+
+<button class="btn" onclick="analyze()">🔄 生成逆向简历</button>
+
+<div class="result" id="result"><div id="resultContent"></div></div>
+<div class="footer">逆向简历 · Demo · 结果由规则引擎生成</div>
+</div>
+
+<script>
+function analyze(){
+var jd=document.getElementById('jdInput').value.trim();
+var skills=document.getElementById('skillInput').value.trim();
+if(!jd||!skills){alert('请填写 JD 和技能');return;}
+
+var jdLower=jd;
+var hasSpringCloud=jdLower.indexOf('spring cloud')!==-1||jdLower.indexOf('微服务')!==-1;
+var hasMySQL=jdLower.indexOf('mysql')!==-1||jdLower.indexOf('sql')!==-1;
+var hasRedis=jdLower.indexOf('redis')!==-1;
+var hasKafka=jdLower.indexOf('kafka')!==-1;
+var hasFinance=jdLower.indexOf('金融')!==-1;
+var hasHighConcur=jdLower.indexOf('高并发')!==-1;
+var hasK8s=jdLower.indexOf('k8s')!==-1||jdLower.indexOf('docker')!==-1;
+var hasFiveYear=jdLower.indexOf('5年')!==-1||jdLower.indexOf('五年')!==-1;
+var hasCodeReview=jdLower.indexOf('code review')!==-1||jdLower.indexOf('代码审查')!==-1||jdLower.indexOf('代码评审')!==-1;
+
+var skillLower=skills;
+var haveSpringCloud=skillLower.indexOf('spring cloud')!==-1||skillLower.indexOf('微服务')!==-1;
+var haveMySQL=skillLower.indexOf('mysql')!==-1||skillLower.indexOf('sql')!==-1;
+var haveRedis=skillLower.indexOf('redis')!==-1;
+var haveKafka=skillLower.indexOf('kafka')!==-1;
+var haveFinance=skillLower.indexOf('金融')!==-1;
+var haveHighConcur=skillLower.indexOf('高并发')!==-1;
+var haveK8s=skillLower.indexOf('docker')!==-1||skillLower.indexOf('k8s')!==-1;
+var haveFiveYear=skillLower.indexOf('4年')!==-1;
+var haveLead=skillLower.indexOf('带过')!==-1||skillLower.indexOf('带领')!==-1;
+
+var extracted=[],matched=[],missing=[];
+if(hasSpringCloud)extracted.push('Spring Cloud 微服务');
+if(hasMySQL)extracted.push('MySQL 性能调优');
+if(hasRedis)extracted.push('Redis');
+if(hasKafka)extracted.push('Kafka');
+if(hasHighConcur)extracted.push('高并发设计');
+if(hasK8s)extracted.push('Docker/K8s');
+if(hasFinance)extracted.push('金融行业经验');
+if(hasFiveYear)extracted.push('5年+经验');
+
+if(haveSpringCloud)matched.push('Spring Cloud 微服务');
+else if(hasSpringCloud)missing.push('Spring Cloud — 你有基础但需补充分布式事务、服务治理经验');
+if(haveMySQL)matched.push('MySQL');
+else if(hasMySQL)missing.push('MySQL 调优 — 补充 Explain 分析、索引优化、分库分表实战');
+if(haveRedis)matched.push('Redis');
+else if(hasRedis)missing.push('Redis — 补充缓存穿透/雪崩解决方案、集群模式');
+if(haveKafka)matched.push('Kafka');
+else if(hasKafka)missing.push('Kafka — 补充消息可靠性、幂等消费、分区策略');
+if(haveFinance)matched.push('金融行业经验');
+else if(hasFinance)missing.push('金融行业背景 — 可在面试中强调你对金融业务的学习意愿');
+if(!haveFiveYear&&hasFiveYear)missing.push('5年经验要求 — 你目前4年，差距较小，可用项目深度弥补');
+if(haveK8s)matched.push('Docker/K8s');
+else if(hasK8s)missing.push('Docker/K8s — 建议 2 周快速入门，掌握基本部署和排错');
+
+// Build result
+var h='<div class="card"><h3>📄 智能匹配简历</h3>';
+h+='<div class="section"><h4>📌 JD 提取技能</h4><div class="skill-tags">';
+for(var i=0;i<extracted.length;i++){
+h+='<span class="skill-tag tag-extracted">'+extracted[i]+'</span>';
+}
+h+='</div></div>';
+
+h+='<div class="section"><h4>✅ 你已匹配的技能</h4><div class="skill-tags">';
+for(var i=0;i<matched.length;i++){
+h+='<span class="skill-tag tag-matched">'+matched[i]+'</span>';
+}
+if(matched.length===0)h+='<span class="bullet">无直接匹配项</span>';
+h+='</div></div>';
+
+h+='<div class="section"><h4>🎯 推荐简历要点</h4>';
+h+='<div class="bullet">• 突出 <strong>Spring Cloud 微服务项目</strong>经验，量化系统 QPS 和可用性指标</div>';
+if(haveMySQL)h+='<div class="bullet">• 强调 <strong>SQL 调优</strong>能力，列举具体优化案例（慢查询数×→时间↓×%）</div>';
+if(haveLead)h+='<div class="bullet">• 体现 <strong>团队带领</strong>经验，写清楚指导人数和产出提升</div>';
+h+='<div class="bullet">• 用 <strong>STAR 法则</strong>重写项目经历：情境→任务→行动→结果</div>';
+h+='</div></div>';
+
+if(missing.length>0){
+h+='<div class="card"><h3>⚠️ 能力差距分析</h3>';
+for(var i=0;i<missing.length;i++){
+h+='<div class="diff-box diff-missing">❌ '+missing[i]+'</div>';
+}
+h+='</div>';
+}
+
+var score=matched.length*20+10;
+h+='<div class="card" style="text-align:center"><h3>📊 匹配度评估</h3>';
+h+='<div style="font-size:40px;font-weight:800;color:#6a1b9a">'+Math.min(score,95)+'%</div>';
+h+='<div style="font-size:13px;color:#888;margin-top:4px">匹配 '+matched.length+'/'+extracted.length+' 项核心技能</div>';
+h+='</div>';
+
+document.getElementById('resultContent').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

@@ -141,7 +141,8 @@
       "title": "防骗雷达",
       "tagline": "爸妈收到可疑消息？截图发过来，AI 秒识骗局",
       "status": "live",
-      "category": "银发经济"
+      "category": "银发经济",
+      "demoUrl": "demo-scam-radar/"
     },
     {
       "id": "course-cleaner",
@@ -149,7 +150,8 @@
       "title": "囤课清道夫",
       "tagline": "你买过的课，AI 帮你盘一盘——哪些值得学，按什么顺序学",
       "status": "live",
-      "category": "个人效率"
+      "category": "个人效率",
+      "demoUrl": "demo-course-cleaner/"
     },
     {
       "id": "side-hustle-finder",
@@ -157,7 +159,8 @@
       "title": "副业起步器",
       "tagline": "不知道做什么副业？AI 根据你的时间、技能和性格精准匹配",
       "status": "live",
-      "category": "职业发展"
+      "category": "职业发展",
+      "demoUrl": "demo-side-hustle-finder/"
     },
     {
       "id": "argument-coach",
@@ -353,24 +356,27 @@
       "icon": "📦",
       "title": "数字断舍离教练",
       "tagline": "AI 帮你删文件",
-      "status": "wip",
-      "category": "个人效率"
+      "status": "live",
+      "category": "个人效率",
+      "demoUrl": "demo-digital-declutter/"
     },
     {
       "id": "info-will",
       "icon": "📜",
       "title": "信息遗嘱",
       "tagline": "数字身后事整理师",
-      "status": "wip",
-      "category": "数字遗产"
+      "status": "live",
+      "category": "数字遗产",
+      "demoUrl": "demo-info-will/"
     },
     {
       "id": "reverse-resume",
       "icon": "🔄",
       "title": "逆向简历",
       "tagline": "AI 反推真实能力",
-      "status": "wip",
-      "category": "职业发展"
+      "status": "live",
+      "category": "职业发展",
+      "demoUrl": "demo-reverse-resume/"
     },
     {
       "id": "meeting-autopsy",

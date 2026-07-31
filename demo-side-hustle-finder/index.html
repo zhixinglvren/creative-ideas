@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>副业起步器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4ff;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85}
+.quiz-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.quiz-card h3{font-size:15px;margin-bottom:14px}
+.quiz-card .q-num{font-size:11px;color:#1565c0;font-weight:700;margin-bottom:6px}
+.option{display:block;width:100%;padding:12px 14px;margin-bottom:8px;border:2px solid #e8eaf6;border-radius:10px;background:#fff;font-size:13px;text-align:left;cursor:pointer;transition:all .2s}
+.option:hover{border-color:#90caf9}
+.option.sel{border-color:#1565c0;background:#e3f2fd}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+.results{display:none}
+.results.show{display:block;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.match-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);position:relative}
+.match-card .rank{position:absolute;top:12px;right:14px;font-size:24px}
+.match-card .m-icon{font-size:36px;margin-bottom:8px}
+.match-card .m-name{font-size:16px;font-weight:700}
+.match-card .m-match{font-size:12px;color:#666;margin-top:2px}
+.match-card .m-why{font-size:12px;color:#888;margin-top:8px;line-height:1.6}
+.match-card .m-meta{display:flex;gap:8px;margin-top:8px}
+.meta-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.tag-time{background:#e8f5e9;color:#2e7d32}
+.tag-money{background:#fff3e0;color:#e65100}
+.tag-diff{background:#fce4ec;color:#c62828}
+.retake{text-align:center;margin-top:16px}
+.retake a{color:#1565c0;font-size:13px;cursor:pointer}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🧭 副业起步器</h1><div class="sub">根据你的时间、技能和性格，精准匹配副业方向</div></div>
+
+<div id="quizArea">
+<div class="quiz-card"><div class="q-num">第 1/5 题</div><h3>你每周可用于副业的时间？</h3>
+<div id="q1"></div></div>
+<div class="quiz-card"><div class="q-num">第 2/5 题</div><h3>你最擅长的技能方向？</h3>
+<div id="q2"></div></div>
+<div class="quiz-card"><div class="q-num">第 3/5 题</div><h3>你偏好的工作方式？</h3>
+<div id="q3"></div></div>
+<div class="quiz-card"><div class="q-num">第 4/5 题</div><h3>你的性格特征？</h3>
+<div id="q4"></div></div>
+<div class="quiz-card"><div class="q-num">第 5/5 题</div><h3>副业目标收入（月）？</h3>
+<div id="q5"></div></div>
+<button class="btn" onclick="calc()">🎯 开始匹配</button>
+</div>
+
+<div class="results" id="results"><div id="resultList"></div>
+<div class="retake"><a onclick="retake()">🔄 重新测试</a></div></div>
+
+<div class="footer">副业起步器 · Demo · 匹配结果供参考</div>
+</div>
+
+<script>
+var answers={q1:null,q2:null,q3:null,q4:null,q5:null};
+var questions={
+q1:[{text:'5 小时以内',val:'low'},{text:'5-15 小时',val:'mid'},{text:'15 小时以上',val:'high'}],
+q2:[{text:'💻 编程/技术',val:'tech'},{text:'✏️ 写作/内容',val:'write'},{text:'🎨 设计/创意',val:'design'},{text:'🗣️ 沟通/销售',val:'talk'},{text:'📊 数据分析',val:'data'}],
+q3:[{text:'独立完成，不被打扰',val:'solo'},{text:'与人交流协作',val:'team'},{text:'线上线下结合',val:'hybrid'}],
+q4:[{text:'喜欢从0到1创造',val:'create'},{text:'喜欢优化已有事物',val:'optimize'},{text:'喜欢分享和教学',val:'teach'},{text:'喜欢分析研究',val:'analyze'}],
+q5:[{text:'1k-3k，起步就行',val:'low'},{text:'3k-8k，补贴生活',val:'mid'},{text:'8k+，认真搞钱',val:'high'}]
+};
+for(var q in questions){
+renderQ(q,questions[q]);
+}
+function renderQ(id,opts){
+var h='';
+for(var i=0;i<opts.length;i++){
+h+='<div class="option" data-q="'+id+'" data-val="'+opts[i].val+'" onclick="select(this)">'+opts[i].text+'</div>';
+}
+document.getElementById(id).innerHTML=h;
+}
+function select(el){
+var q=el.getAttribute('data-q');
+var all=document.querySelectorAll('.option[data-q="'+q+'"]');
+for(var i=0;i<all.length;i++)all[i].className='option';
+el.className='option sel';
+answers[q]=el.getAttribute('data-val');
+}
+
+var sideHustles=[
+{icon:'💻',name:'技术外包/接单',match:0,why:'平台如猪八戒、Upwork 接小程序/网站开发，按项目收费。适合有编程基础和时间灵活的人。',time:'中',money:'高',diff:'中'},
+{icon:'✍️',name:'技术写作/公众号',match:0,why:'写技术博客、公众号、付费专栏。积累读者后可接广告、出课程。长尾收益高。',time:'低',money:'中',diff:'低'},
+{icon:'🎓',name:'在线课程/知识付费',match:0,why:'录制技能课程（编程/设计/写作），上传慕课网/B站/知识星球。一次制作，持续收入。',time:'中',money:'高',diff:'中'},
+{icon:'🔍',name:'SEO/独立站',match:0,why:'搭建内容站（工具/攻略/评测），通过 SEO 获取流量，靠广告联盟和 affiliate 变现。',time:'高',money:'中',diff:'高'},
+{icon:'🤝',name:'技术咨询/顾问',match:0,why:'为企业提供技术选型、架构评审、代码审查等按小时付费咨询服务。依赖行业人脉。',time:'低',money:'高',diff:'高'},
+{icon:'📱',name:'小程序/App 开发',match:0,why:'独立开发工具类小程序或 App，通过付费下载或订阅模式变现。',time:'高',money:'高',diff:'高'},
+{icon:'📝',name:'简历优化/面试辅导',match:0,why:'利用你的面试和职场经验，帮人改简历、模拟面试。按次收费，灵活自由。',time:'低',money:'中',diff:'低'},
+{icon:'🎨',name:'PPT/Keynote 定制',match:0,why:'为企业定制路演 PPT、产品演示文稿。好的设计+逻辑梳理，单页可达50-100元。',time:'中',money:'中',diff:'低'}
+];
+
+function calc(){
+var allAnswered=true;
+for(var q in answers){if(!answers[q])allAnswered=false;}
+if(!allAnswered){alert('请答完所有题目');return;}
+
+for(var i=0;i<sideHustles.length;i++)sideHustles[i].match=0;
+
+if(answers.q2==='tech'){addScore('技术外包/接单',15);addScore('技术写作/公众号',10);addScore('小程序/App 开发',12);addScore('技术咨询/顾问',8);}
+if(answers.q2==='write'){addScore('技术写作/公众号',15);addScore('在线课程/知识付费',10);addScore('简历优化/面试辅导',8);}
+if(answers.q2==='design'){addScore('PPT/Keynote 定制',15);addScore('在线课程/知识付费',8);}
+if(answers.q2==='data'){addScore('SEO/独立站',10);addScore('技术咨询/顾问',8);}
+if(answers.q2==='talk'){addScore('技术咨询/顾问',12);addScore('在线课程/知识付费',10);addScore('简历优化/面试辅导',10);}
+
+if(answers.q1==='low'){addScore('技术写作/公众号',8);addScore('简历优化/面试辅导',8);addScore('PPT/Keynote 定制',8);}
+if(answers.q1==='mid'){addScore('技术外包/接单',8);addScore('在线课程/知识付费',8);}
+if(answers.q1==='high'){addScore('小程序/App 开发',8);addScore('SEO/独立站',8);}
+
+if(answers.q3==='solo'){addScore('技术写作/公众号',6);addScore('SEO/独立站',6);addScore('小程序/App 开发',6);}
+if(answers.q3==='team'){addScore('技术咨询/顾问',6);addScore('简历优化/面试辅导',6);}
+if(answers.q3==='hybrid'){addScore('在线课程/知识付费',6);addScore('技术外包/接单',6);}
+
+if(answers.q4==='create'){addScore('小程序/App 开发',5);addScore('PPT/Keynote 定制',5);}
+if(answers.q4==='optimize'){addScore('SEO/独立站',5);addScore('技术外包/接单',5);}
+if(answers.q4==='teach'){addScore('在线课程/知识付费',8);addScore('技术写作/公众号',6);addScore('简历优化/面试辅导',6);}
+if(answers.q4==='analyze'){addScore('SEO/独立站',5);addScore('技术咨询/顾问',5);}
+
+if(answers.q5==='low'){addScore('技术写作/公众号',4);addScore('简历优化/面试辅导',4);}
+if(answers.q5==='mid'){addScore('技术外包/接单',4);addScore('PPT/Keynote 定制',4);}
+if(answers.q5==='high'){addScore('小程序/App 开发',5);addScore('技术咨询/顾问',5);addScore('在线课程/知识付费',5);}
+
+sideHustles.sort(function(a,b){return b.match-a.match;});
+document.getElementById('quizArea').style.display='none';
+var h='<div class="quiz-card"><h3>🎯 匹配结果 Top 3</h3></div>';
+for(var i=0;i<3;i++){
+var m=sideHustles[i];
+h+='<div class="match-card"><div class="rank">'+(i===0?'🥇':i===1?'🥈':'🥉')+'</div>';
+h+='<div class="m-icon">'+m.icon+'</div><div class="m-name">'+m.name+'</div>';
+h+='<div class="m-match">匹配度 '+m.match+' 分</div>';
+h+='<div class="m-why">'+m.why+'</div>';
+h+='<div class="m-meta">';
+h+='<span class="meta-tag tag-time">⏱ '+m.time+'时间</span>';
+h+='<span class="meta-tag tag-money">💰 '+m.money+'收入</span>';
+h+='<span class="meta-tag tag-diff">📈 '+m.diff+'门槛</span>';
+h+='</div></div>';
+}
+document.getElementById('resultList').innerHTML=h;
+document.getElementById('results').className='results show';
+}
+function addScore(name,s){
+for(var i=0;i<sideHustles.length;i++){if(sideHustles[i].name===name)sideHustles[i].match+=s;}
+}
+function retake(){
+document.getElementById('quizArea').style.display='';
+document.getElementById('results').className='results';
+for(var q in answers)answers[q]=null;
+var all=document.querySelectorAll('.option');
+for(var i=0;i<all.length;i++)all[i].className='option';
+}
+</script>
+</body>
+</html>

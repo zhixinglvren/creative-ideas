@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>囤课清道夫 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6f8;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:20px 0;background:linear-gradient(135deg,#37474f,#263238);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85}
+.stats{display:flex;gap:10px;margin-bottom:16px}
+.stat-card{flex:1;background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.stat-card .num{font-size:28px;font-weight:800}
+.stat-card .label{font-size:11px;color:#888;margin-top:4px}
+.c-red{color:#d32f2f}.c-green{color:#2e7d32}.c-orange{color:#e65100}
+.course-list .course{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);display:flex;gap:12px;align-items:center;cursor:pointer}
+.course .c-icon{font-size:32px;width:44px;text-align:center}
+.course .c-info{flex:1}
+.course .c-name{font-weight:600;font-size:14px}
+.course .c-plat{font-size:11px;color:#888}
+.course .c-progress{height:4px;background:#e0e0e0;border-radius:2px;margin-top:6px;overflow:hidden}
+.course .c-progress .bar{height:100%;border-radius:2px;transition:width .4s}
+.bar-high{background:#4caf50}.bar-mid{background:#ff9800}.bar-low{background:#f44336}
+.course .c-score{font-weight:700;font-size:13px;text-align:center;min-width:36px}
+.sort-bar{display:flex;gap:6px;margin-bottom:12px}
+.sort-bar button{flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;font-weight:500}
+.sort-bar button.on{background:#37474f;color:#fff;border-color:#37474f}
+.recommend{background:#e8f5e9;border-radius:12px;padding:14px;margin-top:12px;font-size:13px;line-height:1.8}
+.recommend h4{color:#2e7d32;margin-bottom:6px}
+.detail-page{display:none}
+.detail-page.show{display:block}
+.back-link{font-size:13px;color:#37474f;cursor:pointer;margin-bottom:12px;display:inline-block;text-decoration:underline}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🧹 囤课清道夫</h1><div class="sub">已购课程智能盘点 · 学习路径优化</div></div>
+
+<div class="stats">
+<div class="stat-card"><div class="num c-red">8</div><div class="label">📚 总课程</div></div>
+<div class="stat-card"><div class="num c-orange">3</div><div class="label">📖 进行中</div></div>
+<div class="stat-card"><div class="num c-green">2</div><div class="label">✅ 已完成</div></div>
+</div>
+
+<div class="sort-bar">
+<button class="on" onclick="sortBy('value')">按价值排序</button>
+<button onclick="sortBy('progress')">按进度排序</button>
+<button onclick="sortBy('platform')">按平台分组</button>
+</div>
+
+<div class="card" id="courseListContainer"><h3>📊 课程价值评分</h3><div class="course-list" id="courseList"></div></div>
+
+<div class="recommend" id="recommendBox"></div>
+
+<div class="detail-page" id="detailPage"></div>
+<div class="footer">囤课清道夫 · Demo · 数据为模拟演示</div>
+</div>
+
+<script>
+var courses=[
+{icon:'🐍',name:'Python 自动化办公',platform:'极客时间',progress:15,totalTime:'42h',price:199,value:92,reason:'实用性强，立即可用于日常工作，ROI 极高',order:1},
+{icon:'🤖',name:'机器学习实战',platform:'Coursera',progress:5,totalTime:'60h',price:299,value:65,reason:'与当前工作相关度中等，建议 Python 掌握后再学',order:3},
+{icon:'📊',name:'数据分析 SQL 进阶',platform:'慕课网',progress:40,totalTime:'18h',price:89,value:88,reason:'高频使用技能，完成度已达 40%，优先收尾',order:2},
+{icon:'🎨',name:'Figma 设计入门',platform:'B站课程',progress:0,totalTime:'12h',price:49,value:25,reason:'与后端开发工作几乎无关，冲动消费，建议放弃',order:7},
+{icon:'🏗️',name:'系统设计面试',platform:'极客时间',progress:70,totalTime:'30h',price:199,value:80,reason:'面试刚需，建议优先完成剩余 30%',order:4},
+{icon:'☕',name:'Spring Cloud 微服务',platform:'慕课网',progress:0,totalTime:'50h',price:149,value:70,reason:'技术栈匹配但内容可能过时，建议择时启动',order:5},
+{icon:'📈',name:'产品经理思维',platform:'得到',progress:100,totalTime:'10h',price:99,value:60,reason:'已完成，拓宽视野用，不需再投入时间',order:6},
+{icon:'🔐',name:'区块链开发',platform:'Udemy',progress:0,totalTime:'35h',price:79,value:15,reason:'与当前方向无关，冲动消费典型，果断放弃',order:8}
+];
+var sortKey='value';
+function renderList(){
+var items=courses.slice().sort(function(a,b){
+if(sortKey==='value')return b.value-a.value;
+if(sortKey==='progress')return b.progress-a.progress;
+return (a.platform<b.platform?-1:1);
+});
+var h='';
+for(var i=0;i<items.length;i++){
+var c=items[i];
+var barCls=c.progress>=70?'bar-high':c.progress>=30?'bar-mid':'bar-low';
+var scoreCls=c.value>=80?'c-green':c.value>=50?'c-orange':'c-red';
+h+='<div class="course" onclick="showDetail('+courses.indexOf(c)+')">';
+h+='<div class="c-icon">'+c.icon+'</div>';
+h+='<div class="c-info"><div class="c-name">'+c.name+'</div>';
+h+='<div class="c-plat">'+c.platform+' · '+c.totalTime+' · ¥'+c.price+'</div>';
+h+='<div class="c-progress"><div class="bar '+barCls+'" style="width:'+c.progress+'%"></div></div>';
+h+='</div><div class="c-score '+scoreCls+'">'+c.value+'分</div></div>';
+}
+document.getElementById('courseList').innerHTML=h||'<p style="font-size:13px;color:#888">暂无课程</p>';
+updateRecommend();
+}
+function sortBy(k){
+sortKey=k;
+var btns=document.querySelectorAll('.sort-bar button');
+for(var i=0;i<btns.length;i++)btns[i].className=btns[i].textContent.indexOf(k==='value'?'价值':k==='progress'?'进度':'平台')!==-1?'on':'';
+renderList();
+}
+function updateRecommend(){
+var sorted=courses.slice().sort(function(a,b){return b.value-a.value;});
+var top=sorted.slice(0,3);
+var totalSaved=0;
+sorted.forEach(function(c){if(c.value<30)totalSaved+=c.price;});
+var h='<h4>📋 AI 建议</h4>';
+h+='1. 🥇 优先学：<b>'+top[0].name+'</b> — '+top[0].reason+'<br>';
+h+='2. 🥈 次优先：<b>'+top[1].name+'</b> — 完成度 '+top[1].progress+'%，'+top[1].reason+'<br>';
+h+='3. ❌ 建议放弃：冲动消费课程可节省 <b>¥'+totalSaved+'</b><br>';
+h+='4. ⏱ 学习顺序：'+top.map(function(x){return x.name;}).join(' → ');
+document.getElementById('recommendBox').innerHTML=h;
+}
+function showDetail(idx){
+var c=courses[idx];
+var barCls=c.progress>=70?'bar-high':c.progress>=30?'bar-mid':'bar-low';
+var h='<a class="back-link" onclick="hideDetail()">← 课程列表</a>';
+h+='<div class="course" style="cursor:default"><div class="c-icon">'+c.icon+'</div>';
+h+='<div class="c-info"><div class="c-name">'+c.name+'</div>';
+h+='<div class="c-plat">'+c.platform+' · '+c.totalTime+' · ¥'+c.price+'</div>';
+h+='<div class="c-progress"><div class="bar '+barCls+'" style="width:'+c.progress+'%"></div></div></div></div>';
+h+='<div class="card" style="margin-top:10px">';
+h+='<h3>📝 分析</h3><p style="font-size:13px;line-height:1.8">'+c.reason+'</p>';
+h+='<p style="font-size:12px;color:#888;margin-top:8px">投入时间：'+c.totalTime+' | 价格：¥'+c.price+' | 进度：'+c.progress+'%</p>';
+h+='</div>';
+document.getElementById('courseListContainer').style.display='none';
+document.getElementById('recommendBox').style.display='none';
+document.querySelector('.sort-bar').style.display='none';
+document.getElementById('detailPage').innerHTML=h;
+document.getElementById('detailPage').className='detail-page show';
+}
+function hideDetail(){
+document.getElementById('courseListContainer').style.display='';
+document.getElementById('recommendBox').style.display='';
+document.querySelector('.sort-bar').style.display='';
+document.getElementById('detailPage').className='detail-page';
+}
+renderList();
+</script>
+</body>
+</html>
