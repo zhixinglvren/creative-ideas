@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>开会计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fafafa;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#bf360c,#870000);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field .row{display:flex;align-items:center;gap:8px}
+.field input,.field select{flex:1;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#bf360c}
+.field .unit{font-size:13px;color:#888;width:40px}
+.cost-display{text-align:center;padding:20px 0;background:linear-gradient(135deg,#fff3e0,#fbe9e7);border-radius:14px;margin-bottom:12px}
+.cost-display .big-num{font-size:48px;font-weight:800;color:#bf360c;transition:all .3s}
+.cost-display .per-person{font-size:13px;color:#888;margin-top:6px}
+.breakdown{font-size:13px;line-height:2}
+.breakdown .row{display:flex;justify-content:space-between;border-bottom:1px solid #f5f5f5;padding:4px 0}
+.breakdown .row:last-child{font-weight:700;border-bottom:none;color:#bf360c}
+.equivalent{background:#fafafa;border-radius:10px;padding:14px;margin-top:12px;font-size:13px;line-height:1.8}
+.equivalent h4{font-size:14px;margin-bottom:6px}
+.equivalent .item{display:flex;align-items:center;gap:6px;margin:4px 0}
+.equivalent .item .icon{font-size:18px}
+.preset-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.preset-btn{padding:8px 14px;border-radius:20px;border:1px solid #e0e0e0;background:#fff;font-size:12px;cursor:pointer;transition:all .2s}
+.preset-btn:active{background:#fbe9e7;border-color:#bf360c;color:#bf360c}
+.tip{background:#fff3e0;border-left:4px solid #ff6d00;padding:10px 14px;border-radius:8px;font-size:12px;color:#e65100;margin-top:12px;animation:shake .5s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💸 开会计算器</h1><div class="sub">量化会议成本 · 倒逼减少无效会议</div></div>
+
+<div class="card"><h3>👥 会议配置</h3>
+<div class="preset-bar">
+<button class="preset-btn" onclick="preset(5,30,150)">🔄 站会 5人</button>
+<button class="preset-btn" onclick="preset(10,60,200)">📋 周会 10人</button>
+<button class="preset-btn" onclick="preset(20,90,250)">🏢 全员会</button>
+<button class="preset-btn" onclick="preset(3,120,300)">🧠 脑暴会</button>
+</div>
+<div class="field"><label>👥 参会人数</label><div class="row"><input id="people" type="number" value="8" min="1" max="500" oninput="calc()"></div></div>
+<div class="field"><label>⏱ 会议时长（分钟）</label><div class="row"><input id="minutes" type="number" value="60" min="5" max="480" oninput="calc()"><span class="unit">分钟</span></div></div>
+<div class="field"><label>💰 平均时薪（元）</label><div class="row"><input id="rate" type="number" value="150" min="20" max="2000" oninput="calc()"><span class="unit">元/时</span></div></div>
+</div>
+
+<div class="cost-display">
+<div class="big-num" id="bigNum">¥1,200</div>
+<div class="per-person" id="perPerson">人均 ¥150</div>
+</div>
+
+<div class="card">
+<h3>📊 成本明细</h3>
+<div class="breakdown" id="breakdown"></div>
+</div>
+
+<div class="equivalent" id="equivalent"></div>
+<div class="tip" id="tip"></div>
+
+<div class="footer">开会计算器 · Demo · 下次开会前算一算</div>
+</div>
+
+<script>
+function preset(p,m,r){
+document.getElementById('people').value=p;
+document.getElementById('minutes').value=m;
+document.getElementById('rate').value=r;
+calc();
+}
+function calc(){
+var p=parseInt(document.getElementById('people').value)||1;
+var m=parseInt(document.getElementById('minutes').value)||5;
+var r=parseInt(document.getElementById('rate').value)||50;
+var total=p*(m/60)*r;
+document.getElementById('bigNum').textContent='¥'+total.toLocaleString('zh-CN');
+document.getElementById('perPerson').textContent='人均 ¥'+Math.round(total/p).toLocaleString('zh-CN');
+var h='<div class="row"><span>参会人数</span><span>'+p+' 人</span></div>';
+h+='<div class="row"><span>会议时长</span><span>'+m+' 分钟 ('+(m/60).toFixed(1)+' 小时)</span></div>';
+h+='<div class="row"><span>时薪 × 时长 × 人数</span><span>¥'+r+' × '+(m/60).toFixed(1)+'h × '+p+'人</span></div>';
+h+='<div class="row"><span>总成本</span><span>¥'+total.toLocaleString('zh-CN')+'</span></div>';
+document.getElementById('breakdown').innerHTML=h;
+var eq=[];
+if(total>=100)eq.push({icon:'☕',text:'够买 <b>'+(total/25).toFixed(0)+' 杯</b> 精品咖啡'});
+if(total>=200)eq.push({icon:'🍜',text:'够团队 <b>'+(total/40).toFixed(0)+' 人</b> 吃顿好的'});
+if(total>=500)eq.push({icon:'🎓',text:'够买 <b>'+(total/200).toFixed(0)+' 门</b> Udemy 课程'});
+if(total>=1000)eq.push({icon:'💻',text:'相当于一台 <b>'+(total/3000).toFixed(1)+' 台</b> MacBook 的年均折旧'});
+if(total>=3000)eq.push({icon:'✈️',text:'够飞一趟 <b>国内往返</b> 机票'});
+if(total>=8000)eq.push({icon:'👨‍💻',text='够外包一个 <b>freelancer</b> 干一星期'});
+var eh='<h4>🔄 这场会的钱够干什么？</h4>';
+for(var i=0;i<eq.length;i++){eh+='<div class="item"><span class="icon">'+eq[i].icon+'</span><span>'+eq[i].text+'</span></div>';}
+if(eq.length===0)eh+='<div class="item"><span>还不够买一杯咖啡，放心开 😄</span></div>';
+document.getElementById('equivalent').innerHTML=eh;
+var tips=[
+'💡 试试把 60 分钟的会缩短到 25 分钟，效果往往更好（帕金森定律）。',
+'💡 如果必须开会，提前发议程——有明确议程的会议平均缩短 30% 时间。',
+'💡 考虑把"信息同步"类会议改成异步文档，省下所有人的时间。',
+'💡 试试亚马逊的"六页纸备忘录"开会法——开会前先默读，没内容就不开。'
+];
+var tip=tips[Math.floor(Math.random()*tips.length)];
+if(total>500)tip='🔥 这场会花费超过 ¥500！<br>'+tip;
+document.getElementById('tip').innerHTML=tip;
+}
+calc();
+</script>
+</body>
+</html>

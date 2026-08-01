@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "meeting-cost-calculator",
+      "icon": "💸",
+      "title": "开会计算器",
+      "tagline": "输入参会人数和时长，算出这场会花了多少钱——倒逼减少无效会议",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-meeting-cost-calculator/"
+    },
+    {
       "id": "pet-symptom",
       "icon": "🐾",
       "title": "毛孩急诊判断",
