@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "family-kinship",
+      "icon": "👨‍👩‍👧",
+      "title": "亲戚称谓计算器",
+      "tagline": "过年回家叫不错人——输入关系路径，秒算正确的中国亲戚称呼",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-family-kinship/"
+    },
+    {
       "id": "meeting-cost-calculator",
       "icon": "💸",
       "title": "开会计算器",

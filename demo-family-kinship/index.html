@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>亲戚称谓计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf6f0;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#d84315,#bf360c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:6px;line-height:1.6}
+.intro{font-size:13px;color:#888;text-align:center;margin-bottom:16px;line-height:1.8}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none;background:#fff;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.field select:focus{border-color:#d84315;outline:none}
+.quick-section{margin-bottom:14px}
+.quick-section h4{font-size:13px;color:#999;margin-bottom:8px}
+.quick-tags{display:flex;flex-wrap:wrap;gap:6px}
+.quick-tag{padding:8px 14px;border-radius:20px;border:1px solid #e0e0e0;background:#fff;font-size:13px;cursor:pointer;transition:all .2s}
+.quick-tag:active{background:#fbe9e7;border-color:#d84315;color:#d84315}
+.step-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.step-row select{flex:1}
+.step-row .arrow{font-size:14px;color:#ccc;width:20px;text-align:center}
+.add-step{font-size:12px;color:#d84315;cursor:pointer;padding:4px 0;display:inline-block}
+.result-card{background:linear-gradient(135deg,#fff8e1,#fff3e0);border-radius:14px;padding:20px;margin-top:12px;text-align:center;display:none}
+.result-card.show{display:block;animation:fadeUp .4s ease}
+.result-card .term{font-size:36px;font-weight:800;color:#d84315;margin:10px 0}
+.result-card .pronounce{font-size:13px;color:#888;margin-bottom:4px}
+.result-card .explanation{font-size:12px;color:#999;line-height:1.6;margin-top:8px;padding:0 10px}
+.result-card .tree{font-size:11px;color:#aaa;margin-top:10px;line-height:1.8}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#d84315,#bf360c);color:#fff;transition:transform .2s;margin-top:12px}
+.btn:active{transform:scale(.97)}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>👨‍👩‍👧 亲戚称谓计算器</h1><div class="sub">过年回家再也不叫错人<br>输入关系路径，秒算正确称呼</div></div>
+<div class="intro">「你爸的弟弟的老婆的弟弟」——这到底该叫什么？别再尴尬了。</div>
+
+<div class="card"><h3>🧬 选你的关系路径</h3>
+<div class="quick-section">
+<h4>⚡ 快速场景</h4>
+<div class="quick-tags">
+<div class="quick-tag" onclick="quick('father','brother')">👴 爸爸的哥哥</div>
+<div class="quick-tag" onclick="quick('mother','sister')">👵 妈妈的姐姐</div>
+<div class="quick-tag" onclick="quick('father','sister','son')">👦 姑姑的儿子</div>
+<div class="quick-tag" onclick="quick('mother','brother','daughter')">👧 舅舅的女儿</div>
+<div class="quick-tag" onclick="quick('father','father','son')">🧓 爷爷的儿子（非你爸）</div>
+<div class="quick-tag" onclick="quick('mother','mother','daughter')">👵 外婆的女儿（非你妈）</div>
+</div>
+</div>
+<div style="text-align:center;color:#ccc;margin:12px 0">— 或手动构建 —</div>
+<div id="stepContainer">
+<div class="step-row" id="step1">
+<select class="step-sel" id="sel1">
+<option value="">选择起点...</option>
+<option value="father">爸爸</option><option value="mother">妈妈</option>
+<option value="father-father">爷爷（父之父）</option><option value="father-mother">奶奶（父之母）</option>
+<option value="mother-father">外公（母之父）</option><option value="mother-mother">外婆（母之母）</option>
+</select>
+</div>
+</div>
+<div class="add-step" onclick="addStep()">+ 加一层关系</div>
+</div>
+<button class="btn" onclick="calculate()">🔍 计算称谓</button>
+<div class="result-card" id="resultCard">
+<div class="pronounce" id="resultPronounce"></div>
+<div class="term" id="resultTerm"></div>
+<div class="tree" id="resultTree"></div>
+<div class="explanation" id="resultExplain"></div>
+</div>
+
+<div class="card"><h3>📖 常见称谓速查</h3>
+<div id="quickRef" style="font-size:13px;line-height:2.2"></div></div>
+
+<div class="footer">亲戚称谓计算器 · Demo · 按传统汉族亲属称谓</div>
+</div>
+
+<script>
+var stepCount=1;
+var kinDB={
+'father':{name:'爸爸',gen:1,male:true,paternal:true},
+'mother':{name:'妈妈',gen:1,male:false,paternal:false},
+'father-father':{name:'爷爷',gen:2,male:true,paternal:true},
+'father-mother':{name:'奶奶',gen:2,male:false,paternal:true},
+'mother-father':{name:'外公',gen:2,male:true,paternal:false},
+'mother-mother':{name:'外婆',gen:2,male:false,paternal:false},
+'father-brother-elder':{name:'伯父',alt:'伯伯',gen:1,male:true,paternal:true},
+'father-brother-younger':{name:'叔父',alt:'叔叔',gen:1,male:true,paternal:true},
+'father-sister-elder':{name:'姑母',alt:'姑姑',gen:1,male:false,paternal:true},
+'father-sister-younger':{name:'姑母',alt:'姑姑',gen:1,male:false,paternal:true},
+'mother-brother-elder':{name:'舅父',alt:'舅舅',gen:1,male:true,paternal:false},
+'mother-brother-younger':{name:'舅父',alt:'舅舅',gen:1,male:true,paternal:false},
+'mother-sister-elder':{name:'姨母',alt:'姨妈',gen:1,male:false,paternal:false},
+'mother-sister-younger':{name:'姨母',alt:'姨妈',gen:1,male:false,paternal:false},
+};
+
+var quickRefData=[
+{t:'爸爸的哥哥',a:'伯父/伯伯'},{t:'爸爸的弟弟',a:'叔父/叔叔'},
+{t:'爸爸的姐姐/妹妹',a:'姑母/姑姑'},{t:'妈妈的哥哥/弟弟',a:'舅父/舅舅'},
+{t:'妈妈的姐姐/妹妹',a:'姨母/姨妈'},{t:'爸爸的爸爸',a:'爷爷'},
+{t:'妈妈的爸爸',a:'外公'},{t:'姑姑的儿子（比你大）',a:'表兄/表哥'},
+{t:'姑姑的儿子（比你小）',a:'表弟'},{t:'舅舅的儿子（比你大）',a:'表兄/表哥'},
+{t:'舅舅的儿子（比你小）',a:'表弟'},{t:'伯父的儿子（比你大）',a:'堂兄/堂哥'},
+{t:'伯父的儿子（比你小）',a:'堂弟'},{t:'姑姑的女儿（比你大）',a:'表姐'},
+{t:'姑姑的女儿（比你小）',a:'表妹'},
+];
+
+function renderQuickRef(){
+var h='';
+for(var i=0;i<quickRefData.length;i++){
+h+='<div><b>'+quickRefData[i].t+'</b> → '+quickRefData[i].a+'</div>';
+}
+document.getElementById('quickRef').innerHTML=h;
+}
+renderQuickRef();
+
+function quick(){
+var args=Array.prototype.slice.call(arguments);
+stepCount=0;
+var container=document.getElementById('stepContainer');
+container.innerHTML='';
+for(var i=0;i<args.length;i++){
+addStep();
+var sel=document.getElementById('sel'+(i+1));
+var val=args[i];
+if(i===0){
+var startOpts=['father','mother','father-father','father-mother','mother-father','mother-mother'];
+if(startOpts.indexOf(val)!==-1)sel.value=val;
+}else{
+var relOpts=['brother','sister','son','daughter','brother-elder','brother-younger','sister-elder','sister-younger'];
+if(relOpts.indexOf(val)!==-1)sel.value=val;
+}
+}
+}
+
+function addStep(){
+stepCount++;
+var container=document.getElementById('stepContainer');
+var div=document.createElement('div');
+div.className='step-row';
+div.id='step'+stepCount;
+var arrow='';
+if(stepCount>1){
+arrow='<span class="arrow">→</span>';
+}
+var opts;
+if(stepCount===1){
+opts=[
+{val:'',text:'选择起点...'},
+{val:'father',text:'爸爸'},{val:'mother',text:'妈妈'},
+{val:'father-father',text:'爷爷（父之父）'},{val:'father-mother',text:'奶奶（父之母）'},
+{val:'mother-father',text:'外公（母之父）'},{val:'mother-mother',text:'外婆（母之母）'},
+{val:'father-brother-elder',text:'伯父（父之兄）'},{val:'father-brother-younger',text:'叔父（父之弟）'},
+{val:'father-sister-elder',text:'姑母（父之姐）'},{val:'father-sister-younger',text:'姑母（父之妹）'},
+{val:'mother-brother-elder',text:'舅父（母之兄）'},{val:'mother-brother-younger',text:'舅父（母之弟）'},
+{val:'mother-sister-elder',text:'姨母（母之姐）'},{val:'mother-sister-younger',text:'姨母（母之妹）'}
+];
+}else{
+opts=[
+{val:'',text:'选择关系...'},
+{val:'brother',text:'的哥哥/弟弟'},{val:'sister',text:'的姐姐/妹妹'},
+{val:'son',text:'的儿子'},{val:'daughter',text:'的女儿'},
+{val:'brother-elder',text:'的哥哥'},{val:'brother-younger',text:'的弟弟'},
+{val:'sister-elder',text:'的姐姐'},{val:'sister-younger',text:'的妹妹'}
+];
+}
+var selHtml='<select class="step-sel" id="sel'+stepCount+'">';
+for(var i=0;i<opts.length;i++){
+selHtml+='<option value="'+opts[i].val+'">'+opts[i].text+'</option>';
+}
+selHtml+='</select>';
+div.innerHTML=arrow+selHtml;
+container.appendChild(div);
+}
+
+function calculate(){
+var steps=[];
+for(var i=1;i<=stepCount;i++){
+var sel=document.getElementById('sel'+i);
+var val=sel?sel.value:'';
+if(!val){
+alert('请完成所有选择');
+return;
+}
+steps.push(val);
+}
+
+var pathStr=steps.map(function(s){
+var info=kinDB[s];
+if(info)return info.name||info.alt;
+var relNames={brother:'兄弟',sister:'姐妹',son:'儿子',daughter:'女儿','brother-elder':'哥哥','brother-younger':'弟弟','sister-elder':'姐姐','sister-younger':'妹妹'};
+return relNames[s]||s;
+}).join(' → ');
+
+var result=resolveKin(steps);
+document.getElementById('resultTree').innerHTML='📐 路径：'+pathStr;
+document.getElementById('resultTerm').textContent=result.term;
+document.getElementById('resultPronounce').textContent=result.pronounce||'';
+document.getElementById('resultExplain').textContent=result.explain||'';
+document.getElementById('resultCard').className='result-card show';
+}
+
+function resolveKin(steps){
+if(steps.length===0)return {term:'?',explain:'请选择关系',pronounce:''};
+
+var start=steps[0];
+var info=kinDB[start];
+
+if(!info){
+return {term:'?',explain:'未知起点',pronounce:''};
+}
+
+if(steps.length===1){
+return {
+term:info.name||'?',
+alt:info.alt||'',
+pronounce:info.alt&&info.alt!==info.name?'也叫：'+info.alt:'',
+explain:'这就是你的<b>'+info.name+'</b>，直系亲属无需计算。'
+};
+}
+
+var gen=info.gen||1;
+var male=info.male;
+var paternal=info.paternal;
+
+for(var i=1;i<steps.length;i++){
+var rel=steps[i];
+
+if(rel==='son'){
+gen--;
+continue;
+}
+if(rel==='daughter'){
+gen--;
+male=false;
+continue;
+}
+if(rel==='brother'||rel==='brother-elder'||rel==='brother-younger'){
+continue;
+}
+if(rel==='sister'||rel==='sister-elder'||rel==='sister-younger'){
+male=false;
+continue;
+}
+}
+
+if(steps.length===2){
+var rel=steps[1];
+
+if(start==='father'&&(rel==='brother'||rel==='brother-elder')){
+return {term:'伯父',pronounce:'也叫：伯伯',explain:'爸爸的哥哥，比你长一辈。他的子女是你的<b>堂兄弟姐妹</b>（同姓）。'};
+}
+if(start==='father'&&(rel==='brother-younger')){
+return {term:'叔父',pronounce:'也叫：叔叔',explain:'爸爸的弟弟，比你长一辈。他的子女是你的<b>堂兄弟姐妹</b>（同姓）。'};
+}
+if(start==='father'&&(rel==='sister'||rel==='sister-elder'||rel==='sister-younger')){
+return {term:'姑母',pronounce:'也叫：姑姑',explain:'爸爸的姐妹，比你长一辈。她的子女是你的<b>表兄弟姐妹</b>（异姓）。'};
+}
+if(start==='mother'&&(rel==='brother'||rel==='brother-elder'||rel==='brother-younger')){
+return {term:'舅父',pronounce:'也叫：舅舅',explain:'妈妈的兄弟，比你长一辈。他的子女是你的<b>表兄弟姐妹</b>（异姓）。'};
+}
+if(start==='mother'&&(rel==='sister'||rel==='sister-elder'||rel==='sister-younger')){
+return {term:'姨母',pronounce:'也叫：姨妈',explain:'妈妈的姐妹，比你长一辈。她的子女是你的<b>表兄弟姐妹</b>（异姓）。'};
+}
+if(start==='father'&&rel==='son'){
+return {term:'兄弟',pronounce:'可能是你自己',explain:'爸爸的儿子——如果你有兄弟，就是你的<b>兄弟</b>。独生子的话，这就是你。'};
+}
+if(start==='father'&&rel==='daughter'){
+return {term:'姐妹',pronounce:'',explain:'爸爸的女儿——如果你有姐妹，就是你的<b>姐妹</b>。'};
+}
+if(start==='mother'&&rel==='son'){
+return {term:'兄弟',pronounce:'',explain:'妈妈的儿子——如果有兄弟就是你<b>兄弟</b>。独生子就是你自己。'};
+}
+if(start==='mother'&&rel==='daughter'){
+return {term:'姐妹',pronounce:'',explain:'妈妈的女儿——如果有姐妹就是你<b>姐妹</b>。'};
+}
+}
+
+if(steps.length===3&&steps[0]==='father'&&(steps[1]==='brother'||steps[1]==='brother-elder'||steps[1]==='brother-younger')){
+var child=steps[2];
+if(child==='son')return {term:'堂兄/堂弟',pronounce:'',explain:'伯父/叔父的儿子，<b>同姓</b>，比你大的叫堂哥、小的叫堂弟。'};
+if(child==='daughter')return {term:'堂姐/堂妹',pronounce:'',explain:'伯父/叔父的女儿，<b>同姓</b>，比你大的叫堂姐、小的叫堂妹。'};
+}
+
+if(steps.length===3&&steps[0]==='father'&&(steps[1]==='sister'||steps[1]==='sister-elder'||steps[1]==='sister-younger')){
+var child=steps[2];
+if(child==='son')return {term:'表兄/表弟',pronounce:'',explain:'姑姑的儿子，<b>异姓</b>，比你大的叫表哥、小的叫表弟。'};
+if(child==='daughter')return {term:'表姐/表妹',pronounce:'',explain:'姑姑的女儿，<b>异姓</b>，比你大的叫表姐、小的叫表妹。'};
+}
+
+if(steps.length===3&&steps[0]==='mother'&&(steps[1]==='brother'||steps[1]==='brother-elder'||steps[1]==='brother-younger')){
+var child=steps[2];
+if(child==='son')return {term:'表兄/表弟',pronounce:'',explain:'舅舅的儿子，<b>异姓</b>，比你大的叫表哥、小的叫表弟。'};
+if(child==='daughter')return {term:'表姐/表妹',pronounce:'',explain:'舅舅的女儿，<b>异姓</b>，比你大的叫表姐、小的叫表妹。'};
+}
+
+if(steps.length===3&&steps[0]==='mother'&&(steps[1]==='sister'||steps[1]==='sister-elder'||steps[1]==='sister-younger')){
+var child=steps[2];
+if(child==='son')return {term:'表兄/表弟',pronounce:'',explain:'姨妈的儿子，<b>异姓</b>，比你大的叫表哥、小的叫表弟。姨妈的子女和舅舅的子女一样都是表亲。'};
+if(child==='daughter')return {term:'表姐/表妹',pronounce:'',explain:'姨妈的女儿，<b>异姓</b>，比你大的叫表姐、小的叫表妹。'};
+}
+
+if(steps.length===3&&start==='father-father'&&steps[1]==='son'){
+var child=steps[2];
+if(child==='son')return {term:'堂兄/堂弟',pronounce:'',explain:'爷爷的儿子（非你爸）的儿子，即伯父/叔父的儿子，你的<b>堂兄弟</b>。'};
+if(child==='daughter')return {term:'堂姐/堂妹',pronounce:'',explain:'爷爷的儿子（非你爸）的女儿，即伯父/叔父的女儿，你的<b>堂姐妹</b>。'};
+}
+
+if(steps.length===3&&start==='mother-mother'&&steps[1]==='daughter'){
+var child=steps[2];
+if(child==='son')return {term:'表兄/表弟',pronounce:'',explain:'外婆的女儿（非你妈）的儿子，即姨妈的儿子，你的<b>表兄弟</b>。'};
+if(child==='daughter')return {term:'表姐/表妹',pronounce:'',explain:'外婆的女儿（非你妈）的女儿，即姨妈的女儿，你的<b>表姐妹</b>。'};
+}
+
+return {
+term:'亲戚',
+pronounce:'',
+explain:'这条关系路径比较复杂，正式版会基于完整的汉族亲属关系图精确计算。目前 Demo 版已覆盖常见场景。'
+};
+}
+</script>
+</body>
+</html>
