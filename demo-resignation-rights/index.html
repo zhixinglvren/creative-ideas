@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>离职权益计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#37474f,#263238);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.8;margin-top:4px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field .hint{font-size:11px;color:#aaa;margin-top:2px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#37474f}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.type-tabs{display:flex;gap:6px;margin-bottom:14px}
+.type-tab{flex:1;padding:10px 8px;border-radius:10px;border:2px solid #e0e0e0;text-align:center;font-size:13px;cursor:pointer;transition:all .2s}
+.type-tab.sel{border-color:#37474f;background:#eceff1;font-weight:600}
+.type-tab .emoji{font-size:20px;display:block;margin-bottom:2px}
+.result{background:linear-gradient(135deg,#eceff1,#cfd8dc);border-radius:14px;padding:20px;margin-top:12px;display:none}
+.result.show{display:block;animation:fadeUp .4s}
+.result .big{font-size:36px;font-weight:800;color:#37474f;text-align:center;margin:8px 0}
+.result .label{font-size:12px;color:#78909c;text-align:center;margin-bottom:16px}
+.result .items{margin-top:10px}
+.result .item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #cfd8dc;font-size:13px}
+.result .item:last-child{border:none}
+.result .item .val{font-weight:600;color:#37474f}
+.legal-ref{background:#fff8e1;border-radius:10px;padding:12px;margin-top:12px;font-size:11px;color:#f57f17;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#37474f,#263238);color:#fff;transition:transform .2s;margin-top:8px}
+.btn:active{transform:scale(.97)}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>📋 离职权益计算器</h1><div class="sub">不管主动被动，该拿的一分别少</div></div>
+
+<div class="card"><h3>🔀 离职方式</h3>
+<div class="type-tabs">
+<div class="type-tab sel" id="tabA" onclick="selType('A')"><span class="emoji">🚶</span>主动辞职</div>
+<div class="type-tab" id="tabB" onclick="selType('B')"><span class="emoji">📄</span>协商解除</div>
+<div class="type-tab" id="tabC" onclick="selType('C')"><span class="emoji">⚠️</span>公司裁员</div>
+<div class="type-tab" id="tabD" onclick="selType('D')"><span class="emoji">🚫</span>违法解除</div>
+</div>
+
+<div class="row2">
+<div class="field"><label>入职日期</label><input id="startDate" type="date" onchange="calc()"></div>
+<div class="field"><label>离职日期</label><input id="endDate" type="date" onchange="calc()"></div>
+</div>
+<div class="row2">
+<div class="field"><label>月平均工资（税前）</label><input id="salary" type="number" value="15000" min="1000" max="200000" onchange="calc()"><div class="hint">离职前12个月均值</div></div>
+<div class="field"><label>本地社平工资3倍</label><input id="cap" type="number" value="35000" min="5000" max="100000" onchange="calc()"><div class="hint">查当地人社局公布数据</div></div>
+</div>
+<div class="field"><label>剩余年假（天）</label><input id="leave" type="number" value="5" min="0" max="30" onchange="calc()"></div>
+<div class="field"><label>竞业限制（月数）</label><input id="noncompete" type="number" value="0" min="0" max="24" onchange="calc()"><div class="hint">如有竞业协议，填协议约定的月数</div></div>
+</div>
+
+<button class="btn" onclick="calc()">💰 计算你能拿多少</button>
+
+<div class="result" id="result"><div class="label">💰 合计应得</div><div class="big" id="bigNum">¥0</div><div class="items" id="items"></div><div class="legal-ref" id="lawRef"></div></div>
+<div class="footer">离职权益计算器 · Demo · 仅供参考，不构成法律建议</div>
+</div>
+
+<script>
+var type='A';
+function selType(t){
+type=t;
+['A','B','C','D'].forEach(function(x){
+document.getElementById('tab'+x).className=t===x?'type-tab sel':'type-tab';
+});
+calc();
+}
+function parseDate(s){
+if(!s)return null;
+var parts=s.split('-');
+return new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+}
+function diffYears(d1,d2){
+var years=d2.getFullYear()-d1.getFullYear();
+var m=d2.getMonth()-d1.getMonth();
+if(m<0||(m===0&&d2.getDate()<d1.getDate()))years--;
+return years;
+}
+function calc(){
+var startDate=parseDate(document.getElementById('startDate').value);
+var endDate=parseDate(document.getElementById('endDate').value);
+var salary=parseInt(document.getElementById('salary').value)||0;
+var cap=parseInt(document.getElementById('cap').value)||35000;
+var leave=parseInt(document.getElementById('leave').value)||0;
+var nc=parseInt(document.getElementById('noncompete').value)||0;
+
+var items=document.getElementById('items');
+var lawRef=document.getElementById('lawRef');
+var bigNum=document.getElementById('bigNum');
+
+if(!startDate||!endDate||!salary){
+bigNum.textContent='¥0';
+items.innerHTML='<div class="item"><span>请填写完整信息</span><span></span></div>';
+lawRef.innerHTML='';
+document.getElementById('result').className='result';
+return;
+}
+if(endDate<=startDate){
+bigNum.textContent='¥0';
+items.innerHTML='<div class="item"><span>日期无效</span><span></span></div>';
+lawRef.innerHTML='';
+document.getElementById('result').className='result';
+return;
+}
+
+var years=diffYears(startDate,endDate);
+var months=(endDate.getFullYear()-startDate.getFullYear())*12+(endDate.getMonth()-startDate.getMonth());
+var fullYears=Math.floor(months/12);
+var remainingMonths=months%12;
+
+var baseSalary=Math.min(salary,cap);
+var n=fullYears+(remainingMonths>=6?1:0.5);
+
+var severancePay=0,severanceLabel='';
+var nhref='';
+if(type==='A'){
+severancePay=0;
+severanceLabel='主动辞职';
+nhref='劳动合同法第37条：劳动者提前30日书面通知，无需支付经济补偿。';
+}else if(type==='B'){
+severancePay=n*baseSalary;
+severanceLabel='协商解除 (N='+n.toFixed(1)+')';
+nhref='劳动合同法第36条+第46条：协商一致解除，支付N个月经济补偿。';
+}else if(type==='C'){
+severancePay=(n+1)*baseSalary;
+severanceLabel='裁员 N+1 (N='+n.toFixed(1)+')';
+nhref='劳动合同法第41条+第46条：经济性裁员，支付N+1个月。';
+}else if(type==='D'){
+severancePay=2*n*baseSalary;
+severanceLabel='违法解除 2N (N='+n.toFixed(1)+')';
+nhref='劳动合同法第87条：违法解除，支付2倍经济补偿（2N）。';
+}
+
+var leavePay=leave/21.75*baseSalary;
+var ncPay=nc*baseSalary*0.3;
+if(ncPay<baseSalary*0.2)ncPay=baseSalary*0.2*nc;
+
+var total=severancePay+leavePay+ncPay;
+
+var h='<div class="item"><span>📋 工作年限</span><span class="val">'+fullYears+'年'+(remainingMonths>0?remainingMonths+'个月':'')+' (N='+n.toFixed(1)+')</span></div>';
+h+='<div class="item"><span>💵 计算基数（社平3倍封顶后）</span><span class="val">¥'+baseSalary.toLocaleString('zh-CN')+'/月</span></div>';
+h+='<div class="item" style="background:#f5f5f5;border-radius:6px;padding:4px 8px"><span>'+severanceLabel+'</span><span class="val" style="color:#37474f">¥'+severancePay.toLocaleString('zh-CN')+'</span></div>';
+h+='<div class="item"><span>🏖 剩余年假折现 ('+leave+'天)</span><span class="val">¥'+Math.round(leavePay).toLocaleString('zh-CN')+'</span></div>';
+if(nc>0){
+h+='<div class="item"><span>🔒 竞业限制补偿 ('+nc+'个月)</span><span class="val">¥'+Math.round(ncPay).toLocaleString('zh-CN')+'</span></div>';
+}
+h+='<div class="item" style="font-weight:700;font-size:15px;border-top:2px solid #37474f;padding-top:10px"><span>💰 合计应得</span><span class="val" style="font-size:18px;color:#37474f">¥'+Math.round(total).toLocaleString('zh-CN')+'</span></div>';
+
+if(type==='A'){
+h+='<div style="font-size:12px;color:#ef5350;margin-top:8px">⚠️ 主动辞职无经济补偿金。如有未休年假，公司仍需折现。</div>';
+}
+if(type==='D'&&nc>0){
+h+='<div style="font-size:12px;color:#ef5350;margin-top:8px">⚠️ 竞业限制补偿与2N赔偿可同时主张。</div>';
+}
+
+items.innerHTML=h;
+bigNum.textContent='¥'+Math.round(total).toLocaleString('zh-CN');
+lawRef.innerHTML='<b>📜 法律依据</b><br>'+nhref+(nc>0?'<br>劳动合同法第23条：竞业限制期限≤2年，按月给予补偿≥前12个月平均工资的30%且≥当地最低工资。':'')+'<br>职工带薪年休假条例第5条：未休年假按日工资300%支付（含正常工资）。<br>劳动合同法第47条：经济补偿上限为社平工资3倍×12年。';
+document.getElementById('result').className='result show';
+}
+
+var d=new Date();
+document.getElementById('endDate').value=d.toISOString().slice(0,10);
+d.setFullYear(d.getFullYear()-3);
+document.getElementById('startDate').value=d.toISOString().slice(0,10);
+calc();
+</script>
+</body>
+</html>

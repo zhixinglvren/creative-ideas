@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "resignation-rights",
+      "icon": "📋",
+      "title": "离职权益计算器",
+      "tagline": "主动辞职还是被裁？算清楚你该拿多少钱——N、N+1还是2N",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-resignation-rights/"
+    },
+    {
       "id": "family-kinship",
       "icon": "👨‍👩‍👧",
       "title": "亲戚称谓计算器",
