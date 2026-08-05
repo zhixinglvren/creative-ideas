@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>群聊精华提取器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8f5e9;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.upload-area{border:2px dashed #c8e6c9;border-radius:12px;padding:30px 16px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-area:hover{border-color:#66bb6a;background:#f1f8e9}
+.upload-area .icon{font-size:32px;margin-bottom:8px}
+.upload-area .txt{font-size:13px;color:#999}
+.demo-btn{font-size:12px;color:#2e7d32;cursor:pointer;margin-top:8px;text-decoration:underline}
+textarea{width:100%;height:200px;padding:12px;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;line-height:1.8;resize:none;outline:none;font-family:inherit;display:none}
+textarea.show{display:block}
+textarea:focus{border-color:#43a047}
+.btn-row{display:flex;gap:8px;margin-top:12px}
+.btn{padding:10px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn.primary{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;flex:1}
+.btn.secondary{background:#f5f5f5;color:#888}
+.btn:active{transform:scale(.97)}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.section{background:#f9fbe7;border-left:4px solid #7cb342;padding:12px 14px;margin-bottom:10px;border-radius:0 8px 8px 0}
+.section.pink{border-color:#e91e63;background:#fce4ec}
+.section.blue{border-color:#2196f3;background:#e3f2fd}
+.section.amber{border-color:#ff9800;background:#fff8e1}
+.section h4{font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;color:#555}
+.section ul{margin:0;padding:0 0 0 16px;font-size:13px;line-height:1.8}
+.section li{margin-bottom:2px}
+.stats{display:flex;gap:8px;margin-bottom:16px}
+.stat{flex:1;text-align:center;background:#f5f5f5;border-radius:10px;padding:12px 8px}
+.stat .num{font-size:24px;font-weight:700;color:#2e7d32}
+.stat .label{font-size:11px;color:#888;margin-top:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💬 群聊精华提取器</h1><div class="sub">300条消息 → 1分钟看完重点</div></div>
+
+<div class="card"><h3>📋 粘贴群聊记录</h3>
+<div class="upload-area" id="uploadArea" onclick="showTextarea()">
+<div class="icon">📎</div>
+<div class="txt">点击粘贴群聊截图或文本<br>支持微信/钉钉/飞书/Telegram</div>
+</div>
+<textarea id="chatInput" placeholder="直接粘贴群聊内容，例如：
+
+[10:02] 张三: 下周三的汇报提前到周一吧
+[10:03] 李四: 可以的，我周一上午有空
+[10:03] 张三: 那定周一 10:00，会议室3
+[10:04] 王五: 我后天要出差，不在公司
+[10:05] 张三: @王五 那你线上接入？
+[10:06] 王五: 好的
+[10:10] 李四: PPT 谁来做？
+[10:12] 张三: 我来做吧，周五前发群里
+[10:15] 李四: 对了，客户那边数据要更新到昨天的
+[10:16] 张三: 收到，我今天更新
+[10:20] 赵六: 新图标方案我放共享文件夹了，大家看一下
+[10:21] 赵六: 链接：https://pan.example.com/s/abc123
+[10:25] 张三: 好的，周一开会前大家看下"></textarea>
+<div class="btn-row">
+<button class="btn secondary" onclick="clearInput()">清空</button>
+<button class="btn primary" onclick="analyze()">🔍 提取精华</button>
+</div>
+</div>
+
+<div class="result" id="result">
+<div class="stats" id="stats"></div>
+<div id="sections"></div>
+</div>
+<div class="footer">群聊精华提取器 · Demo · 本地处理，数据不上传</div>
+</div>
+
+<script>
+var sample=[
+['[10:02] 张三: 下周三的汇报提前到周一吧',
+'[10:03] 李四: 可以的，我周一上午有空',
+'[10:03] 张三: 那定周一 10:00，会议室3',
+'[10:04] 王五: 我后天要出差，不在公司',
+'[10:05] 张三: @王五 那你线上接入？',
+'[10:06] 王五: 好的',
+'[10:10] 李四: PPT 谁来做？',
+'[10:12] 张三: 我来做吧，周五前发群里',
+'[10:15] 李四: 对了，客户那边数据要更新到昨天的',
+'[10:16] 张三: 收到，我今天更新',
+'[10:20] 赵六: 新图标方案我放共享文件夹了，大家看一下',
+'[10:21] 赵六: 链接：https://pan.example.com/s/abc123',
+'[10:25] 张三: 好的，周一开会前大家看下'].join('\n')
+];
+
+function showTextarea(){
+document.getElementById('uploadArea').style.display='none';
+var ta=document.getElementById('chatInput');
+ta.className='show';
+ta.focus();
+}
+function clearInput(){
+var ta=document.getElementById('chatInput');
+ta.value='';
+ta.className='show';
+document.getElementById('uploadArea').style.display='none';
+document.getElementById('result').className='result';
+}
+
+function analyze(){
+var ta=document.getElementById('chatInput');
+var text=ta.value.trim();
+if(!text){
+text=sample[0];
+ta.value=text;
+ta.className='show';
+document.getElementById('uploadArea').style.display='none';
+}
+
+var lines=text.split('\n').filter(function(l){return l.trim();});
+var msgs=[];
+for(var i=0;i<lines.length;i++){
+var line=lines[i].trim();
+var match=line.match(/^\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?\s*(.+?)[:：]\s*(.+)$/);
+if(match){
+msgs.push({time:match[1],sender:match[2].trim(),content:match[3].trim()});
+}else{
+match=line.match(/^(.+?)[:：]\s*(.+)$/);
+if(match){
+msgs.push({time:'',sender:match[1].trim(),content:match[2].trim()});
+}
+}
+}
+
+var decisions=[];var actions=[];var questions=[];var links=[];
+var senderSet={};var deadlines=[];
+
+for(var i=0;i<msgs.length;i++){
+var m=msgs[i];
+senderSet[m.sender]=true;
+
+var c=m.content;
+
+if(/好[的的]|行|OK|ok|可以|没问题|收到|明白|同意|定了|确认|那就/.test(c)&&c.length<20){
+decisions.push({sender:m.sender,text:c,time:m.time});
+}
+if(/我来|我会|我[去做弄搞]|我发|我更新|我来做|我搞定/.test(c)){
+actions.push({sender:m.sender,text:c,time:m.time,type:'todo'});
+}
+if(/谁[来做弄搞]?|怎么做|怎么办|什么时候|在[哪那]|有没有|能不能/.test(c)||c.indexOf('？')!==-1||c.indexOf('?')!==-1){
+questions.push({sender:m.sender,text:c,time:m.time});
+}
+if(/https?:\/\/[^\s]+/.test(c)||/链接[：:]\s*\S+|发[到在了]\s*\S+|共享/.test(c)){
+links.push({sender:m.sender,text:c,time:m.time});
+}
+if(/周[一二三四五六日]|下?周[一二三四五六日]|明天|后天|今天|明早|明晚|这周|下周/.test(c)){
+deadlines.push({sender:m.sender,text:c,time:m.time});
+}
+if(c.indexOf('@')!==-1){
+var ats=c.match(/@\S+/g);
+if(ats){
+for(var j=0;j<ats.length;j++){
+actions.push({sender:m.sender,text:'@'+ats[j].replace('@','')+' — '+c,time:m.time,type:'mention'});
+}
+}
+}
+}
+
+var stats='<div class="stat"><div class="num">'+msgs.length+'</div><div class="label">消息总数</div></div>';
+stats+='<div class="stat"><div class="num">'+Object.keys(senderSet).length+'</div><div class="label">参与人数</div></div>';
+stats+='<div class="stat"><div class="num">'+decisions.length+'</div><div class="label">已决议</div></div>';
+stats+='<div class="stat"><div class="num">'+actions.length+'</div><div class="label">待办事项</div></div>';
+document.getElementById('stats').innerHTML=stats;
+
+var html='';
+if(decisions.length>0){
+html+='<div class="section"><h4>✅ 已做决定</h4><ul>';
+for(var i=0;i<decisions.length;i++){
+html+='<li><b>'+decisions[i].sender+'</b>'+'：'+decisions[i].text+'</li>';
+}
+html+='</ul></div>';
+}
+if(actions.length>0){
+html+='<div class="section blue"><h4>📋 待办 & 分配</h4><ul>';
+for(var i=0;i<actions.length;i++){
+var icon=actions[i].type==='mention'?'👤':'📌';
+html+='<li>'+icon+' <b>'+actions[i].sender+'</b>：'+actions[i].text+'</li>';
+}
+html+='</ul></div>';
+}
+if(deadlines.length>0){
+html+='<div class="section amber"><h4>⏰ 时间节点</h4><ul>';
+for(var i=0;i<deadlines.length;i++){
+html+='<li><b>'+deadlines[i].sender+'</b>'+'：'+deadlines[i].text+'</li>';
+}
+html+='</ul></div>';
+}
+if(questions.length>0){
+html+='<div class="section pink"><h4>❓ 待回应的问题</h4><ul>';
+for(var i=0;i<questions.length;i++){
+html+='<li><b>'+questions[i].sender+'</b>：'+questions[i].text+'</li>';
+}
+html+='</ul></div>';
+}
+if(links.length>0){
+html+='<div class="section"><h4>🔗 分享的资源</h4><ul>';
+for(var i=0;i<links.length;i++){
+html+='<li><b>'+links[i].sender+'</b>：'+links[i].text+'</li>';
+}
+html+='</ul></div>';
+}
+if(!html){
+html='<div class="section">未识别到关键信息，请检查文本格式。</div>';
+}
+document.getElementById('sections').innerHTML=html;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

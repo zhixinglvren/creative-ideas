@@ -1,6 +1,24 @@
 {
   "ideas": [
     {
+      "id": "chat-digest",
+      "icon": "💬",
+      "title": "群聊精华提取器",
+      "tagline": "300条消息1分钟看完——自动识别决策、待办、截止时间、问题和资源",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-chat-digest/"
+    },
+    {
+      "id": "chat-digest",
+      "icon": "💬",
+      "title": "群聊精华提取器",
+      "tagline": "300条消息1分钟看完——自动识别决策、待办、截止时间、问题和资源",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-chat-digest/"
+    },
+    {
       "id": "resignation-rights",
       "icon": "📋",
       "title": "离职权益计算器",
