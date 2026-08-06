@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>五险一金计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3e5f5;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#7b1fa2,#4a148c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field select,.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#7b1fa2}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#7b1fa2,#4a148c);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.bar{display:flex;align-items:center;margin-bottom:8px;font-size:13px}
+.bar .key{width:80px;color:#666;flex-shrink:0}
+.bar .val{font-weight:600;margin-left:8px}
+.bar .bar-visual{flex:1;margin-left:8px;height:14px;border-radius:7px;min-width:20px}
+.bar-total{font-size:18px;font-weight:800;text-align:center;padding:16px 0;color:#4a148c;border-top:2px solid #e1bee7;margin-top:12px}
+.bar-total .num{font-size:36px}
+.detail-block{background:#fafafa;border-radius:10px;padding:14px;margin-top:12px}
+.detail-block h4{font-size:13px;margin-bottom:8px;color:#7b1fa2}
+.detail-block .row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #eee}
+.detail-block .row:last-child{border:none}
+.detail-block .row .amt{font-weight:600}
+.note{font-size:11px;color:#999;margin-top:8px;line-height:1.6}
+.city-preset{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.city-tag{padding:6px 14px;border-radius:16px;border:1px solid #ce93d8;font-size:12px;cursor:pointer;transition:all .2s}
+.city-tag:active{background:#f3e5f5;border-color:#7b1fa2;color:#7b1fa2}
+.city-tag.sel{background:#7b1fa2;color:#fff;border-color:#7b1fa2}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💰 五险一金计算器</h1><div class="sub">税前工资 → 到手多少？雇主实际付了多少？</div></div>
+
+<div class="card"><h3>📍 城市</h3>
+<div class="city-preset">
+<div class="city-tag sel" onclick="selCity(this,'杭州')">杭州</div>
+<div class="city-tag" onclick="selCity(this,'北京')">北京</div>
+<div class="city-tag" onclick="selCity(this,'上海')">上海</div>
+<div class="city-tag" onclick="selCity(this,'深圳')">深圳</div>
+<div class="city-tag" onclick="selCity(this,'广州')">广州</div>
+<div class="city-tag" onclick="selCity(this,'成都')">成都</div>
+</div>
+<div class="field"><label>税前月薪（元）</label><input id="salary" type="number" value="15000" min="2000" max="200000" onchange="calc()"></div>
+<div class="field"><label>社保缴纳基数</label><input id="base" type="number" placeholder="默认=税前月薪" onchange="calc()"><div class="note">通常为税前月薪，上下限由当地社平工资决定。留空则取税前月薪</div></div></div>
+<button class="btn" onclick="calc()">📊 计算到手工资</button>
+
+<div class="result" id="result">
+<div class="bar-total"><div>💰 每月到手</div><div class="num" id="netPay">¥0</div></div>
+<div id="detail"></div>
+<div class="note" id="note"></div>
+</div>
+<div class="footer">五险一金计算器 · Demo · 数据参考各地人社局2026年标准，仅供估算</div>
+</div>
+
+<script>
+var city='杭州';
+
+var baseData={
+'杭州':{pension:{p:8,e:16},medical:{p:2,e:9.5},unemp:{p:0.5,e:0.5},injury:{p:0,e:0.3},maternity:{p:0,e:0.8},house:{p:12,e:12},min:3957,max:22311},
+'北京':{pension:{p:8,e:16},medical:{p:2,e:9.8},unemp:{p:0.5,e:0.5},injury:{p:0,e:0.4},maternity:{p:0,e:0.8},house:{p:12,e:12},min:5869,max:31884},
+'上海':{pension:{p:8,e:16},medical:{p:2,e:10.5},unemp:{p:0.5,e:0.5},injury:{p:0,e:0.32},maternity:{p:0,e:1},house:{p:7,e:7},min:6520,max:34188},
+'深圳':{pension:{p:8,e:14},medical:{p:2,e:6},unemp:{p:0.5,e:0.5},injury:{p:0,e:0.14},maternity:{p:0,e:0.45},house:{p:12,e:12},min:2360,max:38892},
+'广州':{pension:{p:8,e:14},medical:{p:2,e:5.5},unemp:{p:0.5,e:0.5},injury:{p:0,e:0.2},maternity:{p:0,e:0.85},house:{p:12,e:12},min:2300,max:36072},
+'成都':{pension:{p:8,e:16},medical:{p:2,e:8.5},unemp:{p:0.5,e:0.5},injury:{p:0,e:0.2},maternity:{p:0,e:0.8},house:{p:12,e:12},min:2100,max:21228}
+};
+
+var labels={pension:'养老保险',medical:'医疗保险',unemp:'失业保险',injury:'工伤保险',maternity:'生育保险',house:'住房公积金'};
+var colors={pension:'#7b1fa2',medical:'#0288d1',unemp:'#f57c00',injury:'#d32f2f',maternity:'#c2185b',house:'#388e3c'};
+
+function selCity(el,c){document.querySelectorAll('.city-tag').forEach(function(t){t.className='city-tag';});el.className='city-tag sel';city=c;calc();}
+function range(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+
+function calc(){
+var salary=parseInt(document.getElementById('salary').value)||0;
+var baseInput=document.getElementById('base').value;
+var base=baseInput?parseInt(baseInput):salary;
+var d=baseData[city];
+base=range(base,d.min,d.max);
+
+var items=['pension','medical','unemp','injury','maternity','house'];
+var employeeTotal=0,employerTotal=0;
+var rows=[];
+
+for(var i=0;i<items.length;i++){
+var k=items[i];
+var empAmt=Math.round(base*d[k].p/100);
+var erAmt=Math.round(base*d[k].e/100);
+employeeTotal+=empAmt;
+employerTotal+=erAmt;
+rows.push({key:k,label:labels[k],emp:empAmt,er:erAmt,color:colors[k]});
+}
+
+// Tax: taxable = salary - employee insurance - 5000 threshold
+var taxable=Math.max(0,salary-employeeTotal-5000);
+var tax=0;
+var brackets=[0,36000,144000,300000,420000,660000,960000];
+var rates=[0.03,0.1,0.2,0.25,0.3,0.35,0.45];
+var quickDed=[0,2520,16920,31920,52920,85920,181920];
+for(var i=brackets.length-1;i>=0;i--){
+if(taxable>brackets[i]){
+tax=Math.round(taxable*rates[i]-quickDed[i]);
+break;
+}
+}
+
+var net=salary-employeeTotal-tax;
+
+// Build display
+var maxVal=Math.max(salary,employeeTotal,employerTotal,tax);
+
+var html='<div class="detail-block"><h4>👤 个人缴纳</h4>';
+for(var i=0;i<rows.length;i++){
+var r=rows[i];
+var pct=Math.round(r.emp/salary*1000)/10;
+var w=Math.round(r.emp/maxVal*200)+1;
+html+='<div class="row"><span>'+r.label+ ' ('+pct+'%)</span><span class="amt">-¥'+r.emp.toLocaleString()+'</span></div>';
+}
+html+='<div class="row" style="font-weight:700"><span>小计</span><span class="amt" style="color:#d32f2f">-¥'+employeeTotal.toLocaleString()+'</span></div>';
+html+='</div>';
+
+html+='<div class="detail-block"><h4>💸 个人所得税</h4>';
+html+='<div class="row"><span>应纳税所得额</span><span class="amt">¥'+taxable.toLocaleString()+'</span></div>';
+html+='<div class="row" style="font-weight:700"><span>个税</span><span class="amt" style="color:#d32f2f">-¥'+tax.toLocaleString()+'</span></div>';
+html+='</div>';
+
+html+='<div class="detail-block"><h4>🏢 雇主承担</h4>';
+for(var i=0;i<rows.length;i++){
+var r=rows[i];
+var erPct=Math.round(baseData[city][r.key].e);
+html+='<div class="row"><span>'+r.label+' ('+erPct+'%)</span><span class="amt">¥'+r.er.toLocaleString()+'</span></div>';
+}
+html+='<div class="row" style="font-weight:700"><span>雇主合计</span><span class="amt">¥'+employerTotal.toLocaleString()+'</span></div>';
+html+='<div class="row" style="font-weight:700;color:#7b1fa2"><span>雇主实际总成本</span><span class="amt">¥'+(salary+employerTotal).toLocaleString()+'</span></div>';
+html+='</div>';
+
+document.getElementById('netPay').textContent='¥'+net.toLocaleString();
+document.getElementById('detail').innerHTML=html;
+document.getElementById('note').innerHTML='📍 '+city+' · 基数 ¥'+base.toLocaleString()+' (下限 ¥'+d.min.toLocaleString()+' / 上限 ¥'+d.max.toLocaleString()+')<br>⚠️ 社保比例因城市逐年微调，以上为当前参考值，实际以当地人社局公布为准。';
+
+document.getElementById('result').className='result show';
+}
+
+calc();
+</script>
+</body>
+</html>

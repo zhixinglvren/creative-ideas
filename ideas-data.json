@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "salary-calc",
+      "icon": "💰",
+      "title": "五险一金计算器",
+      "tagline": "税前15000到手多少？雇主实际付了多少？一键算清",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-salary-calc/"
+    },
+    {
       "id": "chat-digest",
       "icon": "💬",
       "title": "群聊精华提取器",
