@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "health-report",
+      "icon": "🩺",
+      "title": "体检报告解读助手",
+      "tagline": "血常规肝功能肾功能——箭头↑↓看不懂？一秒读懂每项指标",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-health-report/"
+    },
+    {
       "id": "salary-calc",
       "icon": "💰",
       "title": "五险一金计算器",

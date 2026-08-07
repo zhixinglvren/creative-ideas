@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>体检报告解读助手 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8eaf6;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#3949ab,#1a237e);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.intro{font-size:13px;color:#888;text-align:center;margin-bottom:16px;line-height:1.8}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.quick-section{margin-bottom:12px}
+.quick-section h4{font-size:13px;color:#999;margin-bottom:8px}
+.quick-tags{display:flex;flex-wrap:wrap;gap:6px}
+.quick-tag{padding:8px 14px;border-radius:20px;border:1px solid #c5cae9;background:#fff;font-size:13px;cursor:pointer;transition:all .2s}
+.quick-tag:active{background:#e8eaf6;border-color:#3949ab;color:#3949ab}
+.tag-sel{background:#3949ab!important;color:#fff!important;border-color:#3949ab!important}
+.item-card{background:#fafafa;border-radius:10px;padding:14px;margin-bottom:8px;border-left:4px solid #ccc}
+.item-card.abnormal{border-left-color:#e53935;background:#fff5f5}
+.item-card.borderline{border-left-color:#ff9800;background:#fff8e1}
+.item-card .item-name{font-weight:600;font-size:14px;margin-bottom:4px}
+.item-card .item-value{font-size:13px;color:#666;margin-bottom:4px}
+.item-card .item-range{font-size:11px;color:#999}
+.item-card .item-explain{font-size:12px;line-height:1.7;margin-top:8px;padding:8px;border-radius:6px;background:#fff}
+.item-card.abnormal .item-explain{background:#ffebee;color:#c62828}
+.item-card.borderline .item-explain{background:#fff3e0;color:#e65100}
+.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-left:6px}
+.badge-up{background:#ffcdd2;color:#c62828}
+.badge-down{background:#c8e6c9;color:#2e7d32}
+.badge-warn{background:#ffe0b2;color:#e65100}
+.section-title{font-size:13px;font-weight:600;color:#3949ab;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #e8eaf6}
+.summary{background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:12px;padding:16px;margin-top:12px;line-height:1.8;font-size:13px}
+.summary .count{font-size:28px;font-weight:800;color:#3949ab}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3949ab,#1a237e);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🩺 体检报告解读助手</h1><div class="sub">箭头↑↓看不懂？异常项要不要紧？<br>一秒看懂你的体检报告</div></div>
+<div class="intro">血常规、肝功能、肾功能、血脂……箭头一堆，心里慌。选你关心的指标，告诉你问题多大、该挂哪个科。</div>
+
+<div class="card"><h3>🗂 快速定位</h3>
+<div class="quick-section"><h4>常见异常项</h4>
+<div class="quick-tags">
+<div class="quick-tag" onclick="scrollTo('alt')">转氨酶偏高</div>
+<div class="quick-tag" onclick="scrollTo('ua')">尿酸高</div>
+<div class="quick-tag" onclick="scrollTo('tc')">总胆固醇</div>
+<div class="quick-tag" onclick="scrollTo('tg')">甘油三酯</div>
+<div class="quick-tag" onclick="scrollTo('glu')">血糖偏高</div>
+<div class="quick-tag" onclick="scrollTo('wbc')">白细胞异常</div>
+<div class="quick-tag" onclick="scrollTo('bun')">肌酐偏高</div>
+<div class="quick-tag" onclick="scrollTo('tsh')">促甲状腺素</div>
+</div></div></div>
+
+<div id="items"></div>
+
+<div class="summary" id="summary"></div>
+<div class="footer">体检报告解读助手 · Demo · 仅供参考，不适请及时就医</div>
+</div>
+
+<script>
+var items=[
+{cat:'肝功能',id:'alt',name:'谷丙转氨酶 ALT',val:78,unit:'U/L',range:'0-40',status:'abnormal',
+ explain:'ALT 是肝细胞损伤最敏感的指标。轻度升高（<120）常见于脂肪肝、饮酒、药物影响。建议：① 戒酒 2 周后复查；② 查肝胆 B 超排除脂肪肝；③ 如持续升高，挂**消化内科**。',advice:'消化内科'},
+{cat:'肝功能',id:'ast',name:'谷草转氨酶 AST',val:35,unit:'U/L',range:'0-40',status:'normal',
+ explain:'AST 正常。AST 升高比 ALT 更值得警惕，常提示肝细胞深层损伤或心肌问题。你的值在正常范围，无需担心。'},
+{cat:'肾功能',id:'bun',name:'肌酐 Cr',val:108,unit:'μmol/L',range:'44-104',status:'abnormal',
+ explain:'肌酐是肾功能核心指标。轻度升高可能与运动、高蛋白饮食、饮水不足有关。建议：① 大量饮水后空腹复查；② 查尿常规看有无蛋白尿；③ 如持续偏高，挂**肾内科**，可能需做肾脏 B 超。',advice:'肾内科'},
+{cat:'肾功能',id:'ua',name:'尿酸 UA',val:520,unit:'μmol/L',range:'150-420',status:'abnormal',
+ explain:'尿酸明显偏高，已超正常上限 100。长期高尿酸可致痛风、肾结石、肾功能损伤。建议：① 严格控制高嘌呤食物（内脏、海鲜、啤酒、浓汤）；② 每日饮水 >2000ml；③ 挂**内分泌科**或**风湿免疫科**评估是否需要药物降尿酸。',advice:'内分泌科/风湿科'},
+{cat:'血脂',id:'tc',name:'总胆固醇 TC',val:6.2,unit:'mmol/L',range:'2.8-5.2',status:'abnormal',
+ explain:'总胆固醇偏高。需结合高/低密度脂蛋白综合判断。建议：① 减少动物脂肪、油炸食品；② 增加燕麦、坚果、深海鱼摄入；③ 增加有氧运动（每周≥150分钟）；④ 挂**心内科**或**内分泌科**进一步评估。',advice:'心内科/内分泌科'},
+{cat:'血脂',id:'tg',name:'甘油三酯 TG',val:2.8,unit:'mmol/L',range:'0.56-1.7',status:'abnormal',
+ explain:'甘油三酯显著升高，常见于饮食不当（高碳水/高糖）、肥胖、缺乏运动。短期建议：严格控糖控主食，晚餐减量。如持续高值，风险包括急性胰腺炎。挂**内分泌科**。',advice:'内分泌科'},
+{cat:'血脂',id:'hdl',name:'高密度脂蛋白 HDL',val:1.1,unit:'mmol/L',range:'>1.0',status:'borderline',
+ explain:'HDL 是"好胆固醇"，你的值在临界范围。偏低会增加心血管风险。提升方法：有氧运动最有效，每周至少 3 次 30 分钟以上。'},
+{cat:'血糖',id:'glu',name:'空腹血糖 GLU',val:6.3,unit:'mmol/L',range:'3.9-6.1',status:'abnormal',
+ explain:'空腹血糖偏高（空腹血糖受损，即"糖尿病前期"）。尚未达到糖尿病诊断标准（≥7.0），但已是警示信号。建议：① 查糖化血红蛋白 HbA1c 评估近 3 月平均血糖；② 严格控制甜食、含糖饮料、精米白面；③ 餐后散步 30 分钟；④ 1-3 个月后复查，挂**内分泌科**。',advice:'内分泌科'},
+{cat:'血常规',id:'wbc',name:'白细胞 WBC',val:4.5,unit:'×10⁹/L',range:'3.5-9.5',status:'normal',
+ explain:'白细胞正常，反映免疫系统功能良好，无感染迹象。'},
+{cat:'血常规',id:'rbc',name:'红细胞 RBC',val:5.1,unit:'×10¹²/L',range:'4.0-5.5',status:'normal',
+ explain:'红细胞正常，无贫血或红细胞增多迹象。'},
+{cat:'血常规',id:'plt',name:'血小板 PLT',val:180,unit:'×10⁹/L',range:'100-300',status:'normal',
+ explain:'血小板正常，凝血功能良好。'},
+{cat:'甲状腺',id:'tsh',name:'促甲状腺素 TSH',val:5.8,unit:'mIU/L',range:'0.35-4.94',status:'abnormal',
+ explain:'TSH 轻度偏高，提示可能为亚临床甲减（甲状腺功能减退）。常见症状：乏力、怕冷、体重增加、情绪低落。建议：① 同时查 FT3/FT4 确认；② 挂**内分泌科**；③ 如确诊，口服优甲乐即可控制，不影响生活。',advice:'内分泌科'},
+];
+
+function render(){
+var container=document.getElementById('items');
+var cats={};
+var abnormalCount=0,borderlineCount=0;
+for(var i=0;i<items.length;i++){
+var item=items[i];
+if(!cats[item.cat])cats[item.cat]=[];
+cats[item.cat].push(item);
+if(item.status==='abnormal')abnormalCount++;
+if(item.status==='borderline')borderlineCount++;
+}
+
+var html='';
+var catNames=Object.keys(cats);
+for(var ci=0;ci<catNames.length;ci++){
+var cat=catNames[ci];
+var catItems=cats[cat];
+html+='<div class="section-title">📋 '+cat+'</div>';
+for(var j=0;j<catItems.length;j++){
+var it=catItems[j];
+var cls=it.status==='abnormal'?'abnormal':(it.status==='borderline'?'borderline':'');
+var badge='';
+if(it.status==='abnormal')badge='<span class="badge badge-up">↑ 偏高</span>';
+else if(it.status==='borderline')badge='<span class="badge badge-warn">⚠ 临界</span>';
+html+='<div class="item-card '+cls+'" id="'+it.id+'">';
+html+='<div class="item-name">'+it.name+badge+'</div>';
+html+='<div class="item-value">结果：<b>'+it.val+' '+it.unit+'</b>（参考范围：'+it.range+'）</div>';
+html+='<div class="item-explain">💡 '+it.explain+'</div>';
+html+='</div>';
+}
+}
+
+container.innerHTML=html;
+
+// Summary
+var summaryHtml='<div class="count">'+abnormalCount+'</div> 项异常 ｜ '+borderlineCount+' 项临界';
+if(abnormalCount>0){
+summaryHtml+='<br><br>⚠️ <b>重点关注</b>：';
+var advises={};
+for(var i=0;i<items.length;i++){
+if(items[i].advice&&(items[i].status==='abnormal'||items[i].status==='borderline')){
+if(!advises[items[i].advice])advises[items[i].advice]=[];
+advises[items[i].advice].push(items[i].name);
+}
+}
+var advKeys=Object.keys(advises);
+for(var a=0;a<advKeys.length;a++){
+summaryHtml+='<br>• 挂 <b>'+advKeys[a]+'</b>：'+advises[advKeys[a]].join('、');
+}
+}
+summaryHtml+='<br><br>📌 以上为 AI 辅助解读，不能替代医生诊断。';
+document.getElementById('summary').innerHTML=summaryHtml;
+}
+
+function scrollTo(id){
+var el=document.getElementById(id);
+if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+render();
+</script>
+</body>
+</html>
