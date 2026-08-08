@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>闲置物品回收指南 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f8e9;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#558b2f,#33691e);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none;background:#fff}
+.field select:focus{border-color:#558b2f}
+.quick-section{margin-bottom:12px}
+.quick-section h4{font-size:13px;color:#999;margin-bottom:8px}
+.quick-tags{display:flex;flex-wrap:wrap;gap:6px}
+.quick-tag{padding:8px 14px;border-radius:20px;border:1px solid #c5e1a5;background:#fff;font-size:13px;cursor:pointer;transition:all .2s}
+.quick-tag:active{background:#f1f8e9;border-color:#558b2f;color:#558b2f}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.price-card{background:linear-gradient(135deg,#f1f8e9,#dcedc8);border-radius:12px;padding:20px;text-align:center;margin-bottom:12px}
+.price-card .est{font-size:36px;font-weight:800;color:#33691e}
+.price-card .range{font-size:12px;color:#888;margin-top:4px}
+.platforms{margin-top:12px}
+.platform-card{display:flex;align-items:center;background:#fff;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid #e0e0e0}
+.platform-card .rank{width:28px;height:28px;border-radius:50%;text-align:center;line-height:28px;font-weight:700;font-size:13px;flex-shrink:0;margin-right:10px}
+.platform-card .rank.r1{background:#ffd700;color:#333}
+.platform-card .rank.r2{background:#c0c0c0;color:#333}
+.platform-card .rank.r3{background:#cd7f32;color:#fff}
+.platform-card .info{flex:1}
+.platform-card .info .pname{font-weight:600;font-size:13px}
+.platform-card .info .preason{font-size:11px;color:#888;margin-top:2px}
+.platform-card .score{font-size:11px;color:#558b2f;font-weight:600;flex-shrink:0}
+.tips{background:#fff8e1;border-radius:10px;padding:12px;margin-top:12px;font-size:12px;line-height:1.8;color:#f57f17}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>♻️ 闲置物品回收指南</h1><div class="sub">旧手机旧电脑旧书旧衣服——<br>别扔，看看能换多少钱</div></div>
+
+<div class="card"><h3>📦 选择你要处理的物品</h3>
+<div class="quick-section"><h4>常用品类</h4>
+<div class="quick-tags">
+<div class="quick-tag" onclick="selItem(0)">📱 旧手机</div>
+<div class="quick-tag" onclick="selItem(1)">💻 旧笔记本</div>
+<div class="quick-tag" onclick="selItem(2)">⌚ 智能手表</div>
+<div class="quick-tag" onclick="selItem(3)">📷 旧相机</div>
+<div class="quick-tag" onclick="selItem(4)">📚 旧书</div>
+<div class="quick-tag" onclick="selItem(5)">👕 旧衣物</div>
+<div class="quick-tag" onclick="selItem(6)">🪑 旧家具</div>
+<div class="quick-tag" onclick="selItem(7)">🎮 游戏机</div>
+</div></div></div>
+
+<div id="result"></div>
+<div class="footer">闲置物品回收指南 · Demo · 仅供参考，实际价值以平台评估为准</div>
+</div>
+
+<script>
+var items=[
+{name:'旧手机',icon:'📱',est:'300—2000',unit:'元',cat:'数码',
+ platforms:[
+  {name:'闲鱼',reason:'个人卖家价最高，但需花时间拍照沟通',score:'价格最高'},
+  {name:'爱回收',reason:'上门回收，当面验机打款，方便快捷',score:'最省心'},
+  {name:'转转',reason:'官方验机服务，成色好溢价空间大',score:'验机靠谱'},
+  {name:'回收宝',reason:'线上估价后寄出，价格中等偏上',score:'中等价位'}
+ ],
+ tips:['清空数据并退出 iCloud/华为账号后再寄出','保留原装充电器+包装盒可多卖 50-100 元','屏幕无划痕+机身无磕碰 = 回收价大幅提升','iPhone 回收价高于同年代安卓机约 30%']},
+
+{name:'旧笔记本',icon:'💻',est:'200—1500',unit:'元',cat:'数码',
+ platforms:[
+  {name:'闲鱼',reason:'适合还能开机的，写好配置和成色',score:'价格最高'},
+  {name:'爱回收',reason:'快速估价，上门取件，当面付款',score:'最省心'},
+  {name:'转转',reason:'有官方检测，成色好的溢价多',score:'验机靠谱'}
+ ],
+ tips:['8 年以上的笔记本回收价很低，不如拆零件卖','内存条+硬盘可单独拆卖，比整机回收更值钱','重装系统清理干净后再寄出','无法开机的本子只有拆件回收价值，约 50-100 元']},
+
+{name:'智能手表',icon:'⌚',est:'100—800',unit:'元',cat:'数码',
+ platforms:[
+  {name:'闲鱼',reason:'Apple Watch 保值率最高，建议配原装表带',score:'价格最高'},
+  {name:'爱回收',reason:'Apple Watch 回收流程成熟',score:'最省心'}
+ ],
+ tips:['Apple Watch 回收价比其他品牌高 30-50%','保留原装充电器很重要','屏幕无划痕的溢价明显']},
+
+{name:'旧相机',icon:'📷',est:'500—5000',unit:'元',cat:'数码',
+ platforms:[
+  {name:'闲鱼',reason:'相机圈活跃，二手价透明，越好越贵',score:'价格最高'},
+  {name:'蜂鸟二手',reason:'专业摄影器材交易，买家懂行',score:'专业渠道'},
+  {name:'转转',reason:'有相机验机服务',score:'验机靠谱'}
+ ],
+ tips:['镜头和机身分开卖，总价比套机高','快门数越低越值钱','保留原包装、保修卡、发票 = 价格 +20%','卡片机回收价值低，微单/单反保值好']},
+
+{name:'旧书',icon:'📚',est:'1—15',unit:'元/本',cat:'生活',
+ platforms:[
+  {name:'多抓鱼',reason:'扫码卖书最方便，顺丰免费上门取',score:'最省心'},
+  {name:'闲鱼',reason:'教材/考研书/绝版书溢价空间大',score:'价格最高'},
+  {name:'漫游鲸',reason:'二手书流转平台，回收购书一体',score:'循环利用'}
+ ],
+ tips:['教材类：考研/考公/雅思 时效性强，尽早卖','文学小说：多抓鱼回收价稳定','绝版书/签名版：闲鱼挂高价，等有缘人','发霉严重或破损的书平台不收']},
+
+{name:'旧衣物',icon:'👕',est:'0—30',unit:'元/件',cat:'生活',
+ platforms:[
+  {name:'闲鱼',reason:'品牌衣物（ZARA/优衣库/耐克）好出',score:'品牌溢价'},
+  {name:'白鲸鱼',reason:'旧衣回收平台，按重量回收，上门取',score:'最省心'},
+  {name:'飞蚂蚁',reason:'旧衣捐赠/环保回收，有公益属性',score:'环保公益'}
+ ],
+ tips:['品牌衣物放闲鱼，杂牌衣物走批量回收','冬装>夏装 回收价值','吊牌未拆 = 原价 3-5 折','内衣、袜类不收']},
+
+{name:'旧家具',icon:'🪑',est:'50—500',unit:'元',cat:'家居',
+ platforms:[
+  {name:'闲鱼',reason:'本地自提免运费，实木家具好出',score:'价格最高'},
+  {name:'小区闲置群',reason:'邻里交易，零运费，成交快',score:'最便捷'},
+  {name:'58同城',reason:'二手家具分类明确，同城交易',score:'本地流量大'}
+ ],
+ tips:['实木家具 > 板材家具','宜家热门款转手快，保值率好','拍照时把瑕疵拍清楚，诚实反而成交快','大件家具强调"自提"而非"包邮"']},
+
+{name:'游戏机',icon:'🎮',est:'300—2000',unit:'元',cat:'数码',
+ platforms:[
+  {name:'闲鱼',reason:'Switch/PS5 二手市场活跃，价格透明',score:'价格最高'},
+  {name:'转转',reason:'有游戏机专属检测标准',score:'验机靠谱'},
+  {name:'宁波老猎人',reason:'二手卡带专业回收，价格公道',score:'卡带专收'}
+ ],
+ tips:['带游戏卡带/光盘一起出，总价更高','Switch 续航版比 Lite 保值','保留原包装箱说 = 价格 +15%','PS5 光驱版比数字版更保值']}
+];
+
+function selItem(idx){
+var it=items[idx];
+var html='';
+
+html+='<div class="price-card"><div style="font-size:14px;color:#888">'+it.icon+' '+it.name+' · 预估回收价</div>';
+html+='<div class="est">¥'+it.est+'</div>';
+html+='<div class="range">因品牌/型号/成色差异较大，以平台实际评估为准</div></div>';
+
+html+='<div class="card"><h3>🏆 推荐回收渠道</h3>';
+for(var i=0;i<it.platforms.length;i++){
+var p=it.platforms[i];
+var rc=i<3?'r'+(i+1):'';
+html+='<div class="platform-card">';
+html+='<div class="rank '+rc+'">'+(i+1)+'</div>';
+html+='<div class="info"><div class="pname">'+p.name+'</div>';
+html+='<div class="preason">'+p.reason+'</div></div>';
+html+='<div class="score">'+p.score+'</div></div>';
+}
+html+='</div>';
+
+html+='<div class="tips"><b>💡 小贴士</b><br>';
+for(var i=0;i<it.tips.length;i++){
+html+='• '+it.tips[i]+'<br>';
+}
+html+='</div>';
+
+document.getElementById('result').innerHTML=html;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

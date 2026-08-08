@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "recycle-guide",
+      "icon": "♻️",
+      "title": "闲置物品回收指南",
+      "tagline": "旧手机旧电脑旧书别扔——8大品类告诉你卖多少钱、去哪卖最划算",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-recycle-guide/"
+    },
+    {
       "id": "health-report",
       "icon": "🩺",
       "title": "体检报告解读助手",
