@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>凑单计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff3e0;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#e65100,#bf360c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:14px}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#e65100}
+.preset-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.preset-btn{padding:8px 16px;border-radius:20px;border:1px solid #ffcc80;background:#fff;font-size:12px;cursor:pointer;transition:all .2s}
+.preset-btn:active{background:#fff3e0;border-color:#e65100;color:#e65100}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.result-card{background:linear-gradient(135deg,#fff8e1,#ffe0b2);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.result-card .big{font-size:36px;font-weight:800;color:#bf360c}
+.result-card .label{font-size:12px;color:#888;margin-top:4px}
+.suggestions{margin-top:12px}
+.suggest-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:8px;border:1px solid #eee}
+.suggest-item .info{flex:1}
+.suggest-item .info .name{font-weight:600;font-size:13px}
+.suggest-item .info .reason{font-size:11px;color:#888;margin-top:2px}
+.suggest-item .price{font-weight:700;color:#e65100;font-size:15px;margin-left:12px;white-space:nowrap}
+.suggest-item.best{border:2px solid #ff9800;background:#fff8e1}
+.suggest-item.best::before{content:'🥇 最优';position:absolute;top:-8px;left:12px;font-size:10px;background:#ff9800;color:#fff;padding:1px 8px;border-radius:8px}
+.suggest-item.best{position:relative}
+.summary{font-size:13px;color:#888;text-align:center;margin-top:8px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#e65100,#bf360c);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🛒 凑单计算器</h1><div class="sub">满300减50？你的购物车还差多少钱？<br>别再为凑单多花冤枉钱</div></div>
+
+<div class="card"><h3>🎫 优惠门槛</h3>
+<div class="preset-row">
+<div class="preset-btn" onclick="setRule(300,50)">满300减50</div>
+<div class="preset-btn" onclick="setRule(200,30)">满200减30</div>
+<div class="preset-btn" onclick="setRule(199,25)">满199减25</div>
+<div class="preset-btn" onclick="setRule(99,10)">满99减10</div>
+<div class="preset-btn" onclick="setRule(88,5)">满88减5</div>
+</div>
+<div class="row2">
+<div class="field"><label>满减门槛（元）</label><input id="threshold" type="number" value="300" min="1"></div>
+<div class="field"><label>优惠金额（元）</label><input id="discount" type="number" value="50" min="1"></div>
+</div></div>
+
+<div class="card"><h3>🛍️ 购物车已选</h3>
+<div class="row2">
+<div class="field"><label>商品1 价格</label><input id="item1" type="number" value="89" min="0" step="0.01"></div>
+<div class="field"><label>商品2 价格</label><input id="item2" type="number" value="128" min="0" step="0.01"></div>
+</div>
+<div class="row2">
+<div class="field"><label>商品3 价格</label><input id="item3" type="number" value="0" min="0" step="0.01"></div>
+<div class="field"><label>商品4 价格</label><input id="item4" type="number" value="0" min="0" step="0.01"></div>
+</div>
+<div class="row2">
+<div class="field"><label>商品5 价格</label><input id="item5" type="number" value="0" min="0" step="0.01"></div>
+<div class="field"><label>商品6 价格</label><input id="item6" type="number" value="0" min="0" step="0.01"></div>
+</div></div>
+
+<button class="btn" onclick="calc()">🧮 计算最优凑单方案</button>
+
+<div class="result" id="result">
+<div class="result-card">
+<div class="big" id="gapAmount">¥0</div>
+<div class="label" id="gapLabel"></div>
+</div>
+<div class="suggestions" id="suggestions"></div>
+<div class="summary" id="summary"></div>
+</div>
+<div class="footer">凑单计算器 · Demo · 理性消费，按需凑单</div>
+</div>
+
+<script>
+function setRule(t,d){document.getElementById('threshold').value=t;document.getElementById('discount').value=d}
+
+function calc(){
+var items=[];
+for(var i=1;i<=6;i++){
+var v=parseFloat(document.getElementById('item'+i).value)||0;
+if(v>0)items.push(v);
+}
+var threshold=parseFloat(document.getElementById('threshold').value)||0;
+var discount=parseFloat(document.getElementById('discount').value)||0;
+if(threshold<=0||items.length===0)return;
+
+var cartTotal=items.reduce(function(a,b){return a+b;},0);
+var gap=threshold-cartTotal;
+
+document.getElementById('gapAmount').textContent='¥'+Math.abs(gap).toFixed(2);
+if(gap<=0){
+document.getElementById('gapLabel').textContent='已满 '+threshold+' 元，直接享受满减！';
+document.getElementById('suggestions').innerHTML='';
+document.getElementById('summary').innerHTML='🎉 实付：¥'+(cartTotal-discount).toFixed(2)+'（省 ¥'+discount+'）';
+document.getElementById('result').className='result show';
+return;
+}
+
+document.getElementById('gapLabel').textContent='还差 ¥'+gap.toFixed(2)+' 才能享受 ¥'+discount+' 优惠';
+
+// Generate suggestions
+var suggests=[];
+var magicNumbers=[gap,Math.round(gap),Math.ceil(gap),Math.ceil(gap/10)*10];
+
+// Strategy 1: exact match
+suggests.push({name:'精准凑单',price:gap,reason:'刚好凑满，一分不浪费'});
+
+// Strategy 2: common price points near gap
+var commonPrices=[9.9,12.9,15.9,19.9,25.9,29.9,39.9,49.9,59.9,69.9,79.9,89.9,99.9];
+for(var i=0;i<commonPrices.length;i++){
+var p=commonPrices[i];
+if(p>=gap&&p<=gap*2){
+suggests.push({name:'常见凑单品',price:p,reason:p==Math.round(p)?'整数好找':'×.9 定价套路'});
+break;
+}
+}
+for(var i=0;i<commonPrices.length;i++){
+if(commonPrices[i]>=gap*0.7&&commonPrices[i]<=gap){
+suggests.push({name:'凑单引流品',price:commonPrices[i],reason:'再加一件可能凑满'});
+break;
+}
+}
+
+// Strategy 3: slightly over (waste < discount)
+if(gap<discount){
+var acceptableWaste=discount-gap;
+for(var i=0;i<commonPrices.length;i++){
+var over=commonPrices[i];
+if(over>gap&&(over-gap)<acceptableWaste&&over-gap<gap*0.5){
+suggests.push({name:'加价凑单',price:over,reason:'多花 ¥'+(over-gap).toFixed(1)+'，仍净省 ¥'+(discount-(over-gap)).toFixed(1)});
+break;
+}
+}
+}
+
+// Strategy 4: don't bother if gap is too big
+if(gap>threshold*0.5){
+suggests.push({name:'不建议凑单',price:0,reason:'差额太大（>50%门槛），为凑而凑不划算'});
+}else if(suggests.length<2){
+suggests.push({name:'放弃凑单',price:0,reason:'凑单成本接近优惠金额，不如直接买'});
+}
+
+// Deduplicate by price
+var seen={};
+var deduped=[];
+for(var i=0;i<suggests.length;i++){
+var key=suggests[i].price.toFixed(2);
+if(!seen[key]){seen[key]=true;deduped.push(suggests[i]);}
+}
+
+var html='';
+for(var i=0;i<deduped.length;i++){
+var s=deduped[i];
+var cls=i===0?'suggest-item best':'suggest-item';
+var priceStr=s.price>0?'¥'+s.price.toFixed(2):'—';
+html+='<div class="'+cls+'">';
+html+='<div class="info"><div class="name">'+s.name+'</div><div class="reason">'+s.reason+'</div></div>';
+html+='<div class="price">'+priceStr+'</div>';
+html+='</div>';
+}
+document.getElementById('suggestions').innerHTML=html;
+
+var realSave=discount;
+var first=deduped[0];
+var waste=first.price>0?first.price-gap:0;
+var summary='💰 凑单后实付约：¥'+(cartTotal+(first.price||0)-discount).toFixed(2)+'（省 ¥'+(discount-waste).toFixed(2)+'）';
+summary+='<br>📌 建议按价格升序搜索，找到最接近 ¥'+gap.toFixed(2)+' 的商品';
+document.getElementById('summary').innerHTML=summary;
+
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

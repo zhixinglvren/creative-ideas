@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "padding-calc",
+      "icon": "🛒",
+      "title": "凑单计算器",
+      "tagline": "满300减50，你购物车还差多少？别为凑单多花冤枉钱",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-padding-calc/"
+    },
+    {
       "id": "recycle-guide",
       "icon": "♻️",
       "title": "闲置物品回收指南",
