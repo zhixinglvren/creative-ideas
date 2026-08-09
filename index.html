@@ -225,7 +225,7 @@
             i.title.toLowerCase().includes(q) ||
             i.tagline.toLowerCase().includes(q) ||
             i.category.toLowerCase().includes(q))
-        : allIdeas;
+        : allIdeas.slice().reverse();
       page = 1;
       render();
     }
