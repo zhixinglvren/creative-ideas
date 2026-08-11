@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "dish-translator",
+      "icon": "🥢",
+      "title": "菜名翻译官",
+      "tagline": "踏雪寻梅？蚂蚁上树？一秒翻译文艺菜名—原来是这个食材",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-dish-translator/"
+    },
+    {
       "id": "padding-calc",
       "icon": "🛒",
       "title": "凑单计算器",

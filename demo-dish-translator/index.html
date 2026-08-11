@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>菜名翻译官 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff8e1;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#f4511e,#bf360c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field input{width:100%;padding:12px 16px;border:1px solid #e0e0e0;border-radius:10px;font-size:15px;outline:none;font-family:inherit}
+.field input:focus{border-color:#f4511e}
+.quick-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.quick-tag{padding:8px 14px;border-radius:20px;border:1px solid #ffccbc;background:#fff;font-size:13px;cursor:pointer;transition:all .2s}
+.quick-tag:active{background:#fff3e0;border-color:#f4511e;color:#f4511e}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.result-card{background:#fff;border-radius:14px;padding:20px;border-left:4px solid #f4511e;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.result-card .name{font-size:17px;font-weight:700;color:#f4511e;margin-bottom:8px}
+.result-card .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.result-card .meta span{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.meta-spicy{background:#ffebee;color:#c62828}
+.meta-method{background:#e8f5e9;color:#2e7d32}
+.meta-origin{background:#e3f2fd;color:#1565c0}
+.result-card .desc{font-size:13px;color:#666;line-height:1.7}
+.result-card .materials{font-size:12px;color:#999;margin-top:8px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#f4511e,#bf360c);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{flex:1;text-align:center;padding:10px 8px;border-radius:10px;font-size:13px;cursor:pointer;border:1px solid #e0e0e0;background:#fff;transition:all .2s}
+.tab.on{background:#f4511e;color:#fff;border-color:#f4511e}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🥢 菜名翻译官</h1><div class="sub">"踏雪寻梅""翡翠白玉"到底是啥？<br>一秒翻译诗意菜名为真实食材</div></div>
+
+<div class="card">
+<div class="tabs">
+<div class="tab on" onclick="switchTab('cn')">🇨🇳 诗意菜名</div>
+<div class="tab" onclick="switchTab('en')">🌍 西餐术语</div>
+</div>
+<div class="quick-tags" id="tags"></div>
+<div class="field"><input id="dishInput" placeholder="输入看不懂的菜名，如：踏雪寻梅"></div>
+</div>
+<button class="btn" onclick="translateDish()">🔍 翻译菜名</button>
+
+<div class="result" id="result"></div>
+<div class="footer">菜名翻译官 · Demo · 中餐几千道文艺菜名，不再盲点</div>
+</div>
+
+<script>
+var mode='cn';
+var dishes=[
+// 诗意菜名
+{name:'踏雪寻梅',real:'糖拌西红柿',desc:'把西红柿切片摆成梅花状，撒上白糖——白糖是"雪"，红色西红柿是"梅"。童年回忆级凉菜，酸甜爽口。',materials:'西红柿、白砂糖',method:'凉拌',spicy:'不辣',origin:'北方家常菜',tags:['糖拌西红柿','火山飘雪']},
+{name:'翡翠白玉卷',real:'白菜肉卷',desc:'白菜叶焯水后包裹猪肉馅，蒸制成卷。白菜晶莹剔透如"翡翠"，肉馅洁白似"白玉"。清淡鲜美，宴客常见菜。',materials:'大白菜、猪肉馅、香菇',method:'蒸',spicy:'不辣',origin:'江浙菜',tags:[]},
+{name:'金玉满堂',real:'玉米松子炒虾仁',desc:'金黄的玉米粒配上粉嫩的虾仁，再加松子点缀。玉米是"金"，虾仁如"玉"，年菜常客，寓意富贵吉祥。',materials:'玉米粒、虾仁、松子、胡萝卜丁',method:'炒',spicy:'不辣',origin:'粤菜',tags:[]},
+{name:'蚂蚁上树',real:'肉末粉丝',desc:'碎肉末粘在粉丝上，像蚂蚁爬在树枝上。实际是炒得干香的肉末粉丝煲，下饭神器。',materials:'猪肉末、粉丝（红薯粉条）、豆瓣酱',method:'炒',spicy:'微辣',origin:'川菜',tags:['肉末粉丝煲']},
+{name:'霸王别姬',real:'甲鱼炖鸡',desc:'甲鱼（鳖）和鸡一起炖煮。"霸王"指甲鱼（形似铠甲），"别姬"指鸡（谐音"姬"）。豪华宴席汤品，汤浓肉烂。',materials:'甲鱼、老母鸡、枸杞、火腿',method:'炖',spicy:'不辣',origin:'苏菜',tags:[]},
+{name:'夫妻肺片',real:'牛杂拌红油',desc:'名字很吓人，但其实是卤牛杂（牛肉、牛肚、牛舌等）切片拌红油辣酱。川菜凉菜之王，麻辣鲜香。不是肺片！',materials:'牛肉、牛肚、牛舌、红油辣酱',method:'凉拌',spicy:'麻辣',origin:'川菜',tags:['凉拌肺片']},
+{name:'佛跳墙',real:'海鲜山珍浓汤',desc:'用鲍鱼、海参、鱼翅、花菇等几十种名贵食材慢炖数小时，香气能让和尚翻墙破戒。顶级汤品，宴客天花板。',materials:'鲍鱼、海参、鱼翅、花菇、瑶柱、火腿',method:'炖',spicy:'不辣',origin:'闽菜',tags:[]},
+{name:'狮子头',real:'巨型红烧肉丸',desc:'硕大的猪肉丸子，形似狮子头，实际是手工剁肉+肥瘦相间，红烧后软糯入味。淮扬名菜，入口即化。',materials:'五花肉、马蹄、鸡蛋、酱油',method:'红烧',spicy:'不辣',origin:'淮扬菜',tags:['四喜丸子']},
+{name:'松鼠桂鱼',real:'菊花刀炸鱼',desc:'桂鱼改刀成菊花形，裹粉油炸后浇糖醋汁，形似松鼠尾巴蓬松。外酥里嫩，酸甜可口。刀工大于食材。',materials:'桂鱼、番茄酱、糖、醋',method:'炸+淋汁',spicy:'不辣',origin:'苏菜',tags:[]},
+{name:'开水白菜',real:'高汤焯白菜',desc:'名字听起来寡淡，实际是用鸡鸭火腿熬制数小时的顶级清汤，焯大白菜心。汤清如水却鲜美至极，国宴菜。',materials:'大白菜心、老母鸡、老鸭、火腿',method:'焯+清汤',spicy:'不辣',origin:'川菜',tags:[]},
+{name:'乌云托月',real:'紫菜蛋花汤',desc:'紫菜在汤中飘散如乌云，蛋黄浮在汤面上似明月。其实就是一碗精致的紫菜蛋花汤。',materials:'紫菜、鸡蛋、高汤',method:'煮',spicy:'不辣',origin:'鲁菜',tags:['紫菜蛋花汤']},
+{name:'一清二白',real:'小葱拌豆腐',desc:'豆腐白、小葱青——"一清二白"。最简单的凉菜，却是中国人对清廉的隐喻。',materials:'嫩豆腐、小葱、盐、香油',method:'凉拌',spicy:'不辣',origin:'北方家常',tags:['小葱拌豆腐']},
+// 西餐术语
+{name:'Confit',real:'油封慢煮',desc:'法语词。将食材（通常是鸭腿）浸泡在油脂中，低温长时间慢煮。外酥里嫩，鸭腿Confit是法餐经典。',materials:'鸭腿、鸭油、大蒜、百里香',method:'油封慢煮',spicy:'不辣',origin:'法国',tags:['油封鸭']},
+{name:'Sous Vide',real:'真空低温慢煮',desc:'食材真空密封后放恒温水浴长时间加热。精准控温，牛排、三文鱼都能做到完美熟度。米其林餐厅标配技术。',materials:'视食材而定',method:'真空低温慢煮',spicy:'不辣',origin:'法国',tags:['低温慢煮']},
+{name:'Al Dente',real:'有嚼劲的口感',desc:'意大利语"对牙齿"。指意面煮到刚好有弹性的状态——不软烂也不夹生。煮面时捞起一根咬开，中间有个小白点就是Al Dente。',materials:'意面、盐',method:'煮',spicy:'不辣',origin:'意大利',tags:[]},
+{name:'Umami',real:'第五种味道：鲜味',desc:'日语"うま味"。酸甜苦咸之外的第五味——鲜。存在于味噌、酱油、番茄、帕玛森芝士、海带等。不是虚幻的概念，是有科学依据的味觉。',materials:'—',method:'—',spicy:'—',origin:'日本',tags:['鲜味']},
+{name:'Soffritto',real:'意式底料三宝',desc:'洋葱+胡萝卜+芹菜切碎，橄榄油小火慢炒。意大利菜的基础风味底料，相当于中餐的"葱姜蒜"。',materials:'洋葱、胡萝卜、芹菜、橄榄油',method:'炒',spicy:'不辣',origin:'意大利',tags:[]},
+{name:'Mirepoix',real:'法式底料三宝',desc:'洋葱+胡萝卜+芹菜，黄油慢炒。法餐高汤和炖菜的基础。和意大利Soffritto几乎一样，区别在于用黄油而非橄榄油。',materials:'洋葱、胡萝卜、芹菜、黄油',method:'炒',spicy:'不辣',origin:'法国',tags:[]},
+{name:'Beurre Blanc',real:'白酒黄油汁',desc:'白葡萄酒+醋浓缩后，加入冷黄油慢慢乳化。丝滑酸甜的经典法式酱汁，配海鲜和白肉。难点在于黄油不能融化过头。',materials:'白葡萄酒、黄油、醋、小葱',method:'乳化',spicy:'不辣',origin:'法国',tags:[]},
+];
+var cnDishes=dishes.filter(function(d){return d.origin.indexOf('法国')===-1&&d.origin.indexOf('意大利')===-1&&d.origin.indexOf('日本')===-1;});
+var enDishes=dishes.filter(function(d){return d.origin.indexOf('法国')!==-1||d.origin.indexOf('意大利')!==-1||d.origin.indexOf('日本')!==-1;});
+
+function switchTab(m){
+mode=m;
+document.querySelectorAll('.tab').forEach(function(t,i){t.className=(i===0&&m==='cn')||(i===1&&m==='en')?'tab on':'tab';});
+var list=m==='cn'?cnDishes:enDishes;
+var html='';
+for(var i=0;i<Math.min(list.length,8);i++){
+html+='<div class="quick-tag" onclick="pick(\''+list[i].name+'\')">'+list[i].name+'</div>';
+}
+document.getElementById('tags').innerHTML=html;
+}
+
+function pick(name){
+document.getElementById('dishInput').value=name;
+translateDish();
+}
+
+function translateDish(){
+var q=document.getElementById('dishInput').value.trim();
+if(!q)return;
+var list=mode==='cn'?cnDishes:enDishes;
+var found=null;
+for(var i=0;i<list.length;i++){
+if(list[i].name===q||(list[i].tags&&list[i].tags.indexOf(q)!==-1)){found=list[i];break;}
+}
+if(!found){
+document.getElementById('result').innerHTML='<div class="result-card"><div class="name">🤔 未找到</div><div class="desc">这个菜名暂时不在词库里。试试上方推荐的菜名吧。</div></div>';
+document.getElementById('result').className='result show';
+return;
+}
+
+var html='<div class="result-card">';
+html+='<div class="name">📖 '+found.name+'</div>';
+html+='<div class="meta">';
+if(found.spicy&&found.spicy!=='—')html+='<span class="meta-spicy">🌶 '+found.spicy+'</span>';
+if(found.method&&found.method!=='—')html+='<span class="meta-method">🍳 '+found.method+'</span>';
+if(found.origin&&found.origin!=='—')html+='<span class="meta-origin">📍 '+found.origin+'</span>';
+html+='</div>';
+html+='<div class="desc"><b>其实这是：</b>'+found.real+'</div>';
+html+='<div class="desc" style="margin-top:6px">'+found.desc+'</div>';
+if(found.materials&&found.materials!=='—'){
+html+='<div class="materials">🛒 主要食材：'+found.materials+'</div>';
+}
+html+='</div>';
+document.getElementById('result').innerHTML=html;
+document.getElementById('result').className='result show';
+}
+
+switchTab('cn');
+</script>
+</body>
+</html>
