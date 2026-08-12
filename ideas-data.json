@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "recipe-sub",
+      "icon": "🔄",
+      "title": "菜谱食材替换",
+      "tagline": "想做番茄炒蛋家里没番茄？缺什么食材AI告诉你能用啥替",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-recipe-sub/"
+    },
+    {
       "id": "dish-translator",
       "icon": "🥢",
       "title": "菜名翻译官",

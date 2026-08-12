@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>菜谱食材替换 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fce4ec;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#c62828,#b71c1c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.recipe-list{margin-bottom:12px}
+.recipe-item{display:flex;align-items:center;padding:12px;border-radius:10px;border:1px solid #eee;margin-bottom:6px;cursor:pointer;transition:all .2s}
+.recipe-item:hover{border-color:#c62828;background:#fff5f5}
+.recipe-item.sel{border-color:#c62828;background:#ffebee}
+.recipe-item .ri-icon{font-size:1.5rem;margin-right:10px}
+.recipe-item .ri-info{flex:1}
+.recipe-item .ri-name{font-weight:600;font-size:.9rem}
+.recipe-item .ri-missing{font-size:.72rem;color:#c62828;margin-top:2px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field select,.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field select:focus,.field input:focus{border-color:#c62828}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.sub-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:8px;border-left:4px solid #4caf50}
+.sub-card .sub-ing{font-weight:700;color:#c62828;margin-bottom:4px}
+.sub-card .sub-replace{color:#2e7d32;font-weight:600;margin-bottom:4px}
+.sub-card .sub-tip{font-size:12px;color:#888;line-height:1.6}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#c62828,#b71c1c);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🔄 菜谱食材替换</h1><div class="sub">想做番茄炒蛋但没番茄？<br>缺什么食材，AI 告诉你用什么替</div></div>
+
+<div class="card"><h3>📖 选一个你想做的菜</h3>
+<div class="recipe-list" id="recipeList"></div></div>
+
+<div class="card"><h3>❌ 缺了什么食材？</h3>
+<div class="field"><select id="missingSelect"><option value="">选择你缺少的食材...</option></select></div></div>
+
+<button class="btn" onclick="findSub()">🔍 查找替代方案</button>
+
+<div class="result" id="result"></div>
+<div class="footer">菜谱食材替换 · Demo · 厨房救急小帮手</div>
+</div>
+
+<script>
+var recipes=[
+{name:'番茄炒蛋',icon:'🍳',ings:['番茄','鸡蛋','葱','盐','糖','油'],
+ subs:{番茄:[
+  {replace:'红甜椒',tip:'切丝代替番茄，口感更脆。加一勺番茄酱补酸味。火候比番茄短——炒30秒就够。'},
+  {replace:'草莓（没错）',tip:'对半切快速翻炒，自带酸甜。不要久炒会烂。适合给小朋友惊喜。'},
+  {replace:'山楂糕',tip:'切小块最后放，提供酸味。少了水分——加一勺水。'}
+ ]}},
+{name:'宫保鸡丁',icon:'🥜',ings:['鸡胸肉','花生米','干辣椒','花椒','酱油','醋','糖','淀粉'],
+ subs:{花生米:[
+  {replace:'腰果',tip:'口感更香脆，比花生米贵一点但更好吃。不用提前炸——最后撒上去就行。'},
+  {replace:'瓜子仁',tip:'熟瓜子仁直接替代，省去炒花生的步骤。注意别放早了会发软。'},
+ ],干辣椒:[
+  {replace:'辣椒面',tip:'量减半（辣椒面更辣）。油温稍低一些下锅，避免炒糊发苦。'},
+  {replace:'甜椒+辣酱',tip:'甜椒切丁提供口感，加一勺辣酱调味。颜色比原版更鲜艳。'},
+ ]}},
+{name:'可乐鸡翅',icon:'🍗',ings:['鸡翅','可乐','生抽','老抽','姜','料酒'],
+ subs:{可乐:[
+  {replace:'雪碧',tip:'更清爽的甜味，颜色比可乐版淡。多加半勺老抽补色。'},
+  {replace:'橙汁+蜂蜜',tip:'每份可乐替换为 80ml 橙汁 + 1勺蜂蜜。果香浓郁，适合夏天。'},
+ ]}},
+{name:'鱼香肉丝',icon:'🥢',ings:['猪里脊','木耳','胡萝卜','青椒','泡椒','豆瓣酱','醋','糖'],
+ subs:{木耳:[
+  {replace:'香菇',tip:'提前泡发切片。比木耳更有嚼劲，吸汁能力强。'},
+  {replace:'金针菇',tip:'撕散后最后30秒下锅，别久煮。口感完全不同但很鲜。'},
+ ],泡椒:[
+  {replace:'小米辣+白醋',tip:'2个小米辣切碎 + 半勺白醋。辣度接近泡椒，少了一点发酵酸味。'},
+ ]}},
+{name:'麻婆豆腐',icon:'🧈',ings:['嫩豆腐','猪肉末','豆瓣酱','花椒粉','蒜','葱','淀粉'],
+ subs:{豆瓣酱:[
+  {replace:'黄豆酱+辣椒油',tip:'1勺黄豆酱 + 半勺辣椒油。咸度接近，少了一点豆瓣发酵的复合味。'},
+ ],花椒粉:[
+  {replace:'黑胡椒粉',tip:'完全不同的麻感——黑胡椒是辛辣，花椒是麻。风味会变但也好吃。'},
+  {replace:'藤椒油',tip:'几滴藤椒油替代花椒粉，麻味更清新。出锅前淋，不要久煮。'},
+ ]}},
+{name:'蛋糕（基础款）',icon:'🎂',ings:['低筋面粉','鸡蛋','糖','牛奶','黄油','泡打粉'],
+ subs:{黄油:[
+  {replace:'玉米油',tip:'等量替换，蛋糕会更湿润但少了黄油香气。适合做戚风。'},
+  {replace:'香蕉泥',tip:'半根香蕉压泥替代30g黄油，天然甜味+湿润。蛋糕颜色会深一些。'},
+ ],牛奶:[
+  {replace:'酸奶',tip:'原味酸奶1:1替换，蛋糕更松软带微酸。如果酸奶含糖，配方里的糖减10g。'},
+  {replace:'水+奶粉',tip:'100ml水+20g奶粉。和牛奶效果几乎一样。'},
+ ],泡打粉:[
+  {replace:'小苏打+白醋',tip:'1g小苏打+几滴白醋快速搅拌入面糊，气泡反应要快。'},
+ ]}}
+];
+var selRecipe=null;
+
+function renderRecipes(){
+var h='';
+for(var i=0;i<recipes.length;i++){
+var r=recipes[i];h+='<div class="recipe-item" onclick="selRec('+i+',this)"><div class=ri-icon>'+r.icon+'</div><div class=ri-info><div class=ri-name>'+r.name+'</div><div class=ri-missing>食材：'+r.ings.join('、')+'</div></div></div>';
+}
+document.getElementById('recipeList').innerHTML=h;
+}
+function selRec(idx,el){
+selRecipe=idx;document.querySelectorAll('.recipe-item').forEach(function(x){x.classList.remove('sel')});el.classList.add('sel');
+var r=recipes[idx];var s='<option value="">选择你缺少的食材...</option>';
+for(var i=0;i<r.ings.length;i++){s+='<option value="'+r.ings[i]+'">'+r.ings[i]+'</option>'}
+document.getElementById('missingSelect').innerHTML=s;
+}
+
+function findSub(){
+if(selRecipe===null){alert('请先选择菜谱');return}
+var missing=document.getElementById('missingSelect').value;
+if(!missing){alert('请选择缺少的食材');return}
+var r=recipes[selRecipe];
+var subs=r.subs[missing];
+if(!subs){document.getElementById('result').innerHTML='<div class=card><div class=sub-card><div class=sub-ing>✅ '+missing+' 有现成的替代方案</div><div class=sub-tip>这个食材在这个菜里比较灵活，可以省略或手边有什么用什么。</div></div></div>';document.getElementById('result').className='result show';return}
+
+var h='<div class=card><h3>🔄 '+missing+' → 可用以下代替</h3>';
+for(var i=0;i<subs.length;i++){
+var s=subs[i];h+='<div class=sub-card><div class=sub-ing>🥇 替代：'+s.replace+'</div><div class=sub-tip>💡 '+s.tip+'</div></div>';
+}
+h+='</div>';
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+
+renderRecipes();
+</script>
+</body>
+</html>
