@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "drug-interaction",
+      "icon": "💊",
+      "title": "药品相互作用检查",
+      "tagline": "同时吃几种药？一键检查有没有危险的相互作用",
+      "status": "live",
+      "category": "医疗健康",
+      "demoUrl": "demo-drug-interaction/"
+    },
+    {
       "id": "recipe-sub",
       "icon": "🔄",
       "title": "菜谱食材替换",

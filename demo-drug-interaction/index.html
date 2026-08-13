@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>药品相互作用检查 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e3f2fd;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.selected{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;min-height:32px}
+.selected .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:#e3f2fd;color:#1565c0;font-size:13px}
+.selected .pill .remove{cursor:pointer;font-weight:700;color:#999}
+.drug-list{max-height:260px;overflow-y:auto}
+.drug-item{display:flex;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #eee;margin-bottom:6px;cursor:pointer;transition:all .2s}
+.drug-item:hover{border-color:#1565c0;background:#f5f9ff}
+.drug-item.on{border-color:#1565c0;background:#e3f2fd}
+.drug-item .di-name{font-weight:600;font-size:.9rem}
+.drug-item .di-cat{font-size:.7rem;color:#999;margin-left:8px}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.alert-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:8px;border-left:4px solid #f44336}
+.alert-card.danger{border-left-color:#f44336;background:#fff5f5}
+.alert-card.warn{border-left-color:#ff9800;background:#fff8e1}
+.alert-card.safe{border-left-color:#4caf50;background:#f1f8e9}
+.alert-card .ac-title{font-weight:700;margin-bottom:4px}
+.alert-card .ac-desc{font-size:13px;color:#666;line-height:1.7}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💊 药品相互作用检查</h1><div class="sub">同时吃几种药？<br>检查有没有危险的相互作用</div></div>
+
+<div class="card"><h3>📋 你正在吃的药</h3>
+<div class="selected" id="selected"></div>
+<div class="drug-list" id="drugList"></div></div>
+
+<button class="btn" onclick="checkInteractions()">🔍 检查相互作用</button>
+
+<div class="result" id="result"></div>
+<div class="footer">药品相互作用检查 · Demo · 仅供参考，用药请遵医嘱</div>
+</div>
+
+<script>
+var drugs=[
+{name:'阿司匹林',cat:'解热镇痛'},
+{name:'布洛芬',cat:'解热镇痛'},
+{name:'对乙酰氨基酚',cat:'解热镇痛'},
+{name:'华法林',cat:'抗凝药'},
+{name:'硝苯地平',cat:'降压药'},
+{name:'二甲双胍',cat:'降糖药'},
+{name:'奥美拉唑',cat:'胃药'},
+{name:'氯雷他定',cat:'抗过敏'},
+{name:'阿莫西林',cat:'抗生素'},
+{name:'头孢类',cat:'抗生素'},
+{name:'地高辛',cat:'强心药'},
+{name:'辛伐他汀',cat:'降脂药'},
+];
+
+var interactions=[
+{from:'阿司匹林',to:'布洛芬',level:'warn',title:'同服增加出血风险',desc:'两者都属于 NSAID 类，同时服用会显著增加胃肠道出血和溃疡风险。如果必须同服，应间隔 4-6 小时，并尽量在医生指导下使用。'},
+{from:'阿司匹林',to:'华法林',level:'danger',title:'严重出血风险',desc:'阿司匹林和华法林都会抑制凝血，联合使用会大幅增加出血风险（消化道、颅内出血）。除非医生明确要求，否则禁止同服。'},
+{from:'布洛芬',to:'华法林',level:'danger',title:'严重出血风险',desc:'布洛芬会增强华法林的抗凝作用，增加出血风险。应避免联合使用，或改用对乙酰氨基酚替代布洛芬。'},
+{from:'阿司匹林',to:'对乙酰氨基酚',level:'safe',title:'可同服，注意用量',desc:'两者作用机制不同，可以同服。但注意对乙酰氨基酚每日不超过 2g，过量会损伤肝脏。'},
+{from:'布洛芬',to:'对乙酰氨基酚',level:'safe',title:'可交替使用',desc:'两者可交替使用退烧止痛，间隔 4 小时以上。避免同时大量服用，减轻肝肾负担。'},
+{from:'硝苯地平',to:'辛伐他汀',level:'warn',title:'影响他汀代谢',desc:'硝苯地平会抑制辛伐他汀的代谢，使血药浓度升高，增加肌肉损伤（横纹肌溶解）风险。辛伐他汀剂量应减半，或换用阿托伐他汀。'},
+{from:'地高辛',to:'硝苯地平',level:'warn',title:'地高辛血药浓度升高',desc:'硝苯地平会升高地高辛血药浓度，可能导致地高辛中毒（恶心、心律失常）。需监测地高辛血药浓度。'},
+{from:'阿司匹林',to:'奥美拉唑',level:'safe',title:'常联合使用护胃',desc:'奥美拉唑可保护胃黏膜，减少阿司匹林对胃的刺激。医生常将两者联合使用，属合理配伍。'},
+{from:'二甲双胍',to:'硝苯地平',level:'safe',title:'无显著相互作用',desc:'两者作用机制不同，通常可安全同服。糖尿病合并高血压患者常用组合。'},
+{from:'头孢类',to:'阿莫西林',level:'warn',title:'抗生素重复使用',desc:'两者都属于抗生素，同时使用属于重复用药，可能增加耐药和不良反应风险。应遵医嘱选择一种即可。'},
+];
+
+var selected=[];
+
+function renderDrugs(){
+var h='';
+for(var i=0;i<drugs.length;i++){
+var d=drugs[i];var on=selected.indexOf(d.name)!==-1;
+h+='<div class="drug-item'+(on?' on':'')+'" onclick="toggleDrug('+i+',this)"><span class=di-name>'+d.name+'</span><span class=di-cat>'+d.cat+'</span></div>';
+}
+document.getElementById('drugList').innerHTML=h;
+renderSelected();
+}
+function toggleDrug(idx,el){
+var name=drugs[idx].name;
+var pos=selected.indexOf(name);
+if(pos===-1){selected.push(name);}else{selected.splice(pos,1);}
+renderDrugs();
+}
+function renderSelected(){
+var h='';
+for(var i=0;i<selected.length;i++){
+h+='<span class=pill>'+selected[i]+'<span class=remove onclick="removeDrug(\''+selected[i]+'\')">✕</span></span>';
+}
+document.getElementById('selected').innerHTML=h||'<span style="color:#999;font-size:13px">点击下方药品添加</span>';
+}
+function removeDrug(name){
+var pos=selected.indexOf(name);if(pos!==-1)selected.splice(pos,1);renderDrugs();
+}
+function checkInteractions(){
+if(selected.length<2){alert('请至少选择两种药品');return}
+var found=[];
+for(var i=0;i<interactions.length;i++){
+var it=interactions[i];
+if(selected.indexOf(it.from)!==-1&&selected.indexOf(it.to)!==-1){
+found.push(it);
+}
+}
+var h='';
+if(found.length===0){
+h='<div class="alert-card safe"><div class="ac-title">✅ 未发现已知相互作用</div><div class="ac-desc">你选择的药品组合之间没有已知的危险相互作用。但仍建议在医生指导下用药。</div></div>';
+}else{
+for(var i=0;i<found.length;i++){
+var f=found[i];
+var cls=f.level==='danger'?'danger':(f.level==='warn'?'warn':'safe');
+var icon=f.level==='danger'?'🚨':(f.level==='warn'?'⚠️':'✅');
+h+='<div class="alert-card '+cls+'"><div class="ac-title">'+icon+' '+f.from+' × '+f.to+'</div><div class="ac-title" style="font-size:13px;color:#333">'+f.title+'</div><div class="ac-desc">'+f.desc+'</div></div>';
+}
+h+='<div class="alert-card safe"><div class="ac-title">💡 提示</div><div class="ac-desc">以上检查基于常见药物相互作用数据库，仅供参考。具体用药请务必咨询医生或药师。</div></div>';
+}
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+renderDrugs();
+</script>
+</body>
+</html>
