@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "gift-money",
+      "icon": "🧧",
+      "title": "随礼金额计算器",
+      "tagline": "收到婚礼请柬随多少？关系×城市×场合，一键算出不失礼又不肉疼",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-gift-money/"
+    },
+    {
       "id": "drug-interaction",
       "icon": "💊",
       "title": "药品相互作用检查",

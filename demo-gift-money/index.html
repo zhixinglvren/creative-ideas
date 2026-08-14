@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>随礼金额计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff3e0;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#d84315,#8e24aa);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field select,.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field select:focus,.field input:focus{border-color:#d84315}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.price-card{background:linear-gradient(135deg,#fbe9e7,#f3e5f5);border-radius:14px;padding:24px;text-align:center;margin-bottom:12px}
+.price-card .suggest{font-size:44px;font-weight:800;color:#8e24aa}
+.price-card .range{font-size:12px;color:#888;margin-top:4px}
+.price-card .unit{font-size:13px;color:#888;margin-bottom:4px}
+.tips{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid #d84315}
+.tips .t-title{font-weight:600;font-size:13px;margin-bottom:4px}
+.tips .t-desc{font-size:12px;color:#666;line-height:1.6}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#d84315,#8e24aa);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🧧 随礼金额计算器</h1><div class="sub">婚礼/满月酒/乔迁宴收到请柬<br>随多少份子钱既不失礼又不肉疼？</div></div>
+
+<div class="card"><h3>📋 基本信息</h3>
+<div class="field"><label>🎎 你和TA的关系</label>
+<select id="relation"><option value="best">🫂 死党/亲兄弟（最高规格）</option><option value="close">🤝 好朋友/近亲</option><option value="normal" selected>👥 普通朋友/同事</option><option value="light">👋 泛泛之交/点头之交</option></select></div>
+<div class="field"><label>🎉 场合</label>
+<select id="occasion"><option value="wedding" selected>💍 婚礼</option><option value="fullmoon">👶 满月酒</option><option value="house">🏠 乔迁宴</option><option value="birthday">🎂 生日宴</option></select></div>
+<div class="field"><label>📍 城市</label>
+<select id="city"><option value="hz" selected>杭州</option><option value="sh">上海</option><option value="bj">北京</option><option value="sz">深圳</option><option value="cd">成都</option><option value="small">三线及以下</option></select></div>
+</div>
+
+<button class="btn" onclick="calc()">🧮 计算参考金额</button>
+
+<div class="result" id="result"></div>
+<div class="footer">随礼金额计算器 · Demo · 各地习俗不同，仅供参考</div>
+</div>
+
+<script>
+var rules={
+best:{wedding:[1800,2800,5000],fullmoon:[1000,1800,2800],house:[1000,1600,2600],birthday:[800,1200,2000]},
+close:{wedding:[1200,1800,3000],fullmoon:[800,1200,2000],house:[800,1200,1800],birthday:[600,800,1200]},
+normal:{wedding:[800,1000,1600],fullmoon:[500,800,1200],house:[500,800,1000],birthday:[300,500,800]},
+light:{wedding:[500,600,1000],fullmoon:[300,500,800],house:[300,500,600],birthday:[200,300,500]}
+};
+var cityFactor={hz:1.0,sh:1.15,bj:1.2,sz:1.05,cd:0.9,small:0.75};
+var cityName={hz:'杭州',sh:'上海',bj:'北京',sz:'深圳',cd:'成都',small:'三线及以下'};
+
+function calc(){
+var rel=document.getElementById('relation').value;
+var occ=document.getElementById('occasion').value;
+var city=document.getElementById('city').value;
+var base=rules[rel][occ];
+var f=cityFactor[city];
+
+var suggest=Math.round(base[1]*f/100)*100;
+var low=Math.round(base[0]*f/100)*100;
+var high=Math.round(base[2]*f/100)*100;
+
+var tips=[];
+if(occ==='wedding'){
+tips.push({t:'讲究好意头',d:'中国婚礼红包讲究双数和吉祥数字。推荐 888、666、999、1314（一生一世）等。避免单数和 400（死）等谐音不吉利的数字。'});
+tips.push({t:'杭州本地习俗',d:'杭州普通同事婚礼一般 800-1000，关系好 1600 起。新杭州人圈子建议入乡随俗，问一句"你们那边一般随多少"最稳妥。'});
+}else if(occ==='fullmoon'){
+tips.push({t:'满月酒礼数',d:'满月酒相对婚礼轻松，重在心意。双数、带 8/6 的数字即可。若当场有抓周等环节，可额外加 100-200 表示捧场。'});
+}else if(occ==='house'){
+tips.push({t:'乔迁新居',d:'乔迁礼讲究"暖房"，金额可低于婚礼。礼品（绿植、厨房用品）有时比现金更受欢迎，若送现金同样取双数。'});
+}
+tips.push({t:'万能公式',d:'参考 = 基础档位 × 城市系数。如果最近刚收到对方的礼（ta先随了你），按 ta 随的金额回礼是绝对安全的做法——比行情价更重要。'});
+
+var h='';
+h+='<div class="price-card"><div class="unit">建议随礼金额（'+cityName[city]+'）</div><div class="suggest">¥'+suggest+'</div><div class="range">合理区间：¥'+low+' ~ ¥'+high+'</div></div>';
+for(var i=0;i<tips.length;i++){
+h+='<div class="tips"><div class="t-title">💡 '+tips[i].t+'</div><div class="t-desc">'+tips[i].d+'</div></div>';
+}
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
