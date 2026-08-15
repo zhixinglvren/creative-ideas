@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "prepay-calc",
+      "icon": "🏠",
+      "title": "提前还贷计算器",
+      "tagline": "手有闲钱提前还房贷，缩短年限还是减少月供？省多少利息一算便知",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-prepay-calc/"
+    },
+    {
       "id": "gift-money",
       "icon": "🧧",
       "title": "随礼金额计算器",
