@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "peak-valley",
+      "icon": "⚡",
+      "title": "峰谷电省钱计算器",
+      "tagline": "洗衣机热水器挪到晚上10点后用，一年能省多少电费？",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-peak-valley/"
+    },
+    {
       "id": "prepay-calc",
       "icon": "🏠",
       "title": "提前还贷计算器",
