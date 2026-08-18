@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "coupon-opt",
+      "icon": "🧧",
+      "title": "外卖红包组合优化",
+      "tagline": "手上3个红包怎么用最省？商家满减+平台红包自动算最优组合",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-coupon-opt/"
+    },
+    {
       "id": "peak-valley",
       "icon": "⚡",
       "title": "峰谷电省钱计算器",

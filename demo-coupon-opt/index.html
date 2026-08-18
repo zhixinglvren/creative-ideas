@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>外卖红包组合优化 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f8e9;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#f57f17,#e65100);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus{border-color:#f57f17}
+.coupon-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;background:#fff8e1;border:1px dashed #ffb74d;border-radius:10px;padding:10px 12px}
+.coupon-row .cr-amt{width:70px}
+.coupon-row .cr-min{width:80px}
+.coupon-row .cr-del{font-size:1.2rem;cursor:pointer;color:#e65100;border:none;background:none}
+.coupon-row .cr-tag{font-size:11px;color:#999;width:60px;text-align:right}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.best-card{background:linear-gradient(135deg,#fff8e1,#ffe0b2);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.best-card .big{font-size:36px;font-weight:800;color:#e65100}
+.best-card .label{font-size:12px;color:#888;margin-top:4px}
+.plan{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid #f57f17}
+.plan .p-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.plan .p-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
+.plan .p-row .v{font-weight:600;color:#e65100}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#f57f17,#e65100);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+.add-btn{display:block;width:100%;padding:10px;border:1px dashed #ffb74d;border-radius:10px;background:#fff8e1;color:#e65100;font-size:13px;cursor:pointer;margin-bottom:8px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🧧 外卖红包组合优化</h1><div class="sub">手上3个红包，怎么用最省？<br>满减叠加一算便知</div></div>
+
+<div class="card"><h3>🛒 订单金额</h3>
+<div class="field"><label>餐品小计（元）</label><input id="orderAmt" type="number" value="45" min="1" step="0.1" onchange="calc()"></div>
+<div class="field"><label>商家满减（元，如满40减8）</label><input id="shopDiscount" type="number" value="8" min="0" step="0.5" onchange="calc()"></div></div>
+
+<div class="card"><h3>🎫 我的红包</h3>
+<div id="coupons"></div>
+<button class="add-btn" onclick="addCoupon()">+ 添加红包</button></div>
+
+<button class="btn" onclick="calc()">🧮 算出最优用法</button>
+
+<div class="result" id="result"></div>
+<div class="footer">外卖红包组合优化 · Demo · 理性消费，按需下单</div>
+</div>
+
+<script>
+var coupons=[
+{amt:8,min:30,note:'平台红包'},
+{amt:5,min:25,note:'店铺红包'},
+{amt:3,min:0,note:'无门槛'}
+];
+
+function renderCoupons(){
+var h='';
+for(var i=0;i<coupons.length;i++){
+var c=coupons[i];
+h+='<div class="coupon-row">';
+h+='<input class="cr-amt" type="number" value="'+c.amt+'" min="0" step="0.5" onchange="upd('+i+',\'amt\',this.value)" title="优惠金额">';
+h+='<input class="cr-min" type="number" value="'+c.min+'" min="0" step="1" onchange="upd('+i+',\'min\',this.value)" title="满多少可用">';
+h+='<span class="cr-tag">'+c.note+'</span>';
+h+='<button class="cr-del" onclick="del('+i+')">✕</button>';
+h+='</div>';
+}
+document.getElementById('coupons').innerHTML=h;
+}
+function upd(i,key,val){
+coupons[i][key]=parseFloat(val)||0;
+}
+function del(i){coupons.splice(i,1);renderCoupons();calc();}
+function addCoupon(){coupons.push({amt:10,min:40,note:'新红包'});renderCoupons();}
+
+function calc(){
+var order=parseFloat(document.getElementById('orderAmt').value)||0;
+var shop=parseFloat(document.getElementById('shopDiscount').value)||0;
+if(order<=0)return;
+
+// 商家满减后金额
+var afterShop=Math.max(0,order-shop);
+
+// 遍历红包组合，找最优（红包满减基于订单原价，按常见规则）
+var best={used:[],save:0,pay:afterShop};
+var used=[];
+for(var i=0;i<coupons.length;i++){
+var c=coupons[i];
+if(order>=c.min){
+used.push(i);
+}
+}
+
+// 尝试所有子集
+var n=coupons.length;
+for(var mask=1;mask<(1<<n);mask++){
+var save=0,ok=true,ids=[];
+for(var j=0;j<n;j++){
+if(mask&(1<<j)){
+var c=coupons[j];
+if(order<c.min){ok=false;break;}
+save+=c.amt;ids.push(j);
+}
+}
+if(!ok)continue;
+if(save>best.save){best={used:ids,save:save,pay:afterShop-save};}
+}
+
+var h='';
+h+='<div class="best-card"><div class="label">💰 最优方案实付</div><div class="big">¥'+Math.max(0,best.pay).toFixed(2)+'</div><div class="label">共省 ¥'+(shop+best.save).toFixed(2)+'（商家满减 ¥'+shop.toFixed(2)+' + 红包 ¥'+best.save.toFixed(2)+'）</div></div>';
+
+h+='<div class="plan"><div class="p-title">🧮 用哪些红包</div>';
+if(best.used.length===0){
+h+='<div class="p-row"><span>当前红包都不满足使用条件</span></div>';
+}else{
+for(var k=0;k<best.used.length;k++){
+var idx=best.used[k];
+h+='<div class="p-row"><span>🎫 红包'+(k+1)+'（'+coupons[idx].note+'）</span><span class="v">-¥'+coupons[idx].amt.toFixed(2)+'</span></div>';
+}
+}
+h+='<div class="p-row" style="border-top:1px solid #f0f0f0;margin-top:6px;padding-top:6px"><span>订单原价</span><span>¥'+order.toFixed(2)+'</span></div>';
+h+='<div class="p-row"><span>商家满减</span><span class="v">-¥'+shop.toFixed(2)+'</span></div>';
+h+='<div class="p-row"><span>红包优惠</span><span class="v">-¥'+best.save.toFixed(2)+'</span></div>';
+h+='<div class="p-row" style="font-weight:700"><span>最终实付</span><span class="v" style="font-size:15px">¥'+Math.max(0,best.pay).toFixed(2)+'</span></div>';
+h+='</div>';
+
+h+='<div class="tip">💡 <b>叠加技巧</b>：<br>• 商家满减 + 平台红包 + 会员红包 通常可叠加<br>• 优先用"门槛刚好够到"的红包，别让红包浪费<br>• 实付低于门槛时，加 1-2 元小食凑单反而更省</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+renderCoupons();
+</script>
+</body>
+</html>
