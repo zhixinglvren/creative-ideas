@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "gym-card",
+      "icon": "💪",
+      "title": "健身卡划算度计算器",
+      "tagline": "年卡几千块你真能去几次？对自己诚实，算完再办不办",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-gym-card/"
+    },
+    {
       "id": "coupon-opt",
       "icon": "🧧",
       "title": "外卖红包组合优化",
