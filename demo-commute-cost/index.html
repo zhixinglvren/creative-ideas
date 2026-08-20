@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>通勤成本计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e3f2fd;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus{border-color:#1565c0}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.best-card{background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.best-card .big{font-size:22px;font-weight:800;color:#0d47a1;line-height:1.5}
+.best-card .sub{font-size:12px;color:#888;margin-top:8px}
+.compare{background:#fff;border-radius:12px;padding:16px;margin-bottom:8px}
+.compare .c-title{font-weight:700;font-size:14px;margin-bottom:8px}
+.compare .c-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.compare .c-row:last-child{border:none}
+.compare .c-row .v{font-weight:700;color:#1565c0}
+.compare .cheap{color:#2e7d32;font-weight:700}
+.compare .pricey{color:#e53935;font-weight:700}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🚗 通勤成本计算器</h1><div class="sub">开车通勤真的划算吗？<br>油费+停车+折旧，一算吓一跳</div></div>
+
+<div class="card"><h3>🛣 通勤情况</h3>
+<div class="row2">
+<div class="field"><label>单程距离（公里）</label><input id="dist" type="number" value="12" min="1" onchange="calc()"></div>
+<div class="field"><label>每月上班天数</label><input id="days" type="number" value="22" min="1" max="31" onchange="calc()"></div>
+</div>
+<div class="row2">
+<div class="field"><label>每日往返次数</label><input id="trips" type="number" value="2" min="1" max="4" onchange="calc()"></div>
+<div class="field"><label>堵车系数（1-1.5）</label><input id="traffic" type="number" value="1.2" min="1" max="1.5" step="0.05" onchange="calc()"></div>
+</div></div>
+
+<div class="card"><h3>🚙 开车成本</h3>
+<div class="row2">
+<div class="field"><label>油价（元/升）</label><input id="oilPrice" type="number" value="7.5" min="5" step="0.1" onchange="calc()"></div>
+<div class="field"><label>油耗（升/百公里）</label><input id="consumption" type="number" value="8" min="4" max="20" step="0.5" onchange="calc()"></div>
+</div>
+<div class="row2">
+<div class="field"><label>月停车费（元）</label><input id="parking" type="number" value="600" min="0" onchange="calc()"></div>
+<div class="field"><label>月养车摊分（保险+保养+折旧，元）</label><input id="carCost" type="number" value="800" min="0" onchange="calc()"></div>
+</div></div>
+
+<div class="card"><h3>🚇 公共交通对比</h3>
+<div class="row2">
+<div class="field"><label>单程地铁/公交（元）</label><input id="metro" type="number" value="4" min="1" step="0.5" onchange="calc()"></div>
+<div class="field"><label>打车单程（元，可选）</label><input id="taxi" type="number" value="28" min="0" onchange="calc()"></div>
+</div></div>
+
+<button class="btn" onclick="calc()">🧮 算通勤成本</button>
+
+<div class="result" id="result"></div>
+<div class="footer">通勤成本计算器 · Demo · 数据仅供参考，按实际调整</div>
+</div>
+
+<script>
+function calc(){
+var dist=parseFloat(document.getElementById('dist').value)||0;
+var days=parseInt(document.getElementById('days').value)||22;
+var trips=parseInt(document.getElementById('trips').value)||2;
+var traffic=parseFloat(document.getElementById('traffic').value)||1;
+var oilPrice=parseFloat(document.getElementById('oilPrice').value)||7.5;
+var consumption=parseFloat(document.getElementById('consumption').value)||8;
+var parking=parseFloat(document.getElementById('parking').value)||0;
+var carCost=parseFloat(document.getElementById('carCost').value)||0;
+var metro=parseFloat(document.getElementById('metro').value)||4;
+var taxi=parseFloat(document.getElementById('taxi').value)||0;
+
+var monthlyKm=dist*trips*days*traffic;
+var fuelCost=monthlyKm/100*consumption*oilPrice;
+var driveTotal=fuelCost+parking+carCost;
+var drivePerDay=driveTotal/days;
+
+var metroTotal=metro*trips*days;
+var taxiTotal=taxi*trips*days;
+
+// 判定最优
+var options=[{n:'开车',v:driveTotal},{n:'地铁/公交',v:metroTotal}];
+if(taxi>0)options.push({n:'打车',v:taxiTotal});
+options.sort(function(a,b){return a.v-b.v});
+var cheapest=options[0];
+var diff=cheapest.v-options[1].v;
+
+var verdict='';
+if(cheapest.n==='开车'){
+verdict='🚗 开车最划算（¥'+Math.round(cheapest.v).toLocaleString()+'/月）';
+}else if(cheapest.n==='地铁/公交'){
+verdict='🚇 公共交通更省（比开车省 ¥'+Math.round(diff).toLocaleString()+'/月）';
+}else{
+verdict='🚕 打车最省心（比开车省 ¥'+Math.round(diff).toLocaleString()+'/月）';
+}
+
+var h='';
+h+='<div class="best-card"><div class="big">'+verdict+'</div><div class="sub">开车月成本 ¥'+Math.round(driveTotal).toLocaleString()+' · 平均每天 ¥'+drivePerDay.toFixed(1)+'</div></div>';
+
+h+='<div class="compare"><div class="c-title">📊 三种方式月成本对比</div>';
+h+='<div class="c-row"><span>🚗 开车</span><span class="'+(driveTotal===cheapest.v?'cheap':'pricey')+'">¥'+Math.round(driveTotal).toLocaleString()+'/月</span></div>';
+h+='<div class="c-row" style="padding-left:20px;font-size:12px;color:#999"><span>· 油费 ¥'+Math.round(fuelCost).toLocaleString()+' + 停车 ¥'+Math.round(parking).toLocaleString()+' + 养车 ¥'+Math.round(carCost).toLocaleString()+'</span></div>';
+h+='<div class="c-row"><span>🚇 地铁/公交</span><span class="'+(metroTotal===cheapest.v?'cheap':'pricey')+'">¥'+Math.round(metroTotal).toLocaleString()+'/月</span></div>';
+if(taxi>0)h+='<div class="c-row"><span>🚕 打车</span><span class="'+(taxiTotal===cheapest.v?'cheap':'pricey')+'">¥'+Math.round(taxiTotal).toLocaleString()+'/月</span></div>';
+h+='</div>';
+
+h+='<div class="tip">💡 <b>容易被忽略的开车成本</b>：<br>• 折旧：20万的车一年折旧约2-3万，摊到每月2000+<br>• 堵车油耗：市区走走停停油耗比标称高30-50%<br>• 停车：公司+家里+临时，月 500-1000 很常见<br>• 通勤时间：开车堵车1小时 vs 地铁40分钟，时间也是成本<br>• 拼车/顺风车：多人分摊可把开车成本拉回低位</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
