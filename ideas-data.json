@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "dept-guide",
+      "icon": "🏥",
+      "title": "挂号科室导航",
+      "tagline": "不舒服但不知道挂什么科？输入症状一秒告诉你",
+      "status": "live",
+      "category": "医疗健康",
+      "demoUrl": "demo-dept-guide/"
+    },
+    {
       "id": "commute-cost",
       "icon": "🚗",
       "title": "通勤成本计算器",

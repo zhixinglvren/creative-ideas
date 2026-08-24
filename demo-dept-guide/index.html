@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>挂号科室导航 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8f5e9;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none;font-family:inherit}
+.field input:focus{border-color:#2e7d32}
+.quick-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.quick-tag{padding:8px 14px;border-radius:20px;border:1px solid #c8e6c9;background:#fff;font-size:13px;cursor:pointer;transition:all .2s}
+.quick-tag:active{background:#e8f5e9;border-color:#2e7d32;color:#2e7d32}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.dep-card{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.dep-card .dep{font-size:26px;font-weight:800;color:#1b5e20;margin-bottom:4px}
+.dep-card .urgency{display:inline-block;margin-top:8px;padding:4px 14px;border-radius:16px;font-size:12px;font-weight:600}
+.urg-emergency{background:#ffebee;color:#c62828}
+.urg-urgent{background:#fff3e0;color:#e65100}
+.urg-normal{background:#e3f2fd;color:#1565c0}
+.info{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid #2e7d32}
+.info .i-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.info .i-desc{font-size:13px;color:#666;line-height:1.7}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🏥 挂号科室导航</h1><div class="sub">不舒服但不知道挂什么科？<br>输入症状，一秒告诉你该挂哪</div></div>
+
+<div class="card"><h3>🤒 描述你的症状</h3>
+<div class="quick-tags">
+<div class="quick-tag" onclick="pick('头痛')">🤕 头痛</div>
+<div class="quick-tag" onclick="pick('腹痛')">🤢 腹痛</div>
+<div class="quick-tag" onclick="pick('胸痛')">🫀 胸痛</div>
+<div class="quick-tag" onclick="pick('发热')">🌡 发热</div>
+<div class="quick-tag" onclick="pick('咳嗽')">😮‍💨 咳嗽</div>
+<div class="quick-tag" onclick="pick('拉肚子')">💩 拉肚子</div>
+<div class="quick-tag" onclick="pick('头晕')">😵 头晕</div>
+<div class="quick-tag" onclick="pick('关节痛')">🦴 关节痛</div>
+</div>
+<div class="field"><label>或输入其他症状</label><input id="symptom" placeholder="如：胃疼、耳鸣、腰酸" onkeydown="if(event.key==='Enter')find()"></div></div>
+
+<button class="btn" onclick="find()">🔍 查科室</button>
+
+<div class="result" id="result"></div>
+<div class="footer">挂号科室导航 · Demo · 仅供参考，急症请直接拨打 120</div>
+</div>
+
+<script>
+var db={
+'头痛':{dep:'神经内科',urg:'normal',tips:['突发剧烈头痛伴呕吐 → 急诊','偏头痛/紧张性头痛 → 神经内科','头痛+发热 → 发热门诊','长期慢性头痛先看神经内科'],desc:'排除高血压、颅内问题。紧张性头痛最常见，注意休息。'},
+'偏头痛':{dep:'神经内科',urg:'normal',tips:['典型偏头痛伴闪光 → 神经内科','月发作超4次 → 考虑预防用药'],desc:'神经内科评估，记录发作频率和诱因。'},
+'腹痛':{dep:'消化内科',urg:'normal',tips:['右下腹痛剧烈 → 急诊（排查阑尾炎）','女性下腹痛 → 妇科','餐后腹痛 → 消化内科','疼痛剧烈难忍 → 直接急诊'],desc:'先判断位置：上腹痛偏消化，下腹痛女性需考虑妇科。'},
+'胸痛':{dep:'心内科',urg:'emergency',tips:['胸痛+大汗+压榨感 → 立即急诊120','活动后胸痛 → 心内科','呼吸相关胸痛 → 呼吸科','年轻无高危因素可先观察但建议急诊排查'],desc:'胸痛必须重视，先排除心梗。急诊优先，不要等。'},
+'发热':{dep:'发热门诊',urg:'urgent',tips:['38.5℃以下物理降温','超3天不退 → 发热门诊','伴皮疹/关节痛 → 感染科','儿童持续高热 → 儿科急诊'],desc:'先去发热门诊排查感染，勿自行乱吃抗生素。'},
+'咳嗽':{dep:'呼吸内科',urg:'normal',tips:['超3周慢性咳嗽 → 呼吸内科','咳嗽+咳血 → 急诊','夜间干咳 → 考虑过敏性咳嗽'],desc:'急性咳嗽先观察一周，持续不好转再就医。'},
+'拉肚子':{dep:'消化内科',urg:'normal',tips:['伴发热/血便 → 急诊','超3天不缓解 → 消化内科','儿童 → 儿科'],desc:'补充电解质防脱水，注意饮食清淡。'},
+'头晕':{dep:'神经内科',urg:'normal',tips:['天旋地转 → 耳鼻喉科（耳石症）','站立时头晕 → 心内科（体位性低血压）','伴耳鸣 → 耳鼻喉科'],desc:'先区分"天旋地转"和"头重脚轻"，旋转感多属耳源性。'},
+'耳鸣':{dep:'耳鼻喉科',urg:'normal',tips:['单侧突发耳鸣听力下降 → 耳鼻喉科急诊','长期耳鸣 → 耳鼻喉科评估'],desc:'突发性耳聋黄金治疗期72小时，别拖。'},
+'关节痛':{dep:'风湿免疫科',urg:'normal',tips:['对称性小关节痛 → 风湿免疫科','外伤后痛 → 骨科','红肿热痛急性发作 → 风湿免疫科'],desc:'晨僵超1小时提示炎性关节病，尽早就诊。'},
+'胃疼':{dep:'消化内科',urg:'normal',tips:['空腹痛/夜间痛 → 消化内科','黑便 → 急诊','反复发作建议胃镜'],desc:'规律性腹痛多为溃疡，及时做胃镜明确。'},
+'腰酸':{dep:'骨科',urg:'normal',tips:['腰痛+腿麻 → 脊柱外科','晨僵明显 → 风湿免疫科','外伤后 → 骨科急诊'],desc:'先分清是肌肉劳损还是椎间盘问题。'},
+'过敏':{dep:'皮肤科',urg:'normal',tips:['严重过敏/呼吸困难 → 急诊','慢性荨麻疹 → 皮肤科','药物过敏 → 停用并急诊'],desc:'轻症先停可疑过敏原，严重立即急诊。'},
+'心慌':{dep:'心内科',urg:'normal',tips:['心慌+晕厥 → 急诊','阵发心慌 → 心内科做动态心电图','年轻人心慌 → 先排查心律失常'],desc:'记录发作时间和诱因，做24小时动态心电图。'},
+'皮疹':{dep:'皮肤科',urg:'normal',tips:['伴发热 → 感染科','大面积/水疱 → 急诊','反复发作 → 皮肤科'],desc:'拍照记录皮疹形态变化，就诊时给医生看。'}
+};
+
+function pick(s){
+document.getElementById('symptom').value=s;
+find();
+}
+function find(){
+var q=document.getElementById('symptom').value.trim();
+if(!q)return;
+var dep=null,key=null;
+// 精确匹配
+for(var k in db){if(q.indexOf(k)!==-1){dep=db[k];key=k;break;}}
+if(!dep){
+// 模糊匹配关键词
+for(var k in db){
+if(q.indexOf(k.slice(0,2))!==-1){dep=db[k];key=k;break;}
+}
+}
+if(!dep){
+document.getElementById('result').innerHTML='<div class="info"><div class="i-title">🤔 未匹配到明确科室</div><div class="i-desc">建议描述更具体：部位+症状+持续时间（如"右下腹疼了3天"）。急重症请直接去急诊科或拨打 120。</div></div>';
+document.getElementById('result').className='result show';
+return;
+}
+var urgMap={emergency:['🚨 建议立即急诊','urg-emergency'],urgent:['⚠️ 建议尽快就医','urg-urgent'],normal:['✅ 普通门诊即可','urg-normal']};
+var urg=urgMap[dep.urg];
+var h='';
+h+='<div class="dep-card"><div class="dep">推荐：'+dep.dep+'</div><span class="urgency '+urg[1]+'">'+urg[0]+'</span></div>';
+h+='<div class="info"><div class="i-title">💡 为什么挂这个科</div><div class="i-desc">'+dep.desc+'</div></div>';
+h+='<div class="info"><div class="i-title">📋 就诊提示</div><div class="i-desc">'+dep.tips.join('<br>')+'</div></div>';
+h+='<div class="info"><div class="i-title">📱 挂号小贴士</div><div class="i-desc">• 多数医院 7:30-8:00 放号，热门专家提前抢<br>• 初诊挂普通号即可，检查完再转专家<br>• 手机挂号优先选"上午时段"便于当天出结果<br>• 医保卡/电子凭证带好，异地就医先备案</div></div>';
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
