@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>快递费比价 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e0f7fa;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#00838f,#004d40);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#00838f}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.rank-list{margin-bottom:12px}
+.rank-item{display:flex;align-items:center;background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid #eee;cursor:pointer;transition:all .2s}
+.rank-item:hover{border-color:#00838f}
+.rank-item.best{border:2px solid #00838f;background:#e0f7fa}
+.rank-item .rank-no{width:32px;height:32px;border-radius:50%;text-align:center;line-height:32px;font-weight:700;font-size:14px;margin-right:12px;flex-shrink:0;background:#eceff1;color:#555}
+.rank-item.best .rank-no{background:#00838f;color:#fff}
+.rank-item .ri-info{flex:1}
+.rank-item .ri-name{font-weight:700;font-size:14px}
+.rank-item .ri-speed{font-size:11px;color:#999;margin-top:2px}
+.rank-item .ri-price{font-weight:800;font-size:18px;color:#00838f;margin-left:12px}
+.rank-item.best .ri-price{color:#004d40}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#00838f,#004d40);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>📦 快递费比价</h1><div class="sub">寄快递别再默认顺丰了<br>同样的包裹，换个快递省一半</div></div>
+
+<div class="card"><h3>📍 寄送信息</h3>
+<div class="field"><label>寄送范围</label>
+<select id="region">
+<option value="same">🏙 同城</option>
+<option value="province" selected>🏢 省内</option>
+<option value="cross">🗺 跨省</option>
+<option value="far">✈️ 偏远地区</option>
+</select></div>
+<div class="row2">
+<div class="field"><label>重量（kg）</label><input id="weight" type="number" value="2" min="0.1" max="30" step="0.1" onchange="calc()"></div>
+<div class="field"><label>是否加急</label>
+<select id="urgent"><option value="0">普通</option><option value="1">加急/次日达</option></select></div>
+</div></div>
+
+<button class="btn" onclick="calc()">💰 比价</button>
+
+<div class="result" id="result"></div>
+<div class="footer">快递费比价 · Demo · 价格为参考均价，实际以快递员报价为准</div>
+</div>
+
+<script>
+var companies=[
+{name:'顺丰速运',speed:'次日达/隔日达',base:{same:[12,14],province:[14,16],cross:[18,20],far:[24,26]},per:{same:[1.5,2],province:[2,3],cross:[4,6],far:[8,10]},urgent:5},
+{name:'京东快递',speed:'次日达（一线城市）',base:{same:[10,12],province:[12,14],cross:[16,18],far:[20,22]},per:{same:[1,1.5],province:[2,3],cross:[3,5],far:[6,8]},urgent:4},
+{name:'圆通速递',speed:'2-3天',base:{same:[7,8],province:[8,10],cross:[12,14],far:[16,18]},per:{same:[1,1.5],province:[1.5,2],cross:[2,3],far:[4,6]},urgent:0},
+{name:'中通快递',speed:'2-3天',base:{same:[6,7],province:[8,9],cross:[12,13],far:[15,17]},per:{same:[1,1.5],province:[1.5,2],cross:[2,3],far:[4,6]},urgent:0},
+{name:'韵达快递',speed:'2-4天',base:{same:[6,7],province:[8,9],cross:[11,13],far:[15,16]},per:{same:[1,1.5],province:[1.5,2],cross:[2,3],far:[4,5]},urgent:0},
+{name:'极兔速递',speed:'2-4天',base:{same:[5,6],province:[7,8],cross:[10,12],far:[14,15]},per:{same:[1,1.5],province:[1.5,2],cross:[2,3],far:[3,5]},urgent:0},
+{name:'邮政EMS',speed:'2-5天',base:{same:[9,10],province:[10,12],cross:[15,17],far:[18,20]},per:{same:[1.5,2],province:[2,3],cross:[3,4],far:[5,7]},urgent:2}
+];
+
+function calc(){
+var region=document.getElementById('region').value;
+var weight=parseFloat(document.getElementById('weight').value)||1;
+var urgent=parseInt(document.getElementById('urgent').value)||0;
+
+var list=[];
+for(var i=0;i<companies.length;i++){
+var c=companies[i];
+var base=c.base[region];
+var per=c.per[region];
+var extra=weight>1?(weight-1)*per[0]:0;
+var priceLow=base[0]+extra+(urgent?c.urgent:0);
+var priceHigh=base[1]+extra+(urgent?c.urgent:0);
+list.push({name:c.name,speed:c.speed,low:priceLow,high:priceHigh});
+}
+list.sort(function(a,b){return a.low-b.low});
+
+var h='<div class="rank-list">';
+for(var i=0;i<list.length;i++){
+var item=list[i];
+var best=i===0?'best':'';
+h+='<div class="rank-item '+best+'"><div class="rank-no">'+(i+1)+'</div><div class="ri-info"><div class="ri-name">'+item.name+'</div><div class="ri-speed">'+item.speed+'</div></div><div class="ri-price">¥'+item.low.toFixed(1)+'~'+item.high.toFixed(1)+'</div></div>';
+}
+h+='</div>';
+
+h+='<div class="tip">💡 <b>省钱技巧</b>：<br>• 寄同城小件：极兔/中通最便宜，5-7 元搞定<br>• 1kg 内小件：菜鸟裹裹下单常有 3-5 元券<br>• 贵重物品/合同：别省，选顺丰保价<br>• 大件重货：对比"重货专线"而非普通快递<br>• 寄件量大的商家：跟网点谈月结价，能低 30-50%<br>• 电商退货：用平台运费险，别自己掏钱</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

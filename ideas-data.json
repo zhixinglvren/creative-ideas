@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "courier-compare",
+      "icon": "📦",
+      "title": "快递费比价",
+      "tagline": "寄快递别默认顺丰了！同样包裹换个快递省一半",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-courier-compare/"
+    },
+    {
       "id": "dept-guide",
       "icon": "🏥",
       "title": "挂号科室导航",
