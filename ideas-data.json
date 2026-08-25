@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "overtime-pay",
+      "icon": "⏰",
+      "title": "加班费计算器",
+      "tagline": "月薪2万周末加班8小时该拿多少？1.5/2/3倍一算便知",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-overtime-pay/"
+    },
+    {
       "id": "courier-compare",
       "icon": "📦",
       "title": "快递费比价",
