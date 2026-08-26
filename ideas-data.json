@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "pet-boarding",
+      "icon": "🐱",
+      "title": "宠物寄养比价",
+      "tagline": "国庆出门毛孩子怎么办？三类寄养方式价格一次比清",
+      "status": "live",
+      "category": "宠物经济",
+      "demoUrl": "demo-pet-boarding/"
+    },
+    {
       "id": "overtime-pay",
       "icon": "⏰",
       "title": "加班费计算器",

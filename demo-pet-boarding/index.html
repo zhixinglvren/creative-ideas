@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>宠物寄养比价 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f3e5f5;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#7b1fa2,#4a148c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#7b1fa2}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.plan-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid #eee;border-left:4px solid #7b1fa2}
+.plan-card.best{border:2px solid #7b1fa2;background:#f3e5f5}
+.plan-card .p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.plan-card .p-name{font-weight:700;font-size:15px}
+.plan-card .p-price{font-weight:800;font-size:18px;color:#7b1fa2}
+.plan-card .p-total{font-size:11px;color:#999;text-align:right;margin-top:2px}
+.plan-card .p-desc{font-size:12px;color:#666;line-height:1.7}
+.plan-card .p-pros{margin-top:8px;font-size:11px;color:#2e7d32;line-height:1.6}
+.plan-card .p-cons{margin-top:4px;font-size:11px;color:#c62828;line-height:1.6}
+.badge-best{display:inline-block;padding:2px 8px;border-radius:8px;background:#7b1fa2;color:#fff;font-size:10px;font-weight:700}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#7b1fa2,#4a148c);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🐱 宠物寄养比价</h1><div class="sub">国庆出门7天，毛孩子怎么办？<br>三类寄养方式价格一次比清</div></div>
+
+<div class="card"><h3>🐾 基本信息</h3>
+<div class="row2">
+<div class="field"><label>宠物类型</label>
+<select id="pet"><option value="cat">🐱 猫</option><option value="dog">🐶 狗</option></select></div>
+<div class="field"><label>城市档位</label>
+<select id="city"><option value="t1" selected>一线（北上广深杭）</option><option value="t2">新一线（成都/武汉等）</option><option value="t3">二三线</option></select></div>
+</div>
+<div class="field"><label>寄养天数</label><input id="days" type="number" value="7" min="1" max="30" onchange="calc()"></div></div>
+
+<button class="btn" onclick="calc()">💰 比价</button>
+
+<div class="result" id="result"></div>
+<div class="footer">宠物寄养比价 · Demo · 价格为参考区间，以实际门店/平台为准</div>
+</div>
+
+<script>
+var prices={
+cat:{t1:{shop:[45,80],home:[50,90],sitter:[40,70]},t2:{shop:[30,50],home:[35,60],sitter:[28,45]},t3:{shop:[20,35],home:[25,40],sitter:[18,30]}},
+dog:{t1:{shop:[55,100],home:[60,110],sitter:[45,85]},t2:{shop:[35,60],home:[40,70],sitter:[30,55]},t3:{shop:[25,40],home:[28,45],sitter:[22,35]}}
+};
+
+function calc(){
+var pet=document.getElementById('pet').value;
+var city=document.getElementById('city').value;
+var days=parseInt(document.getElementById('days').value)||1;
+var p=prices[pet][city];
+
+var plans=[
+{name:'宠物店寄养',price:p.shop,desc:'专业门店，有营业执照和专业人员，猫狗分区。通常提供喂食、遛狗、基础护理，部分门店有24小时监控直播。',pros:'专业、省心、有监控、出问题有店方责任',cons:'陌生环境宠物易应激；犬舍一般较吵；节假日需提前很久预约'},
+{name:'家庭式寄养',price:p.home,desc:'有经验的养宠家庭接收寄养，通常一户只接1-2只，环境更像家。通过平台或同城宠物群联系。',pros:'环境舒适、宠物适应快、陪伴更多',cons:'无资质审查标准、依赖双方信任、出问题维权难'},
+{name:'上门喂养',price:p.sitter,desc:'宠物留在家中，专人每日上门喂食、换水、铲屎、陪玩，适合猫或胆小不易应激的宠物。',pros:'宠物不用离开家、零应激、可视频汇报',cons:'无夜间陪护；需装监控放心；一天只来1-2次'}
+];
+
+var sorted=[...plans].sort(function(a,b){return a.price[0]-b.price[0]});
+var cheapestName=sorted[0].name;
+
+var h='';
+for(var i=0;i<plans.length;i++){
+var plan=plans[i];
+var isBest=plan.name===cheapestName;
+var low=plan.price[0]*days,high=plan.price[1]*days;
+h+='<div class="plan-card'+(isBest?' best':'')+'">';
+h+='<div class="p-head"><span class="p-name">'+plan.name+(isBest?' <span class="badge-best">最省</span>':'')+'</span><span><div class="p-price">¥'+low+'~'+high+'</div><div class="p-total">'+plan.price[0]+'-'+plan.price[1]+'元/天 × '+days+'天</div></span></div>';
+h+='<div class="p-desc">'+plan.desc+'</div>';
+h+='<div class="p-pros">✅ '+plan.pros+'</div>';
+h+='<div class="p-cons">⚠️ '+plan.cons+'</div>';
+h+='</div>';
+}
+
+h+='<div class="tip">💡 <b>寄养避坑指南</b>：<br>• 提前 1-2 周预约，节假日热门门店一床难求<br>• 首次寄养先试住 1 晚，观察宠物应激反应<br>• 确认疫苗齐全（猫三联/犬四联+狂犬），门店会查<br>• 签协议明确：喂食标准、遛狗次数、医疗责任划分<br>• 猫优先选上门喂养或家庭寄养，应激风险最低<br>• 务必留紧急联系人，宠物突发疾病要有人能签字<br>• 装摄像头/要求每日视频，人不在更要看得见</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
