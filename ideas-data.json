@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "reno-budget",
+      "icon": "🏗",
+      "title": "装修预算分配器",
+      "tagline": "装修30万硬装软装家电怎么分？钱花在刀刃上不被增项坑",
+      "status": "live",
+      "category": "家装服务",
+      "demoUrl": "demo-reno-budget/"
+    },
+    {
       "id": "pet-boarding",
       "icon": "🐱",
       "title": "宠物寄养比价",

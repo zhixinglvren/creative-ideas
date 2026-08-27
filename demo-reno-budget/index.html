@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>装修预算分配器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff3e0;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#e65100,#bf360c);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus{border-color:#e65100}
+.field .preset{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.preset-btn{padding:6px 14px;border-radius:16px;border:1px solid #ffcc80;background:#fff;font-size:12px;cursor:pointer;transition:all .2s}
+.preset-btn:active{background:#fff3e0;border-color:#e65100;color:#e65100}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.summary-card{background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.summary-card .big{font-size:28px;font-weight:800;color:#bf360c}
+.summary-card .label{font-size:12px;color:#888;margin-top:4px}
+.alloc{background:#fff;border-radius:12px;padding:16px;margin-bottom:8px}
+.alloc .a-row{display:flex;align-items:center;margin-bottom:10px}
+.alloc .a-name{width:70px;font-size:13px;font-weight:600;flex-shrink:0}
+.alloc .a-bar{flex:1;height:14px;border-radius:7px;background:#f5f5f5;overflow:hidden;margin:0 10px}
+.alloc .a-fill{height:100%;border-radius:7px;transition:width .5s ease}
+.alloc .a-amt{width:80px;text-align:right;font-size:13px;font-weight:700;flex-shrink:0}
+.alloc .a-detail{font-size:11px;color:#999;padding-left:80px;margin-top:-4px;margin-bottom:10px;line-height:1.6}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#e65100,#bf360c);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🏗 装修预算分配器</h1><div class="sub">装修30万，硬装软装家电怎么分？<br>钱花在刀刃上，不被增项坑</div></div>
+
+<div class="card"><h3>💰 总预算</h3>
+<div class="field"><label>装修总预算（万元）</label>
+<input id="budget" type="number" value="30" min="5" max="200" step="1" onchange="calc()">
+<div class="preset">
+<div class="preset-btn" onclick="setBudget(15)">简装 15万</div>
+<div class="preset-btn" onclick="setBudget(25)">舒适 25万</div>
+<div class="preset-btn" onclick="setBudget(35)">品质 35万</div>
+<div class="preset-btn" onclick="setBudget(50)">豪华 50万</div>
+</div></div>
+<div class="field"><label>房屋面积（㎡，用于估算单价）</label><input id="area" type="number" value="90" min="30" onchange="calc()"></div></div>
+
+<button class="btn" onclick="calc()">📊 生成预算方案</button>
+
+<div class="result" id="result"></div>
+<div class="footer">装修预算分配器 · Demo · 参考行业经验比例，实际以当地报价为准</div>
+</div>
+
+<script>
+function setBudget(v){document.getElementById('budget').value=v;calc();}
+
+function calc(){
+var budget=parseFloat(document.getElementById('budget').value)||30;
+var area=parseFloat(document.getElementById('area').value)||90;
+var total=budget*10000;
+
+// 分配比例（行业经验）
+var parts=[
+{name:'硬装施工',pct:45,color:'#e65100',items:'水电改造、瓦工、木工、油漆、辅料、人工'},
+{name:'主材',pct:25,color:'#f57c00',items:'瓷砖、地板、橱柜、卫浴、门窗、吊顶'},
+{name:'软装',pct:15,color:'#f9a825',items:'家具、窗帘、灯具、装饰画、绿植'},
+{name:'家电',pct:10,color:'#fbc02d',items:'空调、冰箱、洗衣机、热水器、烟机灶具'},
+{name:'备用金',pct:5,color:'#ff7043',items:'增项、突发开支、家具家电补差'}
+];
+
+var h='';
+h+='<div class="summary-card"><div class="label">💰 总预算 ¥'+total.toLocaleString()+'</div><div class="big">约 ¥'+(total/area).toFixed(0)+'/㎡</div><div class="label">'+area+'㎡ · 中档装修参考</div></div>';
+
+h+='<div class="alloc">';
+for(var i=0;i<parts.length;i++){
+var p=parts[i];
+var amt=Math.round(total*p.pct/100);
+h+='<div class="a-row"><span class="a-name">'+p.name+'</span><div class="a-bar"><div class="a-fill" style="width:'+p.pct+'%;background:'+p.color+'"></div></div><span class="a-amt">¥'+(amt/10000).toFixed(1)+'万</span></div>';
+h+='<div class="a-detail">'+p.items+'</div>';
+}
+h+='</div>';
+
+var tip='';
+if(budget<20){
+tip='💡 <b>预算紧张建议</b>：水电隐蔽工程不能省（返工成本最高），主材选性价比品牌，软装家电可入住后逐步添置。';
+}else if(budget<35){
+tip='💡 <b>预算适中建议</b>：硬装45%打底，主材25%够选主流品牌中档款。最容易被坑的是"增项"——签合同时锁定总价，明确增项上限。';
+}else{
+tip='💡 <b>预算充足建议</b>：重点放在隐蔽工程和主材品质上，软装家电可以选设计师搭配。记住：贵的不一定对，环保等级和五金件才是核心。';
+}
+
+h+='<div class="tip">'+tip+'<br><br>⚠️ <b>防增项必知</b>：<br>• 签合同前拿到完整报价单，逐项核对<br>• 水电改造按"点位"报价比按米报价更透明<br>• 预留 5% 备用金是行业惯例，不是多要钱<br>• 主材自己采购 vs 装修公司代购，差价可达 20%<br>• 竣工验收后再付尾款，别被催着提前结清</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
