@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>宝宝疫苗时间表 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e0f2f1;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#00796b,#004d40);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus{border-color:#00796b}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.legend{display:flex;gap:16px;margin-bottom:12px;font-size:12px;color:#666}
+.legend .lg{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.free{background:#00796b}
+.dot.paid{background:#f57c00}
+.tl-item{display:flex;margin-bottom:14px;position:relative}
+.tl-item::before{content:'';position:absolute;left:19px;top:30px;bottom:-14px;width:2px;background:#e0e0e0}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;z-index:1}
+.tl-dot.free{background:#b2dfdb;color:#004d40}
+.tl-dot.paid{background:#ffe0b2;color:#e65100}
+.tl-body{flex:1;background:#fafafa;border-radius:10px;padding:12px;border:1px solid #f0f0f0}
+.tl-body .tb-age{font-weight:700;font-size:14px;color:#00796b;margin-bottom:4px}
+.tl-body .tb-vaccine{font-size:13px;margin-bottom:2px}
+.tl-body .tb-doses{font-size:11px;color:#888}
+.tl-body .tb-tag{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600}
+.tb-free{background:#b2dfdb;color:#004d40}
+.tb-paid{background:#ffe0b2;color:#e65100}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#00796b,#004d40);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💉 宝宝疫苗时间表</h1><div class="sub">0-6岁疫苗太多记不住？<br>输入出生日期，接种计划一目了然</div></div>
+
+<div class="card"><h3>👶 宝宝信息</h3>
+<div class="field"><label>出生日期</label><input id="birth" type="date" onchange="calc()"></div></div>
+
+<button class="btn" onclick="calc()">📅 生成接种计划</button>
+
+<div class="result" id="result"></div>
+<div class="footer">宝宝疫苗时间表 · Demo · 依据国家免疫规划疫苗程序，具体以接种点为准</div>
+</div>
+
+<script>
+// 疫苗计划：月龄 + 疫苗 + 剂次 + 免费/自费
+var schedule=[
+{age:0,vaccine:'乙肝疫苗（第1剂）',doses:'出生24h内',type:'free'},
+{age:1,vaccine:'卡介苗',doses:'出生后',type:'free'},
+{age:1,vaccine:'乙肝疫苗（第2剂）',doses:'1月龄',type:'free'},
+{age:2,vaccine:'脊灰灭活疫苗（第1剂）',doses:'2月龄',type:'free'},
+{age:2,vaccine:'五联疫苗（自费替代）',doses:'2/3/4/18月龄共4剂',type:'paid'},
+{age:3,vaccine:'百白破疫苗（第1剂）',doses:'3月龄',type:'free'},
+{age:3,vaccine:'脊灰灭活疫苗（第2剂）',doses:'3月龄',type:'free'},
+{age:4,vaccine:'百白破疫苗（第2剂）',doses:'4月龄',type:'free'},
+{age:4,vaccine:'脊灰减毒活疫苗（第3剂）',doses:'4月龄',type:'free'},
+{age:5,vaccine:'百白破疫苗（第3剂）',doses:'5月龄',type:'free'},
+{age:6,vaccine:'乙肝疫苗（第3剂）',doses:'6月龄',type:'free'},
+{age:6,vaccine:'流脑A群疫苗（第1剂）',doses:'6月龄',type:'free'},
+{age:6,vaccine:'流感疫苗（自费，每年）',doses:'6月龄起每年',type:'paid'},
+{age:8,vaccine:'麻腮风疫苗（第1剂）',doses:'8月龄',type:'free'},
+{age:9,vaccine:'流脑A群疫苗（第2剂）',doses:'9月龄',type:'free'},
+{age:12,vaccine:'水痘疫苗（自费推荐）',doses:'12月龄',type:'paid'},
+{age:12,vaccine:'手足口EV71疫苗（自费）',doses:'12月龄起2剂',type:'paid'},
+{age:18,vaccine:'甲肝疫苗（第1剂）',doses:'18月龄',type:'free'},
+{age:18,vaccine:'百白破疫苗（第4剂）',doses:'18月龄',type:'free'},
+{age:18,vaccine:'麻腮风疫苗（第2剂）',doses:'18月龄',type:'free'},
+{age:24,vaccine:'乙脑减毒活疫苗（第2剂）',doses:'2周岁',type:'free'},
+{age:36,vaccine:'流脑A+C疫苗（第1剂）',doses:'3周岁',type:'free'},
+{age:48,vaccine:'脊灰减毒活疫苗（第4剂）',doses:'4周岁',type:'free'},
+{age:72,vaccine:'流脑A+C疫苗（第2剂）',doses:'6周岁',type:'free'},
+{age:72,vaccine:'白破疫苗',doses:'6周岁',type:'free'}
+];
+
+function calc(){
+var birthStr=document.getElementById('birth').value;
+if(!birthStr){alert('请先选择宝宝出生日期');return}
+var birth=new Date(birthStr);
+var now=new Date();
+var ageMonths=(now.getFullYear()-birth.getFullYear())*12+(now.getMonth()-birth.getMonth());
+
+var upcoming=[];
+var done=[];
+for(var i=0;i<schedule.length;i++){
+var s=schedule[i];
+if(ageMonths>=s.age)done.push(s);
+else upcoming.push(s);
+}
+
+var h='';
+h+='<div class="legend"><span class="lg"><span class="dot free"></span>免费（国家免疫规划）</span><span class="lg"><span class="dot paid"></span>自费（推荐接种）</span></div>';
+
+h+='<div class="card"><h3>✅ 已完成（'+done.length+'项）</h3>';
+h+='<div style="font-size:12px;color:#999">宝宝现在 '+ageMonths+' 月龄，以下疫苗已到接种时间，请核对接种本。</div></div>';
+
+h+='<div class="card"><h3>📅 待接种计划</h3>';
+for(var i=0;i<upcoming.length;i++){
+var s=upcoming[i];
+var dueDate=new Date(birth.getFullYear(),birth.getMonth()+s.age,birth.getDate());
+var dueStr=dueDate.getFullYear()+'-'+('0'+(dueDate.getMonth()+1)).slice(-2)+'-'+('0'+dueDate.getDate()).slice(-2);
+var cls=s.type==='free'?'free':'paid';
+var tagCls=s.type==='free'?'tb-free':'tb-paid';
+var tagText=s.type==='free'?'免费':'自费推荐';
+h+='<div class="tl-item"><div class="tl-dot '+cls+'">'+(s.type==='free'?'💉':'💰')+'</div><div class="tl-body"><div class="tb-age">'+s.age+'月龄 · '+dueStr+'</div><div class="tb-vaccine">'+s.vaccine+'</div><div class="tb-doses">'+s.doses+'</div><span class="tb-tag '+tagCls+'">'+tagText+'</span></div></div>';
+}
+h+='</div>';
+
+h+='<div class="tip">💡 <b>接种须知</b>：<br>• 接种前宝宝要健康，发热/腹泻等暂缓<br>• 接种后留观 30 分钟再离开<br>• 自费疫苗按经济情况选：五联（少打8针）、水痘、手足口、流感推荐优先打<br>• 外地接种带上接种本，全国联网可查<br>• 接种时间可推迟 1-2 周，不建议提前<br>• 有疑问打 12320 卫生热线咨询</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

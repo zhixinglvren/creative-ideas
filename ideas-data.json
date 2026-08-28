@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "vaccine-schedule",
+      "icon": "💉",
+      "title": "宝宝疫苗时间表",
+      "tagline": "0-6岁疫苗太多记不住？输入出生日期接种计划一目了然",
+      "status": "live",
+      "category": "亲子育儿",
+      "demoUrl": "demo-vaccine-schedule/"
+    },
+    {
       "id": "reno-budget",
       "icon": "🏗",
       "title": "装修预算分配器",
