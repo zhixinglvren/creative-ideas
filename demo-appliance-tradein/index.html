@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>家电以旧换新计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8f5e9;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#2e7d32}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.total-card{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.total-card .label{font-size:12px;color:#666}
+.total-card .big{font-size:34px;font-weight:800;color:#1b5e20;margin:4px 0}
+.total-card .sub{font-size:11px;color:#888}
+.detail{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;font-size:13px}
+.detail .d-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.detail .d-row:last-child{border:none}
+.detail .d-row .v{font-weight:700;color:#2e7d32}
+.detail .d-row .save{color:#e65100}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🔄 家电以旧换新计算器</h1><div class="sub">换空调冰箱还能领补贴？<br>国补+旧机回收，一算能省多少</div></div>
+
+<div class="card"><h3>🛒 换新信息</h3>
+<div class="field"><label>旧家电品类</label>
+<select id="category">
+<option value="ac">❄️ 空调</option>
+<option value="fridge">🧊 冰箱</option>
+<option value="washer">👕 洗衣机</option>
+<option value="tv">📺 电视</option>
+<option value="range">🍳 灶具</option>
+</select></div>
+<div class="row2">
+<div class="field"><label>新机价格（元）</label><input id="newPrice" type="number" value="4000" min="500" step="100" onchange="calc()"></div>
+<div class="field"><label>旧机状态</label>
+<select id="condition"><option value="good">正常可用</option><option value="old">老旧/维修过</option><option value="broken">已损坏</option></select></div>
+</div></div>
+
+<button class="btn" onclick="calc()">🧮 算补贴</button>
+
+<div class="result" id="result"></div>
+<div class="footer">家电以旧换新计算器 · Demo · 参考国家以旧换新政策，具体以当地活动为准</div>
+</div>
+
+<script>
+var catInfo={
+ac:{name:'空调',rate:0.20,max:2000,old:[500,200,80]},
+fridge:{name:'冰箱',rate:0.20,max:2000,old:[400,150,60]},
+washer:{name:'洗衣机',rate:0.20,max:2000,old:[350,120,50]},
+tv:{name:'电视',rate:0.15,max:2000,old:[300,100,40]},
+range:{name:'灶具',rate:0.15,max:2000,old:[150,60,20]}
+};
+
+function calc(){
+var cat=document.getElementById('category').value;
+var newPrice=parseFloat(document.getElementById('newPrice').value)||0;
+var cond=document.getElementById('condition').value;
+var info=catInfo[cat];
+
+if(newPrice<=0)return;
+
+var subsidy=Math.min(newPrice*info.rate,info.max);
+var condIdx=cond==='good'?0:(cond==='old'?1:2);
+var oldValue=info.old[condIdx];
+var totalSave=subsidy+oldValue;
+var finalPay=Math.max(0,newPrice-totalSave);
+
+var h='';
+h+='<div class="total-card"><div class="label">💡 换新 '+info.name+' 总优惠</div><div class="big">¥'+Math.round(totalSave).toLocaleString()+'</div><div class="sub">最终实付约 ¥'+Math.round(finalPay).toLocaleString()+'（新机 ¥'+newPrice.toLocaleString()+'）</div></div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>国家补贴（'+Math.round(info.rate*100)+'% 比例）</span><span class="v save">-¥'+Math.round(subsidy).toLocaleString()+'</span></div>';
+h+='<div class="d-row"><span>旧机回收估价（'+(cond==='good'?'正常':cond==='old'?'老旧':'已损坏')+'）</span><span class="v save">-¥'+oldValue+'</span></div>';
+h+='<div class="d-row"><span>新机原价</span><span>¥'+newPrice.toLocaleString()+'</span></div>';
+h+='<div class="d-row" style="font-weight:700;border-top:1px solid #eee;margin-top:4px;padding-top:8px"><span>最终实付</span><span class="v" style="font-size:16px">¥'+Math.round(finalPay).toLocaleString()+'</span></div>';
+h+='</div>';
+
+var tip='';
+if(cat==='ac')tip='❄️ 空调建议：能效等级选一级，旧机无论好坏都能折价，补贴按新机价20%封顶2000。拆机费一般商家承担。';
+else if(cat==='fridge')tip='🧊 冰箱建议：选一级能效风冷，旧冰箱搬运注意放倒会漏氟，找专业回收。';
+else if(cat==='washer')tip='👕 洗衣机建议：波轮换滚筒注意阳台尺寸，补贴政策含旧机免费上门回收。';
+else if(cat==='tv')tip='📺 电视建议：旧电视按寸数折价，补贴15%，大尺寸（75寸+）优惠更多。';
+else tip='🍳 灶具建议：燃气灶换新注意气源类型（天然气/液化气），补贴15%，旧灶具可折价。';
+
+h+='<div class="tip">💡 '+tip+'<br><br>⚠️ <b>补贴申领须知</b>：<br>• 通过云闪付/各省商务厅活动页面领券，先领券后下单<br>• 补贴按"新机成交价"计算，部分商家会先让利再补贴<br>• 每人每品类限 1 台，全国范围内有效<br>• 旧机由商家上门回收，无需自己处理<br>• 政策有效期至 2026 年底，热门品类额度有限早换早享<br>• 以旧换新 vs 直接打折：算清补贴后对比，别只看标价</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

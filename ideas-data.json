@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "appliance-tradein",
+      "icon": "🔄",
+      "title": "家电以旧换新计算器",
+      "tagline": "换空调冰箱还能领国补？补贴+旧机回收一算省多少",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-appliance-tradein/"
+    },
+    {
       "id": "vaccine-schedule",
       "icon": "💉",
       "title": "宝宝疫苗时间表",
