@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>停车费刺客检测 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e3f2fd;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#1565c0}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.warn-card{background:linear-gradient(135deg,#ffebee,#ffcdd2);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.warn-card .label{font-size:12px;color:#888}
+.warn-card .big{font-size:34px;font-weight:800;color:#c62828;margin:4px 0}
+.warn-card .sub{font-size:11px;color:#888}
+.detail{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;font-size:13px}
+.detail .d-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.detail .d-row:last-child{border:none}
+.detail .d-row .v{font-weight:700;color:#1565c0}
+.detail .d-row .save{color:#2e7d32}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🅿️ 停车费刺客检测</h1><div class="sub">停一天车要200多？<br>算清停车费，别被"刺客"宰了</div></div>
+
+<div class="card"><h3>📍 停车场景</h3>
+<div class="field"><label>城市档位</label>
+<select id="city"><option value="t1" selected>一线（北上广深杭）</option><option value="t2">新一线（成都/武汉等）</option><option value="t3">二三线</option></select></div>
+<div class="field"><label>停车场类型</label>
+<select id="type">
+<option value="hospital">🏥 医院</option>
+<option value="mall">🛍 商圈商场</option>
+<option value="office">🏢 写字楼</option>
+<option value="airport">✈️ 机场/高铁</option>
+<option value="street">🛣 路边</option>
+</select></div>
+<div class="row2">
+<div class="field"><label>停车时长（小时）</label><input id="hours" type="number" value="4" min="0.5" step="0.5" onchange="calc()"></div>
+<div class="field"><label>是否跨天</label>
+<select id="overnight"><option value="0">否</option><option value="1">是（过夜）</option></select></div>
+</div></div>
+
+<button class="btn" onclick="calc()">💰 算停车费</button>
+
+<div class="result" id="result"></div>
+<div class="footer">停车费刺客检测 · Demo · 价格为参考区间，以实际收费为准</div>
+</div>
+
+<script>
+// 每小时费率（元）：t1/t2/t3 × 类型
+var rates={
+hospital:{t1:[8,12],t2:[5,8],t3:[3,5]},
+mall:{t1:[10,15],t2:[6,10],t3:[4,6]},
+office:{t1:[12,18],t2:[7,10],t3:[4,7]},
+airport:{t1:[15,25],t2:[10,18],t3:[6,10]},
+street:{t1:[12,20],t2:[6,12],t3:[4,8]}
+};
+var typeNames={hospital:'医院',mall:'商圈商场',office:'写字楼',airport:'机场/高铁',street:'路边'};
+var cityNames={t1:'一线城市',t2:'新一线',t3:'二三线'};
+// 封顶价（元/天）
+var dayCap={hospital:{t1:60,t2:40,t3:25},mall:{t1:100,t2:60,t3:35},office:{t1:120,t2:70,t3:40},airport:{t1:200,t2:150,t3:80},street:{t1:150,t2:90,t3:50}};
+
+function calc(){
+var city=document.getElementById('city').value;
+var type=document.getElementById('type').value;
+var hours=parseFloat(document.getElementById('hours').value)||1;
+var overnight=parseInt(document.getElementById('overnight').value)||0;
+
+var r=rates[type][city];
+var cap=dayCap[type][city];
+var low=Math.min(r[0]*hours,overnight?cap:cap);
+var high=Math.min(r[1]*hours,overnight?cap:cap);
+
+var alertText='';
+if(low>=100)alertText='💀 停车刺客级别：比打车还贵！';
+else if(low>=50)alertText='⚠️ 有点贵：快赶上油钱了';
+else if(low>=20)alertText='😐 正常水平：在合理范围内';
+else alertText='✅ 便宜：这个价格停车不心疼';
+
+var h='';
+h+='<div class="warn-card"><div class="label">🅿️ '+typeNames[type]+' · '+cityNames[city]+' · '+(overnight?'跨天':'当日')+' '+hours+'小时</div><div class="big">¥'+Math.round(low)+'~'+Math.round(high)+'</div><div class="sub">'+alertText+'</div></div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>费率区间</span><span class="v">¥'+r[0]+'~'+r[1]+'/小时</span></div>';
+h+='<div class="d-row"><span>按小时计算</span><span>¥'+Math.round(r[0]*hours)+'~'+Math.round(r[1]*hours)+'</span></div>';
+h+='<div class="d-row"><span>每日封顶</span><span class="v">¥'+cap+'/天</span></div>';
+if(overnight)h+='<div class="d-row"><span>跨天按封顶</span><span class="v save">¥'+cap+'/天封顶</span></div>';
+h+='</div>';
+
+var tip='';
+if(type==='hospital')tip='🏥 医院停车技巧：提前挂号预约时段，部分医院凭就诊凭证减免；附近小区/商场步行5分钟能省一半。';
+else if(type==='airport')tip='✈️ 机场停车技巧：P1/P2 短停贵，P3/P4 长停便宜；接送机用"即停即走区"；长停3天以上考虑周边停车场（30-50/天）或打车对比。';
+else if(type==='street')tip='🛣 路边停车技巧：注意收费时段（多数19:00-7:00免费）；看蓝牌收费/绿牌免费区域；12345可投诉乱收费。';
+else if(type==='office')tip='🏢 写字楼技巧：小程序/APP预约停车常有8折；月卡比按次便宜5-8倍，常停必办。';
+else tip='🛍 商圈技巧：满额免停是常态，问清消费门槛；晚高峰离场排队，错峰15分钟省半小时。
+
+h+='<div class="tip">💡 '+tip+'<br><br>⚠️ <b>防刺客必知</b>：<br>• 进场先看收费标准牌（拍照留证）<br>• 超时5分钟按1小时算，提前10分钟离场<br>• 高峰期溢价：部分机场/景区节假日涨价<br>• 乱收费可打 12315/12345 投诉，留好小票</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

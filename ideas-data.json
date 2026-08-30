@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "parking-fee",
+      "icon": "🅿️",
+      "title": "停车费刺客检测",
+      "tagline": "停一天车200多？算清停车费别被刺客宰了",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-parking-fee/"
+    },
+    {
       "id": "appliance-tradein",
       "icon": "🔄",
       "title": "家电以旧换新计算器",
