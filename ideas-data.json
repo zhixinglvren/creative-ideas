@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "medical-insurance",
+      "icon": "💊",
+      "title": "医保报销计算器",
+      "tagline": "住院3万医保能报多少？起付线封顶线比例一次算清",
+      "status": "live",
+      "category": "医疗健康",
+      "demoUrl": "demo-medical-insurance/"
+    },
+    {
       "id": "parking-fee",
       "icon": "🅿️",
       "title": "停车费刺客检测",
