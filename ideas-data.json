@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "creditcard-grace",
+      "icon": "💳",
+      "title": "信用卡免息期计算器",
+      "tagline": "同样刷卡免息期差20天？账单日次日刷最划算",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-creditcard-grace/"
+    },
+    {
       "id": "medical-insurance",
       "icon": "💊",
       "title": "医保报销计算器",

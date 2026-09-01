@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>信用卡免息期计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e0f2f1;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#00796b,#004d40);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#00796b}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.best-card{background:linear-gradient(135deg,#e0f2f1,#b2dfdb);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.best-card .label{font-size:12px;color:#666}
+.best-card .big{font-size:34px;font-weight:800;color:#004d40;margin:4px 0}
+.best-card .sub{font-size:11px;color:#888}
+.detail{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;font-size:13px}
+.detail .d-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.detail .d-row:last-child{border:none}
+.detail .d-row .v{font-weight:700;color:#00796b}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#00796b,#004d40);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💳 信用卡免息期计算器</h1><div class="sub">同样刷卡，免息期差20天<br>账单日后一天刷，钱多放一个月</div></div>
+
+<div class="card"><h3>💳 信用卡信息</h3>
+<div class="row2">
+<div class="field"><label>账单日（每月几号）</label><input id="billingDay" type="number" value="15" min="1" max="28" onchange="calc()"></div>
+<div class="field"><label>还款日（每月几号）</label><input id="dueDay" type="number" value="3" min="1" max="28" onchange="calc()"></div>
+</div>
+<div class="field"><label>常用账单日（快捷选择）</label>
+<select id="preset" onchange="applyPreset()">
+<option value="15,3">15号账单 / 3号还款</option>
+<option value="10,28">10号账单 / 28号还款</option>
+<option value="5,23">5号账单 / 23号还款</option>
+<option value="20,8">20号账单 / 8号还款</option>
+<option value="25,13">25号账单 / 13号还款</option>
+</select></div></div>
+
+<button class="btn" onclick="calc()">🧮 算免息期</button>
+
+<div class="result" id="result"></div>
+<div class="footer">信用卡免息期计算器 · Demo · 各行规则略有差异，以发卡行为准</div>
+</div>
+
+<script>
+function applyPreset(){
+var v=document.getElementById('preset').value.split(',');
+document.getElementById('billingDay').value=v[0];
+document.getElementById('dueDay').value=v[1];
+calc();
+}
+
+function calc(){
+var billing=parseInt(document.getElementById('billingDay').value)||15;
+var due=parseInt(document.getElementById('dueDay').value)||3;
+
+// 最长免息期：账单日次日刷卡 → 下下个还款日
+// 最短免息期：账单日当天刷卡 → 本月还款日
+var maxInterest;
+if(due>billing){
+// 还款日在账单日之后：账单日次日 → 下个月还款日
+maxInterest=(30-billing)+due;
+}else{
+// 还款日在账单日之前（跨月）：账单日次日 → 下下个月还款日
+maxInterest=(30-billing)+30+due;
+}
+var minInterest=due<=billing?(30-billing)+due:due-billing;
+// 简化：最短免息期 ≈ 账单日到还款日的天数
+var shortest=Math.abs(due-billing);
+if(due<=billing)shortest=(30-billing)+due;
+else shortest=due-billing;
+
+var h='';
+h+='<div class="best-card"><div class="label">📈 你的信用卡最长免息期</div><div class="big">'+maxInterest+' 天</div><div class="sub">最短约 '+shortest+' 天 · 平均约 '+Math.round((maxInterest+shortest)/2)+' 天</div></div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>📅 账单日</span><span class="v">每月 '+billing+' 号</span></div>';
+h+='<div class="d-row"><span>📅 还款日</span><span class="v">每月 '+due+' 号</span></div>';
+h+='<div class="d-row"><span>🟢 最划算刷卡日</span><span class="v">账单日次日（'+billing+' 号次日）</span></div>';
+h+='<div class="d-row"><span>🔴 最亏刷卡日</span><span>账单日当天（'+billing+' 号）</span></div>';
+h+='<div class="d-row"><span>最长免息期</span><span class="v">'+maxInterest+' 天</span></div>';
+h+='<div class="d-row"><span>最短免息期</span><span>约 '+shortest+' 天</span></div>';
+h+='<div class="d-row" style="font-weight:700;border-top:1px solid #eee;margin-top:4px;padding-top:8px"><span>两日相差</span><span class="v" style="color:#e65100">'+(maxInterest-shortest)+' 天资金占用</span></div>';
+h+='</div>';
+
+h+='<div class="tip">💡 <b>免息期玩法</b>：<br>• 大额消费（机票/家电/数码）安排在账单日次日，白拿最长免息期<br>• 账单日当天/前后 1-2 天消费最亏，免息期最短<br>• 例：15 号账单 3 号还款，16 号刷卡 = 最长免息，14 号刷卡 = 最短<br>• 部分银行支持修改账单日（每 6-12 个月一次），大额消费前可调整<br>• 免息期只对消费款有效，取现/转账不享受且当天计息<br>• 记得按时还款，逾期利息 18% 一年，把免息赚的全亏回去<br>• 理性消费：免息期是省利息的工具，不是透支的理由</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
