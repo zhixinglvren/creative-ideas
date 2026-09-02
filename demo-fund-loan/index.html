@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>公积金贷款额度计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8eaf6;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#3949ab,#1a237e);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#3949ab}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.amount-card{background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.amount-card .label{font-size:12px;color:#666}
+.amount-card .big{font-size:34px;font-weight:800;color:#1a237e;margin:4px 0}
+.amount-card .sub{font-size:11px;color:#888}
+.detail{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;font-size:13px}
+.detail .d-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.detail .d-row:last-child{border:none}
+.detail .d-row .v{font-weight:700;color:#3949ab}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3949ab,#1a237e);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🏠 公积金贷款额度计算器</h1><div class="sub">公积金能贷多少？比商贷省多少利息？<br>买房前先算清楚</div></div>
+
+<div class="card"><h3>📍 城市 & 缴存</h3>
+<div class="row2">
+<div class="field"><label>城市</label>
+<select id="city"><option value="hz" selected>杭州</option><option value="bj">北京</option><option value="sh">上海</option><option value="sz">深圳</option><option value="gz">广州</option><option value="cd">成都</option></select></div>
+<div class="field"><label>公积金月缴存（元）</label><input id="monthly" type="number" value="3000" min="100" onchange="calc()"></div>
+</div>
+<div class="row2">
+<div class="field"><label>账户余额（元）</label><input id="balance" type="number" value="80000" min="0" onchange="calc()"></div>
+<div class="field"><label>缴存年限（年）</label><input id="years" type="number" value="4" min="0.5" max="40" step="0.5" onchange="calc()"></div>
+</div></div>
+
+<div class="card"><h3>🏡 贷款信息</h3>
+<div class="row2">
+<div class="field"><label>房价总额（万）</label><input id="price" type="number" value="300" min="20" onchange="calc()"></div>
+<div class="field"><label>贷款年限（年）</label><input id="loanYears" type="number" value="30" min="1" max="30" onchange="calc()"></div>
+</div></div>
+
+<button class="btn" onclick="calc()">🧮 算额度</button>
+
+<div class="result" id="result"></div>
+<div class="footer">公积金贷款额度计算器 · Demo · 各地规则有差异，以当地公积金中心为准</div>
+</div>
+
+<script>
+// 城市参数：个人上限、倍数、房价比例
+var cities={
+hz:{cap:100,mult:15,priceRatio:0.7,rate:2.85},
+bj:{cap:120,mult:10,priceRatio:0.8,rate:2.6},
+sh:{cap:65,mult:15,priceRatio:0.8,rate:2.85},
+sz:{cap:70,mult:14,priceRatio:0.7,rate:2.6},
+gz:{cap:70,mult:15,priceRatio:0.8,rate:2.85},
+cd:{cap:70,mult:20,priceRatio:0.7,rate:2.6}
+};
+var bizRate=3.5;
+
+function calc(){
+var city=document.getElementById('city').value;
+var monthly=parseFloat(document.getElementById('monthly').value)||0;
+var balance=parseFloat(document.getElementById('balance').value)||0;
+var years=parseFloat(document.getElementById('years').value)||0;
+var price=parseFloat(document.getElementById('price').value)||0;
+var loanYears=parseInt(document.getElementById('loanYears').value)||30;
+
+var c=cities[city];
+// 四种算法取最小值
+var byBalance=balance*c.mult;           // 余额×倍数
+var byMonthly=monthly*12*years*0.5;     // 简化：月缴存×12×年限×0.5（部分城市按此）
+var byPrice=price*10000*c.priceRatio;   // 房价比例
+var byCap=c.cap*10000;                  // 城市上限
+var loan=Math.min(byBalance,byMonthly,byPrice,byCap);
+loan=Math.floor(loan/10000)*10000; // 取整到万
+if(loan<0)loan=0;
+
+// 商贷对比：等额本息月供
+function monthPay(p,r,n){
+if(p<=0)return 0;
+var mr=r/100/12;
+return p*mr*Math.pow(1+mr,n)/(Math.pow(1+mr,n)-1);
+}
+var need=Math.max(0,price*10000*0.7-loan); // 假设首付30%，其余部分商贷
+var n=loanYears*12;
+var gongPay=monthPay(loan,c.rate,n);
+var bizPay=monthPay(need,bizRate,n);
+var gongInterest=monthPay(loan,c.rate,n)*n-loan;
+var bizInterest=monthPay(need,bizRate,n)*n-need;
+// 若全部商贷利息
+var allBizInterest=monthPay(loan+need,bizRate,n)*n-(loan+need);
+
+var h='';
+h+='<div class="amount-card"><div class="label">🏠 公积金最高可贷</div><div class="big">¥'+Math.round(loan/10000)+' 万</div><div class="sub">'+(byCap===loan?'已达城市上限':'四种算法取最小值')+' · 公积金利率 '+c.rate+'%</div></div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>① 余额×倍数（'+c.mult+'倍）</span><span class="v">¥'+Math.round(byBalance/10000)+'万</span></div>';
+h+='<div class="d-row"><span>② 月缴存测算</span><span class="v">¥'+Math.round(byMonthly/10000)+'万</span></div>';
+h+='<div class="d-row"><span>③ 房价比例（'+Math.round(c.priceRatio*100)+'%）</span><span class="v">¥'+Math.round(byPrice/10000)+'万</span></div>';
+h+='<div class="d-row"><span>④ 城市上限</span><span class="v">¥'+c.cap+'万</span></div>';
+h+='<div class="d-row" style="font-weight:700;border-top:1px solid #eee;margin-top:4px;padding-top:8px"><span>✅ 可取额度</span><span class="v" style="font-size:16px;color:#1a237e">¥'+Math.round(loan/10000)+'万</span></div>';
+h+='</div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>公积金贷款月供（30年）</span><span class="v">¥'+Math.round(gongPay).toLocaleString()+'</span></div>';
+h+='<div class="d-row"><span>公积金总利息</span><span>¥'+Math.round(gongInterest).toLocaleString()+'</span></div>';
+h+='<div class="d-row"><span>全部商贷总利息</span><span class="v">¥'+Math.round(allBizInterest).toLocaleString()+'</span></div>';
+h+='<div class="d-row" style="font-weight:700;color:#2e7d32;border-top:1px solid #eee;margin-top:4px;padding-top:8px"><span>💡 用公积金省利息</span><span>¥'+Math.round(Math.max(0,allBizInterest-gongInterest)).toLocaleString()+'</span></div>';
+h+='</div>';
+
+h+='<div class="tip">💡 <b>公积金贷款要点</b>：<br>• 利率仅 2.6%-3.1%，比商贷（3.5%+）低不少，30年能省几十万<br>• 首套房额度更高，二套房通常打 6-8 折<br>• 提取过公积金会降低余额，影响可贷额度<br>• 组合贷 = 公积金部分 + 商贷部分，先公后商<br>• 缴存 6 个月以上才能贷（多数城市）<br>• 贷前别断缴，连续缴存是关键<br>• 具体规则咨询 12329 公积金热线</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

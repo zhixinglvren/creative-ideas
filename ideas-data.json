@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "fund-loan",
+      "icon": "🏠",
+      "title": "公积金贷款额度计算器",
+      "tagline": "公积金能贷多少？比商贷省多少利息？买房前先算清",
+      "status": "live",
+      "category": "房产交易",
+      "demoUrl": "demo-fund-loan/"
+    },
+    {
       "id": "creditcard-grace",
       "icon": "💳",
       "title": "信用卡免息期计算器",
