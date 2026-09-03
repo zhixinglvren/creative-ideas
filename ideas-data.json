@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "house-tax",
+      "icon": "🏠",
+      "title": "二手房税费计算器",
+      "tagline": "总价300万二手房税费中介费要花多少？一算吓一跳",
+      "status": "live",
+      "category": "房产交易",
+      "demoUrl": "demo-house-tax/"
+    },
+    {
       "id": "fund-loan",
       "icon": "🏠",
       "title": "公积金贷款额度计算器",

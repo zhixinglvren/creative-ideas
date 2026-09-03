@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>二手房税费计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fbe9e7;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#bf360c,#3e2723);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#bf360c}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.total-card{background:linear-gradient(135deg,#fbe9e7,#ffccbc);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.total-card .label{font-size:12px;color:#666}
+.total-card .big{font-size:30px;font-weight:800;color:#bf360c;margin:4px 0}
+.total-card .sub{font-size:11px;color:#888}
+.detail{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;font-size:13px}
+.detail .d-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.detail .d-row:last-child{border:none}
+.detail .d-row .v{font-weight:700;color:#bf360c}
+.detail .d-row .free{color:#2e7d32}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#bf360c,#3e2723);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🏠 二手房税费计算器</h1><div class="sub">总价300万的二手房<br>税费中介费到底要花多少？</div></div>
+
+<div class="card"><h3>📋 房源信息</h3>
+<div class="row2">
+<div class="field"><label>成交总价（万）</label><input id="price" type="number" value="300" min="20" onchange="calc()"></div>
+<div class="field"><label>面积（㎡）</label><input id="area" type="number" value="90" min="20" onchange="calc()"></div>
+</div>
+<div class="row2">
+<div class="field"><label>购房套数</label>
+<select id="house"><option value="first">首套</option><option value="second">二套</option></select></div>
+<div class="field"><label>房本年限</label>
+<select id="years"><option value="under2">不满2年</option><option value="over2" selected>满2年</option><option value="over5">满5年</option></select></div>
+</div>
+<div class="row2">
+<div class="field"><label>是否唯一住房</label>
+<select id="unique"><option value="yes" selected>满五唯一</option><option value="no">非唯一</option></select></div>
+<div class="field"><label>中介费率（%）</label><input id="fee" type="number" value="1.5" min="0" max="3" step="0.1" onchange="calc()"></div>
+</div></div>
+
+<button class="btn" onclick="calc()">🧮 算总成本</button>
+
+<div class="result" id="result"></div>
+<div class="footer">二手房税费计算器 · Demo · 各地政策有差异，以当地税务为准</div>
+</div>
+
+<script>
+function calc(){
+var price=parseFloat(document.getElementById('price').value)||0;
+var area=parseFloat(document.getElementById('area').value)||0;
+var house=document.getElementById('house').value;
+var years=document.getElementById('years').value;
+var unique=document.getElementById('unique').value;
+var feeRate=parseFloat(document.getElementById('fee').value)||0;
+var total=price*10000;
+
+// 契税：首套 ≤90㎡ 1%，>90㎡ 1.5%；二套 ≤90㎡ 1%，>90㎡ 2%（简化北上广深略高）
+var deedRate;
+if(house==='first')deedRate=area<=90?0.01:0.015;
+else deedRate=area<=90?0.01:0.02;
+var deed=total*deedRate;
+
+// 增值税：不满2年 5.3%（含附加），满2年免征
+var vat=years==='under2'?total*0.053:0;
+
+// 个税：满五唯一免征，否则 1%（核定）或差额20%，用1%简化
+var incomeTax=0;
+if(years==='over5'&&unique==='yes')incomeTax=0;
+else incomeTax=total*0.01;
+
+// 中介费
+var agency=total*feeRate/100;
+
+var sumTax=deed+vat+incomeTax;
+var allCost=sumTax+agency;
+var actualRate=allCost/total*100;
+
+var h='';
+h+='<div class="total-card"><div class="label">🏠 房款之外的总成本</div><div class="big">¥'+Math.round(allCost).toLocaleString()+'</div><div class="sub">税费 ¥'+Math.round(sumTax).toLocaleString()+' + 中介费 ¥'+Math.round(agency).toLocaleString()+' · 相当于房价 '+actualRate.toFixed(1)+'%</div></div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>📜 契税（'+(deedRate*100)+'%）</span><span class="v">¥'+Math.round(deed).toLocaleString()+'</span></div>';
+h+='<div class="d-row"><span>🧾 增值税'+(years==='under2'?'（5.3%）':'')+'</span><span class="'+(vat===0?'free':'v')+'">'+(vat===0?'免征 ¥0':'¥'+Math.round(vat).toLocaleString())+'</span></div>';
+h+='<div class="d-row"><span>📄 个人所得税</span><span class="'+(incomeTax===0?'free':'v')+'">'+(incomeTax===0?'免征 ¥0（满五唯一）':'¥'+Math.round(incomeTax).toLocaleString())+'</span></div>';
+h+='<div class="d-row"><span>🤝 中介费（'+feeRate+'%）</span><span class="v">¥'+Math.round(agency).toLocaleString()+'</span></div>';
+h+='<div class="d-row" style="font-weight:700;border-top:1px solid #eee;margin-top:4px;padding-top:8px"><span>💰 实际总支出</span><span class="v" style="font-size:16px">¥'+Math.round(total+allCost).toLocaleString()+'</span></div>';
+h+='</div>';
+
+h+='<div class="tip">💡 <b>省钱策略</b>：<br>• 优先选「满五唯一」房源——个税+增值税全免，比不满2年省近 6%<br>• 不满2年房：增值税 5.3% 是大头，能避则避<br>• 中介费可以谈：链家/贝壳挂牌 2.4-3%，实际 1-1.5% 常见，小中介更低<br>• 契税首套 90㎡ 以下只要 1%，刚需首套优先小户型更省<br>• 房东"净收价"陷阱：约定税费各付，别全揽<br>• 看房前先问清：房本年限、是否唯一，直接决定你多掏几万<br>• 网签价可以做低避税，但影响贷款额度，别因小失大</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
