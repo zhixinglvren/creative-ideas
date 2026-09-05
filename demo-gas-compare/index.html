@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>加油比价盈亏计算 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8f5e9;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus{border-color:#2e7d32}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.verdict-card{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.verdict-card .big{font-size:20px;font-weight:800;line-height:1.5}
+.verdict-card .good{color:#1b5e20}
+.verdict-card .bad{color:#c62828}
+.verdict-card .mid{color:#e65100}
+.verdict-card .sub{font-size:12px;color:#666;margin-top:8px;line-height:1.6}
+.detail{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;font-size:13px}
+.detail .d-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5}
+.detail .d-row:last-child{border:none}
+.detail .d-row .v{font-weight:700;color:#2e7d32}
+.detail .d-row .warn{color:#c62828}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>⛽ 加油比价盈亏计算</h1><div class="sub">听说 5 公里外的油站便宜 6 毛？<br>跑过去到底省不省？算完再出发</div></div>
+
+<div class="card"><h3>⛽ 油价信息</h3>
+<div class="row2">
+<div class="field"><label>附近油价（元/升）</label><input id="priceNear" type="number" value="7.85" min="5" step="0.01" onchange="calc()"></div>
+<div class="field"><label>远处油价（元/升）</label><input id="priceFar" type="number" value="7.25" min="5" step="0.01" onchange="calc()"></div>
+</div>
+<div class="row2">
+<div class="field"><label>油箱容量（升）</label><input id="tank" type="number" value="55" min="20" max="100" onchange="calc()"></div>
+<div class="field"><label>当前油量（%）</label><input id="level" type="number" value="20" min="0" max="100" onchange="calc()"></div>
+</div></div>
+
+<div class="card"><h3>🚗 出行成本</h3>
+<div class="row2">
+<div class="field"><label>单程距离（km）</label><input id="dist" type="number" value="5" min="0.5" step="0.5" onchange="calc()"></div>
+<div class="field"><label>百公里油耗（L）</label><input id="consumption" type="number" value="8" min="3" max="20" step="0.5" onchange="calc()"></div>
+</div>
+<div class="field"><label>时间成本（元/单程，可选）</label><input id="timeCost" type="number" value="5" min="0" step="1" onchange="calc()"></div></div>
+
+<button class="btn" onclick="calc()">🧮 算盈亏</button>
+
+<div class="result" id="result"></div>
+<div class="footer">加油比价盈亏计算 · Demo · 数据自填，结论一目了然</div>
+</div>
+
+<script>
+function calc(){
+var pNear=parseFloat(document.getElementById('priceNear').value)||0;
+var pFar=parseFloat(document.getElementById('priceFar').value)||0;
+var tank=parseFloat(document.getElementById('tank').value)||55;
+var level=parseFloat(document.getElementById('level').value)||20;
+var dist=parseFloat(document.getElementById('dist').value)||0;
+var cons=parseFloat(document.getElementById('consumption').value)||8;
+var timeCost=parseFloat(document.getElementById('timeCost').value)||0;
+
+if(pNear<=pFar){alert('远处的油比附近贵或一样，不用比了');return}
+
+// 加满需要加的升数 = 油箱 × (100-当前油量)%
+var toFill=tank*((100-level)/100);
+// 每升省
+var savePerL=pNear-pFar;
+var totalSave=savePerL*toFill;
+// 往返油费
+var roundTripKm=dist*2;
+var fuelUsed=roundTripKm/100*cons;
+var fuelCost=fuelUsed*pNear;
+// 时间成本（往返）
+var timeCostTotal=timeCost*2;
+var netSave=totalSave-fuelCost-timeCostTotal;
+
+var verdict='',cls='',sub='';
+if(netSave>15){
+verdict='✅ 值得跑！';cls='good';
+sub='跑这一趟净省 ¥'+netSave.toFixed(0)+'，去！';
+}else if(netSave>0){
+verdict='⚠️ 省得不多';cls='mid';
+sub='只省 ¥'+netSave.toFixed(0)+'，顺路才去，专程跑不值';
+}else{
+verdict='❌ 别去！亏了';cls='bad';
+sub='这一趟净亏 ¥'+Math.abs(netSave).toFixed(0)+'，加附近油站更划算';
+}
+
+var h='';
+h+='<div class="verdict-card"><div class="big '+cls+'">'+verdict+'</div><div class="sub">'+sub+'</div></div>';
+
+h+='<div class="detail">';
+h+='<div class="d-row"><span>每升省</span><span class="v">¥'+savePerL.toFixed(2)+'</span></div>';
+h+='<div class="d-row"><span>本次加油量（加到满）</span><span>'+toFill.toFixed(0)+' 升</span></div>';
+h+='<div class="d-row"><span>💰 油费共省</span><span class="v">¥'+totalSave.toFixed(1)+'</span></div>';
+h+='<div class="d-row"><span>🚗 往返油费（'+dist*2+'km）</span><span class="warn">-¥'+fuelCost.toFixed(1)+'</span></div>';
+if(timeCost>0)h+='<div class="d-row"><span>⏱ 时间成本（往返）</span><span class="warn">-¥'+timeCostTotal.toFixed(0)+'</span></div>';
+h+='<div class="d-row" style="font-weight:700;border-top:1px solid #eee;margin-top:4px;padding-top:8px"><span>净收益</span><span class="'+(netSave>=0?'v':'warn')+'" style="font-size:15px">'+(netSave>=0?'+':'')+'¥'+netSave.toFixed(1)+'</span></div>';
+h+='</div>';
+
+h+='<div class="tip">💡 <b>算账技巧</b>：<br>• 核心公式：省的钱 = 油价差 × 本次加油量；成本 = 往返油费 + 时间成本<br>• 油箱越空、去越远越划算——加得少跑得远必亏<br>• 顺路加油（上下班路过）才是真省钱，专程跑不划算<br>• 把时间成本算进去：来回 30 分钟值不值省下的 20 块？<br>• 还要考虑：app 加油券、会员日、信用卡返现，往往比跑远路更省<br>• 低于 4 毛/升的价差 + 超过 3km 的距离，基本都别去</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>

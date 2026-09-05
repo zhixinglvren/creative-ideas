@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "gas-compare",
+      "icon": "⛽",
+      "title": "加油比价盈亏计算",
+      "tagline": "5公里外油站便宜6毛？跑过去到底省不省，算完再出发",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-gas-compare/"
+    },
+    {
       "id": "house-tax",
       "icon": "🏠",
       "title": "二手房税费计算器",
