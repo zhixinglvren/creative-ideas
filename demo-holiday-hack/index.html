@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>拼假攻略计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e3f2fd;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#1565c0}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.best-card{background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.best-card .label{font-size:12px;color:#666}
+.best-card .big{font-size:34px;font-weight:800;color:#0d47a1;margin:4px 0}
+.best-card .sub{font-size:12px;color:#666}
+.plan{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid #1565c0}
+.plan.best{border-left-color:#2e7d32;background:#f1f8e9}
+.plan .p-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.plan .p-dates{font-size:12px;color:#666;line-height:1.7}
+.hl{color:#c62828;font-weight:700}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🧳 拼假攻略计算器</h1><div class="sub">请3天假连休13天？<br>年假怎么用最划算，一算便知</div></div>
+
+<div class="card"><h3>📅 2026 法定节假日</h3>
+<div class="field"><label>选择目标假期</label>
+<select id="holiday" onchange="calc()">
+<option value="0">🎊 国庆（10/1-10/7，7天）</option>
+<option value="1">🌕 中秋（9/25，1天）</option>
+<option value="2">🌙 春节（2/16-2/22，7天）</option>
+<option value="3">🚩 五一（5/1-5/5，5天）</option>
+<option value="4">🌱 清明（4/5-4/6，2天）</option>
+<option value="5">🐉 端午（6/18-6/20，3天）</option>
+<option value="6">🎆 元旦（1/1-1/3，3天）</option>
+</select></div>
+<div class="field"><label>可用年假余额（天）</label><input id="leave" type="number" value="5" min="0" max="20" onchange="calc()"></div>
+</div>
+
+<button class="btn" onclick="calc()">🧮 算最优拼假方案</button>
+
+<div class="result" id="result"></div>
+<div class="footer">拼假攻略计算器 · Demo · 放假安排以国务院公布为准，周末推算基于2026年日历</div>
+</div>
+
+<script>
+// 2026年节假日（含调休上班日简化处理）
+var holidays=[
+{name:'国庆',start:'2026-10-01',end:'2026-10-07',total:7},
+{name:'中秋',start:'2026-09-25',end:'2026-09-25',total:1},
+{name:'春节',start:'2026-02-16',end:'2026-02-22',total:7},
+{name:'五一',start:'2026-05-01',end:'2026-05-05',total:5},
+{name:'清明',start:'2026-04-05',end:'2026-04-06',total:2},
+{name:'端午',start:'2026-06-18',end:'2026-06-20',total:3},
+{name:'元旦',start:'2026-01-01',end:'2026-01-03',total:3}
+];
+// 调休上班日（简化：节前/节后需上班的周末）
+var makeupWork=['2026-09-27','2026-10-10','2026-02-14','2026-02-28','2026-04-26','2026-05-09','2026-06-21'];
+
+function d(s){return new Date(s+'T00:00:00')}
+function fmt(dt){return (dt.getMonth()+1)+'/'+dt.getDate()}
+function isWorkday(dt){
+var s=dt.toISOString().slice(0,10);
+if(makeupWork.indexOf(s)!==-1)return true;   // 调休上班
+var w=dt.getDay();
+return w!==0&&w!==6;
+}
+function isHoliday(dt){
+var s=dt.toISOString().slice(0,10);
+for(var i=0;i<holidays.length;i++){
+if(s>=holidays[i].start&&s<=holidays[i].end)return true;
+}
+return false;
+}
+// 从指定日期向前/向后找连续非工作日（含法定假+周末）的天数
+function countRange(startDt,endDt){
+var n=0,cur=new Date(startDt);
+while(cur<=endDt){n++;cur.setDate(cur.getDate()+1)}
+return n;
+}
+
+function calc(){
+var idx=parseInt(document.getElementById('holiday').value)||0;
+var leave=parseInt(document.getElementById('leave').value)||0;
+var h=holidays[idx];
+var s=d(h.start),e=d(h.end);
+
+// 找假期前需要请假的工作日（从假期前一天往前推，跳过周末）
+var preLeave=[];
+var cur=new Date(s);cur.setDate(cur.getDate()-1);
+while(preLeave.length<leave&&isWorkday(cur)&&!isHoliday(cur)){
+preLeave.unshift(new Date(cur));
+cur.setDate(cur.getDate()-1);
+}
+// 若还有年假，继续从假期后往后请
+var postLeave=[];
+var remain=leave-preLeave.length;
+var cur2=new Date(e);cur2.setDate(cur2.getDate()+1);
+while(postLeave.length<remain&&isWorkday(cur2)&&!isHoliday(cur2)){
+postLeave.push(new Date(cur2));
+cur2.setDate(cur2.getDate()+1);
+}
+
+// 计算连休区间：从最早请假日的"前一个休息日"到最晚请假日的"后一个休息日"
+var first=preLeave.length?preLeave[0]:s;
+var last=postLeave.length?postLeave[postLeave.length-1]:e;
+// 向前扩展到周末
+var fs=new Date(first);
+while(true){var p=new Date(fs);p.setDate(p.getDate()-1);if(!isWorkday(p)&&!isHoliday(p)){fs=p}else{break}}
+// 向后扩展
+var le=new Date(last);
+while(true){var nx=new Date(le);nx.setDate(nx.getDate()+1);if(!isWorkday(nx)&&!isHoliday(nx)){le=nx}else{break}}
+
+var totalDays=countRange(fs,le);
+var ratio=leave>0?(totalDays/leave).toFixed(1):'∞';
+
+var hh='';
+hh+='<div class="best-card"><div class="label">🧳 最优方案可连休</div><div class="big">'+totalDays+' 天</div><div class="sub">请 <span class="hl">'+leave+'</span> 天年假 · 性价比 '+(leave>0?ratio+' 倍':'不用请假')+'</div></div>';
+
+hh+='<div class="plan best"><div class="p-title">✅ 推荐方案</div><div class="p-dates">';
+hh+='法定假期：'+h.start.slice(5)+' ~ '+h.end.slice(5)+'（'+h.total+'天）<br>';
+if(preLeave.length){
+hh+='<b>节前请假：</b>';
+for(var i=0;i<preLeave.length;i++){hh+=fmt(preLeave[i])+(i<preLeave.length-1?'、':'')}
+hh+='<br>';
+}
+if(postLeave.length){
+hh+='<b>节后请假：</b>';
+for(var i=0;i<postLeave.length;i++){hh+=fmt(postLeave[i])+(i<postLeave.length-1?'、':'')}
+hh+='<br>';
+}
+if(!preLeave.length&&!postLeave.length){
+hh+='（无需请假，直接享受法定假期）<br>';
+}
+hh+='<b>连休区间：</b><span class="hl">'+fmt(fs)+' ~ '+fmt(le)+'（'+totalDays+'天）</span>';
+hh+='</div></div>';
+
+// 备选：全部前置 vs 全部后置
+if(leave>0){
+var allPre=[],c1=new Date(s);c1.setDate(c1.getDate()-1);
+while(allPre.length<leave&&isWorkday(c1)&&!isHoliday(c1)){allPre.unshift(new Date(c1));c1.setDate(c1.getDate()-1)}
+if(allPre.length===leave){
+var fs2=new Date(allPre[0]);
+while(true){var p2=new Date(fs2);p2.setDate(p2.getDate()-1);if(!isWorkday(p2)&&!isHoliday(p2)){fs2=p2}else{break}}
+var le2=new Date(e);
+while(true){var n2=new Date(le2);n2.setDate(n2.getDate()+1);if(!isWorkday(n2)&&!isHoliday(n2)){le2=n2}else{break}}
+var t2=countRange(fs2,le2);
+if(t2!==totalDays){
+hh+='<div class="plan"><div class="p-title">📌 备选：全部前置</div><div class="p-dates">请假 '+allPre.map(fmt).join('、')+' → 连休 '+fmt(fs2)+' ~ '+fmt(le2)+'（<b>'+t2+'天</b>）</div></div>';
+}
+}
+}
+
+hh+='<div class="tip">💡 <b>拼假要点</b>：<br>• 黄金公式：<b>请 3 天假连休 9-13 天</b>是性价比最优区间<br>• 节后请假比节前好批（节前是业务高峰，领导敏感）<br>• 用年假而非病假/事假（事假扣钱且影响考勤）<br>• 提前 1 个月提申请，节前 2 周领导就开始卡假条<br>• 关注调休上班日（如 9/27、10/10 要上班），别算错<br>• 连休太长反而累：13 天以上回来有"节后综合征"<br>• 拼假错峰出行，机票酒店比正日子便宜 30-50%</div>';
+
+document.getElementById('result').innerHTML=hh;
+document.getElementById('result').className='result show';
+}
+</script>
+</body>
+</html>
