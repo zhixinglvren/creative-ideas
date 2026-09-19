@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>月子中心 vs 月嫂 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fce4ec;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#ad1457,#880e4f);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#ad1457}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.plan{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;border:1px solid #eee;border-left:4px solid #ad1457}
+.plan.best{border:2px solid #2e7d32;background:#f1f8e9}
+.plan .p-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.plan .p-name{font-weight:700;font-size:15px}
+.plan .p-price{font-weight:800;font-size:17px;color:#ad1457;text-align:right}
+.plan .p-unit{font-size:10px;color:#999}
+.plan .p-desc{font-size:12px;color:#666;line-height:1.7}
+.plan .p-pros{margin-top:8px;font-size:11px;color:#2e7d32;line-height:1.6}
+.plan .p-cons{margin-top:4px;font-size:11px;color:#c62828;line-height:1.6}
+.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;margin-left:6px}
+.b-green{background:#2e7d32;color:#fff}
+.b-amber{background:#f57c00;color:#fff}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#ad1457,#880e4f);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>🍼 月子中心 vs 月嫂</h1><div class="sub">产后 28 天怎么安排？<br>三种方案的费用和体验一次比清</div></div>
+
+<div class="card"><h3>👶 基本情况</h3>
+<div class="row2">
+<div class="field"><label>城市档位</label>
+<select id="city"><option value="t1" selected>一线（北上广深）</option><option value="t2">新一线（杭州/成都等）</option><option value="t3">二三线</option></select></div>
+<div class="field"><label>服务天数</label><input id="days" type="number" value="28" min="7" max="90" onchange="calc()"></div>
+</div>
+<div class="field"><label>家里是否有老人能帮忙</label>
+<select id="family"><option value="no" selected>没有/不便</option><option value="yes">有，能全天帮忙</option></select></div>
+</div>
+
+<button class="btn" onclick="calc()">💰 对比三种方案</button>
+
+<div class="result" id="result"></div>
+<div class="footer">月子中心 vs 月嫂 · Demo · 价格为参考区间，以当地实际报价为准</div>
+</div>
+
+<script>
+var prices={
+t1:{center:[60000,150000],nanny:[16000,28000],family:[8000,15000]},
+t2:{center:[35000,80000],nanny:[11000,19000],family:[5000,10000]},
+t3:{center:[20000,45000],nanny:[8000,13000],family:[3000,7000]}
+};
+
+function calc(){
+var city=document.getElementById('city').value;
+var days=parseInt(document.getElementById('days').value)||28;
+var hasFamily=document.getElementById('family').value==='yes';
+var p=prices[city];
+
+// 按天折算（基准28天）
+var factor=days/28;
+var center=[Math.round(p.center[0]*factor),Math.round(p.center[1]*factor)];
+var nanny=[Math.round(p.nanny[0]*factor),Math.round(p.nanny[1]*factor)];
+var family=[Math.round(p.family[0]*factor),Math.round(p.family[1]*factor)];
+
+var plans=[
+{name:'🏥 月子中心',price:center,unit:'全包 · 含护理/月子餐/产后修复',
+desc:'母婴同室或护士托管，24小时专业护理，含月子餐、产后修复、婴儿护理。医疗资源近，突发情况能及时处理。',
+pros:'省心省力、专业团队、有医疗保障、家人不用操心',
+cons:'价格最高、环境陌生、热门机构需提前半年预约、可能出现"样板间与实住不符"'},
+{name:'👩 请月嫂',price:nanny,unit:'住家 · 一对一',
+desc:'月嫂住家一对一照护产妇和宝宝，做饭洗衣带娃。经验参差，需面试筛选，好月嫂档期紧张。',
+pros:'在自己家、价格低于月子中心、一对一服务、饮食口味可定制',
+cons:'好月嫂难约且贵、无医疗背景、需家人配合、服务质量个体差异大'},
+{name:'👨‍👩‍👧 家人照顾',price:family,unit:'亲人 · 需自行准备月子餐',
+desc:'由家人（通常是婆婆或妈妈）照顾，配合请钟点工做月子餐或请短期护工。最省钱，但家人会很累。',
+pros:'最省钱、环境最熟悉、亲情陪伴',
+cons:'家人尤其老人极易疲劳、育儿观念冲突、产妇休息难保障、隐性成本（家人请假/健康）'}
+];
+
+var sorted=[].concat(plans).sort(function(a,b){return a.price[0]-b.price[0]});
+var cheapest=sorted[0].name;
+
+// 推荐逻辑
+var recommend='';
+if(hasFamily){
+recommend='家里有老人帮忙 → 建议「家人照顾 + 请 1-2 周月嫂过渡」组合，既能省钱又能让老人有喘息。';
+}else{
+recommend='没有人手帮忙 → 优先考虑「月嫂」或「月子中心」，别硬扛：产后 28 天是产妇恢复的关键窗口。';
+}
+
+var h='';
+for(var i=0;i<plans.length;i++){
+var pl=plans[i];
+var isBest=pl.name===cheapest;
+h+='<div class="plan'+(isBest?' best':'')+'">';
+h+='<div class="p-head"><span class="p-name">'+pl.name+(isBest?'<span class="badge b-green">最省</span>':'')+'</span>';
+h+='<span><div class="p-price">¥'+(pl.price[0]/10000).toFixed(1)+'~'+(pl.price[1]/10000).toFixed(1)+'万</div><div class="p-unit">'+pl.unit+'</div></span></div>';
+h+='<div class="p-desc">'+pl.desc+'</div>';
+h+='<div class="p-pros">✅ '+pl.pros+'</div>';
+h+='<div class="p-cons">⚠️ '+pl.cons+'</div>';
+h+='</div>';
+}
+
+h+='<div class="tip">💡 <b>怎么选</b>：'+recommend+'<br><br><b>避坑要点</b>：<br>• 月子中心：务必实地看房（看真实在住房间，不看样板间）、确认护士配比（1:3 以内）、问清额外收费项<br>• 月嫂：面试问 3 件事——带过多少个宝宝、如何处理黄疸/呛奶、上一家为什么不续约<br>• 签合同写清：服务内容、退订条款、突发情况处理（宝宝生病谁负责）<br>• 月嫂中介费通常是月薪的 30-50%，直聘可省但这笔钱买的是换人保障<br>• 别只看价格：产后抑郁高发期，情绪支持比省钱更重要<br>• 提前 3-6 个月预订，好月嫂和好月子中心都是抢手货</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+
+calc();
+</script>
+</body>
+</html>

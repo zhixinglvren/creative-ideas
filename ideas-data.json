@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "postpartum-care",
+      "icon": "🍼",
+      "title": "月子中心 vs 月嫂",
+      "tagline": "产后28天怎么安排？三种方案费用优劣一次比清",
+      "status": "live",
+      "category": "亲子育儿",
+      "demoUrl": "demo-postpartum-care/"
+    },
+    {
       "id": "holiday-hack",
       "icon": "🧳",
       "title": "拼假攻略计算器",
