@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "wedding-budget",
+      "icon": "💒",
+      "title": "婚礼预算分配器",
+      "tagline": "结婚30万够不够？酒席婚庆三金怎么分才不超支",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-wedding-budget/"
+    },
+    {
       "id": "postpartum-care",
       "icon": "🍼",
       "title": "月子中心 vs 月嫂",

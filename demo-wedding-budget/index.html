@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>婚礼预算分配器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff0f5;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#c2185b,#880e4f);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#c2185b}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.sum-card{background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-radius:14px;padding:20px;text-align:center;margin-bottom:12px}
+.sum-card .label{font-size:12px;color:#666}
+.sum-card .big{font-size:30px;font-weight:800;color:#880e4f;margin:4px 0}
+.sum-card .sub{font-size:11px;color:#888}
+.item{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border-left:4px solid #c2185b}
+.item .i-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.item .i-name{font-weight:700;font-size:14px}
+.item .i-amt{font-weight:800;font-size:15px;color:#c2185b}
+.item .i-pct{font-size:11px;color:#999;margin-left:4px;font-weight:400}
+.item .i-desc{font-size:12px;color:#666;line-height:1.6}
+.item .i-tip{font-size:11px;color:#e65100;margin-top:5px;line-height:1.6}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#c2185b,#880e4f);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💒 婚礼预算分配器</h1><div class="sub">结婚 30 万够不够？<br>酒席、婚庆、三金怎么分才不超支</div></div>
+
+<div class="card"><h3>💍 基本信息</h3>
+<div class="row2">
+<div class="field"><label>总预算（万元）</label><input id="budget" type="number" value="30" min="3" max="200" step="1" onchange="calc()"></div>
+<div class="field"><label>宾客人数</label><input id="guests" type="number" value="150" min="20" max="1000" step="10" onchange="calc()"></div>
+</div>
+<div class="field"><label>城市档位</label>
+<select id="city" onchange="calc()">
+<option value="t1">一线（北上广深）</option>
+<option value="t2" selected>新一线/二线（杭州/成都等）</option>
+<option value="t3">三四线</option>
+</select></div>
+</div>
+
+<button class="btn" onclick="calc()">📊 生成预算方案</button>
+
+<div class="result" id="result"></div>
+<div class="footer">婚礼预算分配器 · Demo · 参考市场行情，实际以当地报价为准</div>
+</div>
+
+<script>
+// 各项占比 + 每桌/人均参考价（按城市档位）
+var ratio=[
+{key:'banquet',name:'🍽 婚宴酒席',pct:[38,45],desc:'含场地、餐标、服务费',tip:'一般 10 人/桌；餐标逐年涨，签合同锁定价格'},
+{key:'decor',name:'🎀 婚庆布置',pct:[10,15],desc:'舞台、花艺、灯光、司仪、跟拍',tip:'套餐价与单点差价大，问清是否含拆装和加班费'},
+{key:'jewelry',name:'💎 三金/钻戒',pct:[8,12],desc:'金饰、钻戒、对戒',tip:'金价随行就市，避开节庆前涨价高峰；钻戒看 4C 别只看品牌'},
+{key:'photo',name:'📷 婚纱照',pct:[5,8],desc:'拍摄套餐、精修、相册',tip:'警惕"低价引流+选片加钱"，签约前问清精修张数和底片是否全给'},
+{key:'dress',name:'👰 婚纱礼服',pct:[3,5],desc:'婚纱、敬酒服、西装（租或买）',tip:'租赁比定制省一半，但热门档期要提前 2 个月订'},
+{key:'candy',name:'🍬 喜糖请柬',pct:[2,3],desc:'喜糖、请柬、伴手礼、红包袋',tip:'按宾客人数多备 15%，单价 15-30 元/份较常见'},
+{key:'honeymoon',name:'✈️ 蜜月旅行',pct:[8,12],desc:'机票、酒店、行程',tip:'淡季出行能省 30%；婚期和蜜月错开更划算'},
+{key:'reserve',name:'🛡 机动备用金',pct:[5,8],desc:'临时加项、超支缓冲',tip:'婚礼超支是常态，留 5-8% 心里不慌'}
+];
+
+function calc(){
+var budget=parseFloat(document.getElementById('budget').value)||0;
+var guests=parseInt(document.getElementById('guests').value)||100;
+var city=document.getElementById('city').value;
+if(budget<=0)return;
+
+var total=budget*10000;
+var tables=Math.ceil(guests/10);
+// 每桌餐标参考
+var perTable={t1:[6000,12000],t2:[3500,7000],t3:[1800,3500]}[city];
+var banquetMid=(perTable[0]+perTable[1])/2*tables;
+
+// 按比例分配，但婚宴优先用实际桌数估算校验
+var h='';
+h+='<div class="sum-card"><div class="label">💒 总预算</div><div class="big">¥'+budget+' 万</div><div class="sub">约 '+tables+' 桌 · '+guests+' 人 · 人均 ¥'+Math.round(total/guests).toLocaleString()+'</div></div>';
+
+// 婚宴实际参考与预算占比是否匹配
+var banquetRatio=banquetMid/total*100;
+var warn='';
+if(banquetRatio>50){
+warn='⚠️ 按当地行情，仅婚宴就需 ¥'+(banquetMid/10000).toFixed(1)+' 万（占总预算 '+banquetRatio.toFixed(0)+'%），预算偏紧——建议减少桌数或降餐标。';
+}else if(banquetRatio<30){
+warn='✅ 婚宴支出占 '+(banquetRatio.toFixed(0))+'%，预算相对宽松，可适当提升布置和婚纱照品质。';
+}else{
+warn='📌 婚宴占总预算 '+(banquetRatio.toFixed(0))+'%，属常见区间（参考桌价 ¥'+perTable[0]+'-'+perTable[1]+'/桌）。';
+}
+h+='<div class="tip" style="margin-bottom:12px">'+warn+'</div>';
+
+for(var i=0;i<ratio.length;i++){
+var r=ratio[i];
+var lo=total*r.pct[0]/100, hi=total*r.pct[1]/100;
+h+='<div class="item">';
+h+='<div class="i-head"><span class="i-name">'+r.name+'<span class="i-pct">'+r.pct[0]+'-'+r.pct[1]+'%</span></span><span class="i-amt">¥'+(lo/10000).toFixed(1)+'~'+(hi/10000).toFixed(1)+'万</span></div>';
+h+='<div class="i-desc">'+r.desc+'</div>';
+h+='<div class="i-tip">💡 '+r.tip+'</div>';
+h+='</div>';
+}
+
+h+='<div class="tip"><b>省钱四个关键</b>：<br>• <b>婚宴是最大头</b>（38-45%）：桌数少 10 桌 = 省 3-7 万，比砍布置有效得多<br>• <b>婚庆套餐拆开比价</b>：司仪、跟拍、花艺单独谈，往往比打包便宜 20-30%<br>• <b>错峰办婚礼</b>：淡季（1-3 月、7-8 月）场地和婚庆都能便宜 15-25%<br>• <b>礼金要算进现金流</b>：多数婚礼礼金能覆盖 50-80% 酒席成本，但别提前花掉<br><br><b>常见超支陷阱</b>：婚庆加项（灯光升级/追光灯/干冰）、婚纱照选片加钱、酒水开瓶费、司仪额外红包、伴手礼临时加量。</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+calc();
+</script>
+</body>
+</html>
