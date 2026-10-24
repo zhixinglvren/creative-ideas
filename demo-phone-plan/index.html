@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>手机套餐计算器 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e8eaf6;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#3949ab,#1a237e);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:#3949ab}
+.row2{display:flex;gap:10px}
+.row2 .field{flex:1}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.rec-card{background:linear-gradient(135deg,#e8eaf6,#c5cae9);border-radius:14px;padding:22px;text-align:center;margin-bottom:12px}
+.rec-card .label{font-size:12px;color:#666}
+.rec-card .big{font-size:34px;font-weight:800;color:#1a237e;margin:4px 0}
+.rec-card .sub{font-size:12px;color:#666;line-height:1.6}
+.plan{background:#fff;border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid #eee;border-left:4px solid #3949ab}
+.plan.best{border:2px solid #2e7d32;background:#f1f8e9;border-left-color:#2e7d32}
+.plan .p-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.plan .p-name{font-weight:700;font-size:14px}
+.plan .p-price{font-weight:800;font-size:17px;color:#3949ab}
+.plan.best .p-price{color:#2e7d32}
+.plan .p-detail{font-size:12px;color:#666;line-height:1.7}
+.plan .p-save{font-size:11px;color:#e65100;margin-top:5px}
+.badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700;margin-left:5px;background:#2e7d32;color:#fff}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3949ab,#1a237e);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>📱 手机套餐计算器</h1><div class="sub">每月话费 100+ 却用不完流量？<br>算算你该换什么档位</div></div>
+
+<div class="card"><h3>📊 你的实际用量</h3>
+<div class="row2">
+<div class="field"><label>月均流量（GB）</label><input id="data" type="number" value="15" min="0" max="500" onchange="calc()"></div>
+<div class="field"><label>月均通话（分钟）</label><input id="voice" type="number" value="120" min="0" max="3000" step="10" onchange="calc()"></div>
+</div>
+<div class="field"><label>当前月费（元）</label><input id="current" type="number" value="99" min="8" max="500" onchange="calc()"></div>
+<div class="field"><label>家里是否有宽带需求</label>
+<select id="broadband" onchange="calc()">
+<option value="no" selected>不需要 / 已有宽带</option>
+<option value="yes">需要办宽带（融合套餐更划算）</option>
+</select></div>
+</div>
+
+<button class="btn" onclick="calc()">💰 算最优套餐</button>
+
+<div class="result" id="result"></div>
+<div class="footer">手机套餐计算器 · Demo · 套餐价格为参考值，以运营商实际资费为准</div>
+</div>
+
+<script>
+// 单品套餐（参考三大运营商常见档位）
+var soloPlans=[
+{price:29,data:5,voice:100,name:'29元档'},
+{price:39,data:10,voice:200,name:'39元档'},
+{price:59,data:20,voice:300,name:'59元档'},
+{price:79,data:30,voice:500,name:'79元档'},
+{price:99,data:50,voice:800,name:'99元档'},
+{price:129,data:80,voice:1000,name:'129元档'},
+{price:159,data:100,voice:1500,name:'159元档'},
+{price:199,data:150,voice:2000,name:'199元档'},
+{price:239,data:200,voice:3000,name:'239元档'}
+];
+// 融合套餐（含宽带，通常更划算）
+var fusionPlans=[
+{price:69,data:20,voice:300,name:'69元融合（含300M宽带）'},
+{price:99,data:40,voice:500,name:'99元融合（含500M宽带）'},
+{price:129,data:60,voice:800,name:'129元融合（含1000M宽带）'},
+{price:159,data:100,voice:1200,name:'159元融合（含1000M宽带+电视）'},
+{price:199,data:150,voice:2000,name:'199元融合（含2000M宽带+电视）'}
+];
+
+function calc(){
+var needData=parseFloat(document.getElementById('data').value)||0;
+var needVoice=parseFloat(document.getElementById('voice').value)||0;
+var current=parseFloat(document.getElementById('current').value)||0;
+var needBB=document.getElementById('broadband').value==='yes';
+
+var pool = needBB ? fusionPlans : soloPlans;
+
+// 找满足需求的最低档
+var fit=null;
+for(var i=0;i<pool.length;i++){
+if(pool[i].data>=needData && pool[i].voice>=needVoice){fit=pool[i];break;}
+}
+
+var h='';
+if(!fit){
+h+='<div class="rec-card"><div class="label">⚠️ 你的用量较大</div><div class="big">需定制</div><div class="sub">月流量 '+needData+'GB / 通话 '+needVoice+'分钟，超出常规档位<br>建议办融合套餐或加装流量包</div></div>';
+}else{
+var save=current-fit.price;
+h+='<div class="rec-card"><div class="label">📱 推荐套餐</div><div class="big">¥'+fit.price+'</div><div class="sub">'+fit.name+'（'+fit.data+'GB + '+fit.voice+'分钟）'+(save>0?' · 每月省 ¥'+save:'')+'</div></div>';
+}
+
+// 展示匹配档 + 上下各一档
+var list=[];
+var idx=fit?pool.indexOf(fit):pool.length-1;
+for(var j=Math.max(0,idx-1);j<=Math.min(pool.length-1,idx+1);j++){list.push(pool[j]);}
+
+for(var k=0;k<list.length;k++){
+var p=list[k];
+var isBest=(fit && p.price===fit.price);
+var diff=current-p.price;
+h+='<div class="plan'+(isBest?' best':'')+'">';
+h+='<div class="p-head"><span class="p-name">'+p.name+(isBest?'<span class="badge">最合适</span>':'')+'</span><span class="p-price">¥'+p.price+'</span></div>';
+h+='<div class="p-detail">流量 '+p.data+'GB · 通话 '+p.voice+'分钟';
+if(needData>p.data)h+=' · <span style="color:#c62828">流量不够</span>';
+if(needVoice>p.voice)h+=' · <span style="color:#c62828">通话不够</span>';
+h+='</div>';
+if(diff>0)h+='<div class="p-save">相比当前套餐每月省 ¥'+diff+'（一年省 ¥'+(diff*12)+'）</div>';
+else if(diff<0)h+='<div class="p-save" style="color:#c62828">比当前贵 ¥'+Math.abs(diff)+'/月</div>';
+h+='</div>';
+}
+
+h+='<div class="tip"><b>省钱思路</b>：<br>• <b>流量用不完就是浪费</b>：多数人实际用量远低于套餐额度，降一档通常没影响<br>• <b>融合套餐最划算</b>：含宽带的融合套餐，往往比"手机套餐+单独宽带"便宜 30-50 元/月<br>• <b>老用户可打 10086/10010/10000 转人工</b>，直接说"我想降档"，常有挽留优惠<br>• <b>副卡/共享套餐</b>：家庭多人用，主卡+副卡共享流量，人均成本能降一半<br>• <b>互联网套餐</b>：部分虚拟运营商（如各种"宝卡""花卡"）同价位流量更多，但信号覆盖需实测<br>• <b>合约到期再动</b>：提前解约可能付违约金，先查合约状态<br>• <b>月底看账单明细</b>：流量超额费和增值业务（彩铃/会员）常是隐形支出</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+calc();
+</script>
+</body>
+</html>

@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "phone-plan",
+      "icon": "📱",
+      "title": "手机套餐计算器",
+      "tagline": "每月话费100+却用不完流量？算算你该换什么档位",
+      "status": "live",
+      "category": "效率工具",
+      "demoUrl": "demo-phone-plan/"
+    },
+    {
       "id": "wedding-budget",
       "icon": "💒",
       "title": "婚礼预算分配器",
