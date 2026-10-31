@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>水电煤账单体检 - Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#e0f7fa;color:#333;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:24px 0;background:linear-gradient(135deg,#00838f,#004d40);color:#fff;border-radius:16px;margin-bottom:16px}
+.header h1{font-size:22px;margin-bottom:4px}
+.header .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.6}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card h3{font-size:15px;margin-bottom:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.field{margin-bottom:6px}
+.field label{display:block;font-size:12px;color:#666;margin-bottom:3px}
+.field input{width:100%;padding:9px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;outline:none}
+.field input:focus{border-color:#00838f}
+.label-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;color:#999;margin-bottom:4px;padding-left:2px}
+.result{display:none;margin-top:16px}
+.result.show{display:block;animation:fadeUp .4s}
+.summary{background:linear-gradient(135deg,#e0f7fa,#b2ebf2);border-radius:14px;padding:18px;margin-bottom:12px;text-align:center}
+.summary .big{font-size:26px;font-weight:800;color:#004d40}
+.summary .sub{font-size:12px;color:#666;margin-top:4px;line-height:1.6}
+.item{background:#fff;border-radius:12px;padding:13px;margin-bottom:8px;border-left:4px solid #00838f}
+.item.warn{border-left-color:#f57c00;background:#fff8e1}
+.item.bad{border-left-color:#c62828;background:#ffebee}
+.item.ok{border-left-color:#2e7d32;background:#f1f8e9}
+.item .i-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.item .i-name{font-weight:700;font-size:14px}
+.item .i-amt{font-weight:800;font-size:14px}
+.item .i-amt.up{color:#c62828}
+.item .i-amt.down{color:#2e7d32}
+.item .i-detail{font-size:12px;color:#666;line-height:1.6}
+.item .i-advice{font-size:11.5px;color:#37474f;margin-top:6px;line-height:1.7;padding-top:6px;border-top:1px dashed #e0e0e0}
+.tip{font-size:12px;color:#666;background:#f5f5f5;border-radius:10px;padding:12px;line-height:1.8}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#00838f,#004d40);color:#fff;margin-top:8px;transition:transform .2s}
+.btn:active{transform:scale(.97)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.footer{text-align:center;padding:24px 0;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h1>💡 水电煤账单体检</h1><div class="sub">这个月电费突然翻倍？<br>找出异常项和真实原因</div></div>
+
+<div class="card"><h3>📄 输入两期账单（元）</h3>
+<div class="label-row"><span>项目</span><span>上月 / 本月</span></div>
+
+<div class="field"><label>⚡ 电费</label>
+<div class="row3">
+<input id="elec1" type="number" value="180" placeholder="上月" onchange="calc()">
+<input id="elec2" type="number" value="420" placeholder="本月" onchange="calc()">
+</div></div>
+
+<div class="field"><label>💧 水费</label>
+<div class="row3">
+<input id="water1" type="number" value="45" placeholder="上月" onchange="calc()">
+<input id="water2" type="number" value="52" placeholder="本月" onchange="calc()">
+</div></div>
+
+<div class="field"><label>🔥 燃气费</label>
+<div class="row3">
+<input id="gas1" type="number" value="60" placeholder="上月" onchange="calc()">
+<input id="gas2" type="number" value="65" placeholder="本月" onchange="calc()">
+</div></div>
+
+<div class="field" style="margin-top:12px"><label>🌡 本月是否有明显季节变化（开空调/取暖）</label>
+<select id="season" onchange="calc()">
+<option value="no">没有 / 变化不大</option>
+<option value="yes">有（夏季开空调 / 冬季取暖）</option>
+</select></div>
+</div>
+
+<button class="btn" onclick="calc()">🔍 体检账单</button>
+
+<div class="result" id="result"></div>
+<div class="footer">水电煤账单体检 · Demo · 判断基于通用用量规律，具体以当地燃气/电力公司核查为准</div>
+</div>
+
+<script>
+var items=[
+{id:'elec',name:'⚡ 电费',in1:'elec1',in2:'elec2',
+ advice:{
+  high:'① 先看是否跨了阶梯电价档位（多数地区年用电超 2760 度后单价跳涨 0.05-0.3 元/度）<br>② 空调/电暖器是最大变量：1.5匹空调每天 8 小时约 10-15 度<br>③ 电热水器常年保温最耗电，建议定时开关<br>④ 检查是否有电器待机漏电、老冰箱压缩机不停机<br>⑤ 换智能电表后账单跳涨，可申请校验电表（免费）',
+  normal:'用量平稳。可留意峰谷电价：把洗衣机、热水器挪到 22:00 后能省 30-50%。'
+ }},
+{id:'water',name:'💧 水费',in1:'water1',in2:'water2',
+ advice:{
+  high:'① 关掉所有水龙头看水表是否还转——转了就是漏水（马桶水箱最常见）<br>② 马桶水箱滴漏一天能漏 0.5 吨，滴一小时肉眼几乎看不出<br>③ 检查热水器、洗衣机进水管接口<br>④ 阶梯水价：超基数后单价翻倍<br>⑤ 排除漏水后，可申请校表',
+  normal:'用量正常。装个节水花洒和马桶节水阀，一年能省一两百。'
+ }},
+{id:'gas',name:'🔥 燃气费',in1:'gas1',in2:'gas2',
+ advice:{
+  high:'① 冬季用气本来就高（洗澡时间长、水温低），先看季节性<br>② 闻到异味或不用气时燃气表仍走字——可能泄漏，立即报修！<br>③ 燃气热水器老化燃烧效率下降，用气量会明显上升<br>④ 阶梯气价：年用气量跨档后单价上涨<br>⑤ 检查灶具是否漏气（肥皂水涂抹接口）',
+  normal:'用量平稳。注意燃气灶火苗发黄说明燃烧不充分，调风门可省气。'
+ }}
+];
+
+function calc(){
+var season=document.getElementById('season').value==='yes';
+var rows=[];
+var totalUp=0, abnormal=0;
+
+for(var i=0;i<items.length;i++){
+var it=items[i];
+var a=parseFloat(document.getElementById(it.in1).value)||0;
+var b=parseFloat(document.getElementById(it.in2).value)||0;
+if(a===0&&b===0)continue;
+var diff=b-a;
+var pct=a>0?(diff/a*100):(b>0?100:0);
+rows.push({it:it,prev:a,cur:b,diff:diff,pct:pct});
+if(diff>0)totalUp+=diff;
+}
+
+var h='';
+h+='<div class="summary"><div class="big">本月合计多支出 ¥'+Math.round(totalUp)+'</div><div class="sub">共检查 '+rows.length+' 项'+(season?' · 已考虑季节因素':'')+'</div></div>';
+
+for(var j=0;j<rows.length;j++){
+var r=rows[j];
+var cls='ok';
+var verdict='正常';
+if(r.pct>=60){cls='bad';verdict='异常偏高';abnormal++;}
+else if(r.pct>=30){cls='warn';verdict='明显上升';abnormal++;}
+else if(r.pct>=10){cls='ok';verdict='小幅波动';}
+else if(r.pct<0){cls='ok';verdict='下降';}
+
+var amtCls=r.diff>0?'up':'down';
+var sign=r.diff>0?'+':'';
+
+h+='<div class="item '+cls+'">';
+h+='<div class="i-head"><span class="i-name">'+r.it.name+'</span><span class="i-amt '+amtCls+'">'+sign+'¥'+Math.round(r.diff)+'（'+r.pct.toFixed(0)+'%）</span></div>';
+h+='<div class="i-detail">上月 ¥'+r.prev+' → 本月 ¥'+r.cur+' · <b>'+verdict+'</b></div>';
+
+if(r.pct>=30){
+h+='<div class="i-advice">排查方向：<br>'+r.it.advice.high+(season?'<br><span style="color:#2e7d32">已勾选季节因素，空调/取暖导致的上涨属正常，重点排查前三项。</span>':'')+'</div>';
+}else{
+h+='<div class="i-advice">💡 '+r.it.advice.normal+'</div>';
+}
+h+='</div>';
+}
+
+h+='<div class="tip"><b>通用常识</b>：<br>• <b>阶梯价格</b>是账单突增最常见的原因——很多地区按年累计，年底几个月单价最高<br>• <b>换表后必查</b>：新装智能表有 1-2 个月误差期，账单异常可打 95598（电）/96655（水气，各地不同）申请校验<br>• <b>租房族注意</b>：房东代收水电常加价，要求看原始票据；合租要定期对账<br>• <b>欠费补缴</b>：账单突然变高也可能是上期欠费顺延<br>• <b>异常报警</b>：水量或气量翻 3 倍以上且排除季节性，直接报修并留好记录，漏损可申请减免</div>';
+
+document.getElementById('result').innerHTML=h;
+document.getElementById('result').className='result show';
+}
+calc();
+</script>
+</body>
+</html>

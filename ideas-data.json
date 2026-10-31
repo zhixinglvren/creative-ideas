@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "bill-checkup",
+      "icon": "💡",
+      "title": "水电煤账单体检",
+      "tagline": "这个月电费突然翻倍？查出异常项和真实原因",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-bill-checkup/"
+    },
+    {
       "id": "phone-plan",
       "icon": "📱",
       "title": "手机套餐计算器",
