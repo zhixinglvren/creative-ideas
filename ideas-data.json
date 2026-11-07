@@ -1,6 +1,15 @@
 {
   "ideas": [
     {
+      "id": "repair-quote",
+      "icon": "🔧",
+      "title": "家电维修报价判断",
+      "tagline": "修空调报价800到底贵不贵？先看看市场行情再决定",
+      "status": "live",
+      "category": "生活工具",
+      "demoUrl": "demo-repair-quote/"
+    },
+    {
       "id": "bill-checkup",
       "icon": "💡",
       "title": "水电煤账单体检",
